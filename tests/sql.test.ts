@@ -1,6 +1,7 @@
 import {expect, test, jest, beforeEach, afterEach} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
+import { MySQLDB } from '../types';
 
 jest.setTimeout(20_000);
 

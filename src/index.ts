@@ -1,8 +1,9 @@
 import Logger from './libraries/Logger'
-import os from 'os'
+import * as os from 'node:os'
 import Executor from "./libraries/Executor"
 import { satisfies } from "semver"
 import DBDestroySignal from "./libraries/AbortSignal"
+import { InternalServerOptions, ServerOptions } from '../types'
 
 const defaultOptions: InternalServerOptions = {
     dbName: 'dbdata',

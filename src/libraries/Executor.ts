@@ -1,12 +1,13 @@
 import { exec, spawn } from "child_process"
 import {coerce} from 'semver';
 import {v4 as uuidv4} from 'uuid'
-import os from 'os'
-import fsPromises from 'fs/promises';
-import fs from 'fs';
+import * as os from 'os'
+import * as fsPromises from 'fs/promises';
+import * as fs from 'fs';
 import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
+import { ExecuteReturn, MySQLDB, ServerOptions } from "../../types";
 
 class Executor {
     logger: Logger;

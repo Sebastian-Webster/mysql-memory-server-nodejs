@@ -1,5 +1,5 @@
-import http from 'http';
-import fs from 'fs';
+import * as http from 'http';
+import * as fs from 'fs';
 
 export default function Download(url: string, filepath: string): Promise<undefined> {
     return new Promise((resolve, reject) => {

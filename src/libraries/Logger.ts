@@ -1,3 +1,5 @@
+import { LOG_LEVEL } from "../../types";
+
 const LOG_LEVELS = {
     'LOG': 0,
     'WARN': 1,
