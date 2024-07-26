@@ -1,0 +1,16 @@
+[
+    {
+        "version": "9.0.1",
+        "arch": "arm64",
+        "os": "darwin",
+        "osKernelVersionsSupported": ">22",
+        "url": "https://dev.mysql.com/get/Downloads/MySQL-9.0/mysql-9.0.1-macos14-arm64.tar.gz"
+    },
+    {
+        "version": "9.0.1",
+        "arch": "x64",
+        "os": "darwin",
+        "osKernelVersionsSupported": ">22",
+        "url": "https://dev.mysql.com/get/Downloads/MySQL-9.0/mysql-9.0.1-macos14-x86_64.tar.gz"
+    }
+]
