@@ -4,7 +4,7 @@ import * as fsPromises from 'fs/promises'
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import Logger from './Logger';
-import { createGunzip } from 'zlib';
+import * as tar from 'tar';
 
 export function downloadVersions(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -23,7 +23,7 @@ export function downloadVersions(): Promise<string> {
     })
 }
 
-export function downloadBinary(url: string, logger: Logger): Promise<void> {
+export function downloadBinary(url: string, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
         logger.log('Binary path:', dirpath)
@@ -31,7 +31,7 @@ export function downloadBinary(url: string, logger: Logger): Promise<void> {
 
         const uuid = uuidv4()
         const zipFilepath = `${dirpath}/${uuid}.tar.gz`
-        const extractedFilepath = `${dirpath}/${uuid}.tar`
+        const extractedPath = `${dirpath}/${uuid}`
 
         const fileStream = fs.createWriteStream(zipFilepath);
 
@@ -49,31 +49,28 @@ export function downloadBinary(url: string, logger: Logger): Promise<void> {
             })
         })
 
-        fileStream.on('finish', () => {
+        fileStream.on('finish', async () => {
             logger.log('Extracting binary...')
 
-            const zipReadStream = fs.createReadStream(zipFilepath)
-            const extractedWriteStream = fs.createWriteStream(extractedFilepath)
+            await fsPromises.mkdir(extractedPath)
 
-            zipReadStream.pipe(createGunzip()).pipe(extractedWriteStream)
-
-            zipReadStream.on('error', (err) => {
-                extractedWriteStream.end()
-                fsPromises.unlink(zipFilepath)
-                fsPromises.unlink(extractedFilepath)
-                reject(err)
-            })
-
-            extractedWriteStream.on('error', (err) => {
-                zipReadStream.close();
-                fsPromises.unlink(zipFilepath)
-                fsPromises.unlink(extractedFilepath)
-                reject(err)
-            })
-            
-            extractedWriteStream.on('finish', () => {
-                logger.log('Finished extracting binary')
-                resolve()
+            tar.extract({
+                file: zipFilepath,
+                cwd: extractedPath,
+                onwarn: (code, message, data) => {
+                    logger.warn('tar emitted warning:\ncode:', code, '\nmessage:', message, '\ndata:', data)
+                },
+                noMtime: true
+            }).then(async () => {
+                logger.log('Binary has been extracted')
+                try {
+                    await fsPromises.rm(zipFilepath)
+                } finally {
+                    resolve(`${extractedPath}/${url.split('/').at(-1).replace('.tar.gz', '')}/bin/mysqld`)
+                }
+            }).catch(error => {
+                logger.error(error)
+                reject(error)
             })
         })
 

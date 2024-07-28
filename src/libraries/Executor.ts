@@ -42,7 +42,7 @@ class Executor {
         })
     }
 
-    startMySQL(options: ServerOptions): Promise<MySQLDB> {
+    startMySQL(options: ServerOptions, binaryFilepath?: string): Promise<MySQLDB> {
         return new Promise(async (resolve, reject) => {
             //mysqlmsn = MySQL Memory Server Node.js
             const dbPath = `${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`
@@ -54,7 +54,7 @@ class Executor {
             let killing = false;
             
 
-            const {error: err, stderr}  = await this.#execute(`mysqld --datadir=${datadir} --initialize-insecure`)
+            const {error: err, stderr}  = await this.#execute(`${binaryFilepath || 'mysqld'} --datadir=${datadir} --initialize-insecure`)
             
             if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
                 return reject(err || stderr)
@@ -68,7 +68,7 @@ class Executor {
 
             const errors: string[] = []
             const logFile = `${dbPath}/log.log`
-            const process = spawn(`mysqld`, [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`], {signal: DBDestroySignal.signal})
+            const process = spawn(binaryFilepath || 'mysqld', [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`], {signal: DBDestroySignal.signal})
 
             process.on('close', (code, signal) => {
                 if (code === 0) {

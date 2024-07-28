@@ -28,14 +28,25 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
     logger.log('Data:', options.version, os.platform(), os.release(), os.arch())
     const version = await executor.getMySQLVersion()
     if (version === null || (options.version && !satisfies(version, options.version))) {
+        let binaryURL: string;
+        let binaryFilepath: string;
         try {
-            const binaryURL = getBinaryURL(MySQLVersions, options.version)
+            binaryURL = getBinaryURL(MySQLVersions, options.version)
             logger.log('Downloading binary from url:', binaryURL)
-            await downloadBinary(binaryURL, logger);
         } catch (e) {
             logger.error(e)
             throw 'Downloading updated versions list is coming soon'
         }
+
+        try {
+            binaryFilepath = await downloadBinary(binaryURL, logger);
+        } catch (error) {
+            logger.error('Failed to download binary')
+            throw error
+        }
+
+        logger.log('Running downloaded binary')
+        return await executor.startMySQL(options, binaryFilepath)
     } else {
         logger.log(version)
         return await executor.startMySQL(options)
