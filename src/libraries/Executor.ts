@@ -108,12 +108,21 @@ class Executor {
                             xPort: mySQLXPort,
                             dbName: options.dbName,
                             stop: () => {
-                                return new Promise((resolve, reject) => {
+                                return new Promise(async (resolve, reject) => {
                                     killing = true
                                     const killed = process.kill();
                                     
                                     if (killed) {
-                                        resolve()
+                                        try {
+                                            const splitPath = binaryFilepath.split('/')
+                                            const binariesIndex = splitPath.indexOf('binaries')
+                                            //The path will be the directory path for the binary download
+                                            splitPath.splice(binariesIndex + 2)
+                                            //Delete the binary folder
+                                            await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                                        } finally {
+                                            resolve()
+                                        }
                                     }
                                     else reject()
                                 })
