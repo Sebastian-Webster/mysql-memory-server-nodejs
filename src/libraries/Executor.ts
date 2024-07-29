@@ -32,11 +32,12 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath || 'mysqld', [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`], {signal: DBDestroySignal.signal})
+            const process = spawn(binaryFilepath || 'mysqld', [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             process.on('close', (code, signal) => {
+                if (killing) return
+                
                 if (code === 0) {
-                    if (killing) return
                     return reject('Database exited early')
                 }
 
@@ -74,7 +75,7 @@ class Executor {
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     killing = true
-                                    const killed = process.kill();
+                                    const killed = process.kill('SIGKILL');
                                     
                                     if (killed) {
                                         try {
@@ -83,7 +84,10 @@ class Executor {
                                             //The path will be the directory path for the binary download
                                             splitPath.splice(binariesIndex + 2)
                                             //Delete the binary folder
-                                            await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                                            await Promise.all([
+                                                fsPromises.rm(splitPath.join('/'), {force: true, recursive: true}),
+                                                fsPromises.rm(dbPath, {force: true, recursive: true})
+                                            ])
                                         } finally {
                                             resolve()
                                         }
