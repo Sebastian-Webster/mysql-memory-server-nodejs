@@ -10,7 +10,8 @@ import { downloadBinary } from './libraries/Downloader'
 
 const defaultOptions: InternalServerOptions = {
     dbName: 'dbdata',
-    logLevel: 'LOG'
+    logLevel: 'LOG',
+    portRetries: 10
 }
 
 process.on('exit', () => {

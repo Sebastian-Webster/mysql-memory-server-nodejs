@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
-import { ExecuteReturn, MySQLDB, ServerOptions } from "../../types";
+import { ExecuteReturn, InternalServerOptions, MySQLDB } from "../../types";
 
 class Executor {
     logger: Logger;
@@ -24,50 +24,14 @@ class Executor {
         })
     }
 
-    getMySQLVersion(): Promise<string | null> {
+    #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath?: string): Promise<MySQLDB> {
+        let killing = false;
+        const errors: string[] = []
+        const logFile = `${dbPath}/log.log`
+
         return new Promise(async (resolve, reject) => {
-            const {error, stdout, stderr} = await this.#execute('mysqld --version')
-            if (stderr && stderr.includes('command not found')) {
-                resolve(null)
-            } else if (error || stderr) {
-                reject(error || stderr)
-            } else {
-                const version = coerce(stdout)
-                if (version === null) {
-                    reject('Could not get installed MySQL version')
-                } else {
-                    resolve(version.version)
-                }
-            }
-        })
-    }
+            await fsPromises.rm(logFile, {force: true})
 
-    startMySQL(options: ServerOptions, binaryFilepath?: string): Promise<MySQLDB> {
-        return new Promise(async (resolve, reject) => {
-            //mysqlmsn = MySQL Memory Server Node.js
-            const dbPath = `${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`
-            const datadir = `${dbPath}/data`
-
-            this.logger.log('Created data directory for database at:', datadir)
-            await fsPromises.mkdir(datadir, {recursive: true})
-
-            let killing = false;
-            
-
-            const {error: err, stderr}  = await this.#execute(`${binaryFilepath || 'mysqld'} --datadir=${datadir} --initialize-insecure`)
-            
-            if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
-                return reject(err || stderr)
-            }
-
-            const port = GenerateRandomPort()
-            const mySQLXPort = GenerateRandomPort();
-            this.logger.log('Using port:', port)
-
-            await fsPromises.writeFile(`${dbPath}/init.sql`, `CREATE DATABASE ${options.dbName};`, {encoding: 'utf8'})
-
-            const errors: string[] = []
-            const logFile = `${dbPath}/log.log`
             const process = spawn(binaryFilepath || 'mysqld', [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`], {signal: DBDestroySignal.signal})
 
             process.on('close', (code, signal) => {
@@ -131,6 +95,67 @@ class Executor {
                     }
                 }
             })
+        })
+    }
+
+    getMySQLVersion(): Promise<string | null> {
+        return new Promise(async (resolve, reject) => {
+            const {error, stdout, stderr} = await this.#execute('mysqld --version')
+            if (stderr && stderr.includes('command not found')) {
+                resolve(null)
+            } else if (error || stderr) {
+                reject(error || stderr)
+            } else {
+                const version = coerce(stdout)
+                if (version === null) {
+                    reject('Could not get installed MySQL version')
+                } else {
+                    resolve(version.version)
+                }
+            }
+        })
+    }
+
+    startMySQL(options: InternalServerOptions, binaryFilepath?: string): Promise<MySQLDB> {
+        return new Promise(async (resolve, reject) => {
+            //mysqlmsn = MySQL Memory Server Node.js
+            const dbPath = `${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`
+            const datadir = `${dbPath}/data`
+
+            this.logger.log('Created data directory for database at:', datadir)
+            await fsPromises.mkdir(datadir, {recursive: true})
+            
+
+            const {error: err, stderr}  = await this.#execute(`${binaryFilepath || 'mysqld'} --datadir=${datadir} --initialize-insecure`)
+            
+            if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
+                return reject(err || stderr)
+            }
+
+            await fsPromises.writeFile(`${dbPath}/init.sql`, `CREATE DATABASE ${options.dbName};`, {encoding: 'utf8'})
+
+            let retries = 0;
+
+            do {
+                const port = GenerateRandomPort()
+                const mySQLXPort = GenerateRandomPort();
+                this.logger.log('Using port:', port, 'on retry:', retries)
+
+                try {
+                    const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, dbPath, binaryFilepath)
+                    return resolve(resolved)
+                } catch (e) {
+                    if (e !== 'Port is already in use') {
+                        return reject(e)
+                    }
+                    retries++
+                    if (retries < options.portRetries) {
+                        this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
+                    }
+                }
+            } while (retries < options.portRetries)
+
+            reject(`The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`)
         })
     }
 }
