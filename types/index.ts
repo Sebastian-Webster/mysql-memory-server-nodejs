@@ -5,13 +5,15 @@ export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR'
 export type ServerOptions = {
     version?: string,
     dbName: string,
-    loglevel?: LOG_LEVEL
+    loglevel?: LOG_LEVEL,
+    portRetries?: number
 }
 
 export type InternalServerOptions = {
     version?: string,
     dbName: string,
-    logLevel: LOG_LEVEL
+    logLevel: LOG_LEVEL,
+    portRetries: number
 }
 
 export type ExecutorOptions = {
