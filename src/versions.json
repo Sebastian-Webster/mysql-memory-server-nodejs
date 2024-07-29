@@ -92,7 +92,7 @@
     },
     {
         "version": "8.0.39",
-        "arch": "arn64",
+        "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
         "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-linux-glibc2.17-aarch64-minimal.tar.xz"
