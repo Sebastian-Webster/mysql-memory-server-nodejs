@@ -26,8 +26,8 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
 
     const executor = new Executor(logger)
 
-    logger.log('Data:', options.version, os.platform(), os.release(), os.arch())
-    const version = await executor.getMySQLVersion()
+    const version = await executor.getMySQLVersion(options.version)
+    logger.log('Version currently installed:', version)
     if (version === null || (options.version && !satisfies(version, options.version))) {
         let binaryURL: string;
         let binaryFilepath: string;
@@ -36,7 +36,10 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
             logger.log('Downloading binary from url:', binaryURL)
         } catch (e) {
             logger.error(e)
-            throw 'Downloading updated versions list is coming soon'
+            if (options.version) {
+                throw `A MySQL version ${options.version} binary could not be found that supports your OS and CPU architecture.`
+            }
+            throw `A MySQL binary could not be found that supports your OS and CPU architecture.`
         }
 
         try {

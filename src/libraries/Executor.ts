@@ -1,5 +1,5 @@
 import { exec, spawn } from "child_process"
-import {coerce} from 'semver';
+import {coerce, satisfies} from 'semver';
 import {v4 as uuidv4} from 'uuid'
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
@@ -102,19 +102,57 @@ class Executor {
         })
     }
 
-    getMySQLVersion(): Promise<string | null> {
+    getMySQLVersion(preferredVersion?: string): Promise<string | null> {
         return new Promise(async (resolve, reject) => {
-            const {error, stdout, stderr} = await this.#execute('mysqld --version')
-            if (stderr && stderr.includes('command not found')) {
-                resolve(null)
-            } else if (error || stderr) {
-                reject(error || stderr)
+            if (process.platform === 'win32') {
+                try {
+                    const dirs = await fsPromises.readdir('%SystemDrive%\\Program Files\\MySQL')
+                    const servers = dirs.filter(dirname => dirname.includes('MySQL Server'))
+
+                    if (servers.length === 0) {
+                        return resolve(null)
+                    }
+
+                    const versions: string[] = []
+
+                    for (const dir of servers) {
+                        const path = `%SystemDrive%\\Program Files\\MySQL\\${dir}\\bin\\mysqld`
+                        const {error, stdout, stderr} = await this.#execute(`${path} --version`)
+
+                        if (error || stderr) {
+                            return reject(error || stderr)
+                        }
+
+                        const version = coerce(stdout)
+                        if (version === null) {
+                            return reject('Could not get MySQL version')
+                        } else {
+                            versions.push(version.version)
+                        }
+                    }
+
+                    if (preferredVersion) {
+                        resolve(versions.find(version => satisfies(version, preferredVersion)) || null)
+                    } else {
+                        versions.sort()
+                        resolve(versions[0])
+                    }
+                } catch {
+                    resolve(null)
+                }
             } else {
-                const version = coerce(stdout)
-                if (version === null) {
-                    reject('Could not get installed MySQL version')
+                const {error, stdout, stderr} = await this.#execute('mysqld --version')
+                if (stderr && stderr.includes('command not found')) {
+                    resolve(null)
+                } else if (error || stderr) {
+                    reject(error || stderr)
                 } else {
-                    resolve(version.version)
+                    const version = coerce(stdout)
+                    if (version === null) {
+                        reject('Could not get installed MySQL version')
+                    } else {
+                        resolve(version.version)
+                    }
                 }
             }
         })
