@@ -26,7 +26,6 @@ class Executor {
     }
 
     #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
-        let killing = false;
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
 
@@ -35,26 +34,48 @@ class Executor {
 
             const process = spawn(binaryFilepath, [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
-            process.on('close', (code, signal) => {
-                if (killing) return
-                
-                if (code === 0) {
-                    return reject('Database exited early')
-                }
+            //resolveFunction is the function that will be called to resolve the promise that stops the database.
+            //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
+            //Once ran, resolveFunction will be called.
+            let resolveFunction: () => void;
 
-                const errorString = errors.join('\n')
-                this.logger.error(errorString)
-                if (errorString.includes('Address already in use')) {
-                    return reject('Port is already in use')
-                }
-
-                if (code) {
-                    return reject(errorString)
+            process.on('close', async (code, signal) => {
+                try {
+                    await fsPromises.rm(dbPath, {recursive: true, force: true})
+                    if (binaryFilepath.includes(os.tmpdir())) {
+                        const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
+                        const binariesIndex = splitPath.indexOf('binaries')
+                        //The path will be the directory path for the binary download
+                        splitPath.splice(binariesIndex + 2)
+                        //Delete the binary folder
+                        await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                    }
+                } catch (e) {
+                    this.logger.error(e)
+                } finally {
+                    if (resolveFunction) {
+                        resolveFunction()
+                        return
+                    }
+                    
+                    if (code === 0) {
+                        return reject('Database exited early')
+                    }
+    
+                    const errorString = errors.join('\n')
+                    this.logger.error(errorString)
+                    if (errorString.includes('Address already in use')) {
+                        return reject('Port is already in use')
+                    }
+    
+                    if (code) {
+                        return reject(errorString)
+                    }
                 }
             })
 
             process.stderr.on('data', (data) => {
-                if (!killing) {
+                if (!resolveFunction) {
                     if (Buffer.isBuffer(data)) {
                         errors.push(data.toString())
                     } else {
@@ -75,37 +96,13 @@ class Executor {
                             dbName: options.dbName,
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
-                                    killing = true
-                                    let killed = false;
-                                    if (os.platform() === 'win32') {
-                                        const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
-                                        if (!error && !stderr) {
-                                            killed = true;
-                                        } 
-                                    } else {
-                                        killed = process.kill('SIGKILL');
-                                    }
+                                    resolveFunction = resolve;
+
+                                    const killed = process.kill()
                                     
-                                    if (killed) {
-                                        try {
-                                            if (binaryFilepath !== 'mysqld') {
-                                                const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
-                                                const binariesIndex = splitPath.indexOf('binaries')
-                                                //The path will be the directory path for the binary download
-                                                splitPath.splice(binariesIndex + 2)
-                                                //Delete the binary folder
-                                                await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
-                                            }
-                                        } finally {
-                                            try {
-                                                console.log(dbPath)
-                                                await fsPromises.rm(dbPath, {force: true, recursive: true})
-                                            } finally {
-                                                resolve()
-                                            }
-                                        }
+                                    if (!killed) {
+                                       reject()
                                     }
-                                    else reject()
                                 })
                             }
                         })
@@ -121,8 +118,6 @@ class Executor {
                 try {
                     const dirs = await fsPromises.readdir(`${process.env.PROGRAMFILES}\\MySQL`)
                     const servers = dirs.filter(dirname => dirname.includes('MySQL Server'))
-
-                    console.log(servers)
 
                     if (servers.length === 0) {
                         return resolve(null)

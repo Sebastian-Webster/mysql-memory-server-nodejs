@@ -10,12 +10,11 @@ import { downloadBinary } from './libraries/Downloader'
 
 const defaultOptions: InternalServerOptions = {
     dbName: 'dbdata',
-    logLevel: 'LOG',
+    logLevel: 'ERROR',
     portRetries: 10
 }
 
 process.on('exit', () => {
-    console.log('Process is exiting')
     DBDestroySignal.abort('Process is exiting')
 })
 
