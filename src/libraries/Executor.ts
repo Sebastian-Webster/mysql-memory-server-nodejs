@@ -7,7 +7,8 @@ import * as fs from 'fs';
 import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
-import { ExecuteReturn, InternalServerOptions, MySQLDB } from "../../types";
+import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
+import {normalize as normalizePath} from 'path'
 
 class Executor {
     logger: Logger;
@@ -24,7 +25,7 @@ class Executor {
         })
     }
 
-    #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath?: string): Promise<MySQLDB> {
+    #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
         let killing = false;
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
@@ -32,7 +33,7 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath || 'mysqld', [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const process = spawn(binaryFilepath, [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             process.on('close', (code, signal) => {
                 if (killing) return
@@ -75,21 +76,33 @@ class Executor {
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     killing = true
-                                    const killed = process.kill('SIGKILL');
+                                    let killed = false;
+                                    if (os.platform() === 'win32') {
+                                        const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
+                                        if (!error && !stderr) {
+                                            killed = true;
+                                        } 
+                                    } else {
+                                        killed = process.kill('SIGKILL');
+                                    }
                                     
                                     if (killed) {
                                         try {
-                                            const splitPath = binaryFilepath.split('/')
-                                            const binariesIndex = splitPath.indexOf('binaries')
-                                            //The path will be the directory path for the binary download
-                                            splitPath.splice(binariesIndex + 2)
-                                            //Delete the binary folder
-                                            await Promise.all([
-                                                fsPromises.rm(splitPath.join('/'), {force: true, recursive: true}),
-                                                fsPromises.rm(dbPath, {force: true, recursive: true})
-                                            ])
+                                            if (binaryFilepath !== 'mysqld') {
+                                                const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
+                                                const binariesIndex = splitPath.indexOf('binaries')
+                                                //The path will be the directory path for the binary download
+                                                splitPath.splice(binariesIndex + 2)
+                                                //Delete the binary folder
+                                                await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                                            }
                                         } finally {
-                                            resolve()
+                                            try {
+                                                console.log(dbPath)
+                                                await fsPromises.rm(dbPath, {force: true, recursive: true})
+                                            } finally {
+                                                resolve()
+                                            }
                                         }
                                     }
                                     else reject()
@@ -102,42 +115,47 @@ class Executor {
         })
     }
 
-    getMySQLVersion(preferredVersion?: string): Promise<string | null> {
+    getMySQLVersion(preferredVersion?: string): Promise<InstalledMySQLVersion | null> {
         return new Promise(async (resolve, reject) => {
             if (process.platform === 'win32') {
                 try {
-                    const dirs = await fsPromises.readdir('%SystemDrive%\\Program Files\\MySQL')
+                    const dirs = await fsPromises.readdir(`${process.env.PROGRAMFILES}\\MySQL`)
                     const servers = dirs.filter(dirname => dirname.includes('MySQL Server'))
+
+                    console.log(servers)
 
                     if (servers.length === 0) {
                         return resolve(null)
                     }
 
-                    const versions: string[] = []
+                    const versions: {version: string, path: string}[] = []
 
                     for (const dir of servers) {
-                        const path = `%SystemDrive%\\Program Files\\MySQL\\${dir}\\bin\\mysqld`
-                        const {error, stdout, stderr} = await this.#execute(`${path} --version`)
+                        const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld`
+                        const {error, stdout, stderr} = await this.#execute(`"${path}" --version`)
 
                         if (error || stderr) {
                             return reject(error || stderr)
                         }
 
-                        const version = coerce(stdout)
+                        const verIndex = stdout.indexOf('Ver')
+
+                        const version = coerce(stdout.slice(verIndex))
                         if (version === null) {
                             return reject('Could not get MySQL version')
                         } else {
-                            versions.push(version.version)
+                            versions.push({version: version.version, path})
                         }
                     }
 
                     if (preferredVersion) {
-                        resolve(versions.find(version => satisfies(version, preferredVersion)) || null)
+                        resolve(versions.find(version => satisfies(version.version, preferredVersion)) || null)
                     } else {
                         versions.sort()
                         resolve(versions[0])
                     }
-                } catch {
+                } catch (e) {
+                    this.logger.error('Error occurred while getting installed MySQL version:', e)
                     resolve(null)
                 }
             } else {
@@ -151,26 +169,30 @@ class Executor {
                     if (version === null) {
                         reject('Could not get installed MySQL version')
                     } else {
-                        resolve(version.version)
+                        resolve({version: version.version, path: 'mysqld'})
                     }
                 }
             }
         })
     }
 
-    startMySQL(options: InternalServerOptions, binaryFilepath?: string): Promise<MySQLDB> {
+    startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         return new Promise(async (resolve, reject) => {
             //mysqlmsn = MySQL Memory Server Node.js
-            const dbPath = `${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`
-            const datadir = `${dbPath}/data`
+            const dbPath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`)
+            const datadir = normalizePath(`${dbPath}/data`)
 
             this.logger.log('Created data directory for database at:', datadir)
             await fsPromises.mkdir(datadir, {recursive: true})
             
 
-            const {error: err, stderr}  = await this.#execute(`${binaryFilepath || 'mysqld'} --datadir=${datadir} --initialize-insecure`)
+            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --datadir=${datadir} --initialize-insecure`)
             
             if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
+                if (process.platform === 'win32' && err.message.includes('Command failed')) {
+                    this.logger.error(err || stderr)
+                    return reject('The mysqld command failed to run. MySQL needs Microsoft Visual C++ Redistributable Package. Do you have this installed? MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions.')
+                }
                 return reject(err || stderr)
             }
 

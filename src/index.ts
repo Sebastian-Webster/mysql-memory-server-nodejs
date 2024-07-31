@@ -28,7 +28,7 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
 
     const version = await executor.getMySQLVersion(options.version)
     logger.log('Version currently installed:', version)
-    if (version === null || (options.version && !satisfies(version, options.version))) {
+    if (version === null || (options.version && !satisfies(version.version, options.version))) {
         let binaryURL: string;
         let binaryFilepath: string;
         try {
@@ -53,6 +53,6 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
         return await executor.startMySQL(options, binaryFilepath)
     } else {
         logger.log(version)
-        return await executor.startMySQL(options)
+        return await executor.startMySQL(options, version.path)
     }
 }
