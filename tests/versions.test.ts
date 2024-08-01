@@ -1,6 +1,7 @@
 import {expect, test, jest} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
+import { coerce } from 'semver';
 
 const versions = ['9.0.1', '8.4.2', '8.0.39']
 
@@ -20,6 +21,6 @@ for (const version of versions) {
         await connection.end();
         await db.stop();
 
-        expect(mySQLVersion).toBe(version)
+        expect(coerce(mySQLVersion)?.version).toBe(version)
     })
 }
