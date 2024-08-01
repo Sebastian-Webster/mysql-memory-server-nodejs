@@ -63,11 +63,11 @@
         "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
-        "version": "8.0.39",
+        "version": "8.4.2",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-winx64.zip"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-winx64.zip"
     },
     {
         "version": "8.0.39",

@@ -40,3 +40,8 @@ export type MySQLVersion = {
     osKernelVersionsSupported: string,
     url: string
 }
+
+export type InstalledMySQLVersion = {
+    version: string,
+    path: string
+}

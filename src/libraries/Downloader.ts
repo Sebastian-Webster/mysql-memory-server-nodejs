@@ -5,6 +5,20 @@ import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import Logger from './Logger';
 import * as tar from 'tar';
+import AdmZip from 'adm-zip'
+import { normalize as normalizePath } from 'path';
+
+function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        entry.getDataAsync((data, err) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(data)
+            }
+        })
+    })
+}
 
 export function downloadVersions(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -30,7 +44,10 @@ export function downloadBinary(url: string, logger: Logger): Promise<string> {
         await fsPromises.mkdir(dirpath, {recursive: true})
 
         const uuid = uuidv4()
-        const zipFilepath = `${dirpath}/${uuid}.tar.gz`
+        const lastDashIndex = url.lastIndexOf('-')
+        const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
+        const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
+        logger.log('Binary filepath:', zipFilepath)
         const extractedPath = `${dirpath}/${uuid}`
 
         const fileStream = fs.createWriteStream(zipFilepath);
@@ -54,24 +71,44 @@ export function downloadBinary(url: string, logger: Logger): Promise<string> {
 
             await fsPromises.mkdir(extractedPath)
 
-            tar.extract({
-                file: zipFilepath,
-                cwd: extractedPath,
-                onwarn: (code, message, data) => {
-                    logger.warn('tar emitted warning:\ncode:', code, '\nmessage:', message, '\ndata:', data)
-                },
-                noMtime: true
-            }).then(async () => {
-                logger.log('Binary has been extracted')
-                try {
-                    await fsPromises.rm(zipFilepath)
-                } finally {
-                    resolve(`${extractedPath}/${url.split('/').at(-1).replace('.tar.gz', '')}/bin/mysqld`)
+            if (fileExtension === 'zip') {
+                //Only Windows MySQL files use the .zip extension
+                const zip = new AdmZip(zipFilepath)
+                const entries = zip.getEntries()
+                let mysqldPath = '';
+                for (const entry of entries) {
+                    if (entry.isDirectory) {
+                        await fsPromises.mkdir(`${extractedPath}/${entry.entryName}`, {recursive: true})
+                    } else {
+                        if (entry.name === 'mysqld.exe') {
+                            mysqldPath = entry.entryName
+                        }
+
+                        const data = await getZipData(entry)
+                        await fsPromises.writeFile(`${extractedPath}/${entry.entryName}`, data)
+                    }
                 }
-            }).catch(error => {
-                logger.error(error)
-                reject(error)
-            })
+                resolve(normalizePath(`${extractedPath}/${mysqldPath}`))
+            } else {
+                tar.extract({
+                    file: zipFilepath,
+                    cwd: extractedPath,
+                    onwarn: (code, message, data) => {
+                        logger.warn('tar emitted warning:\ncode:', code, '\nmessage:', message, '\ndata:', data)
+                    },
+                    noMtime: true
+                }).then(async () => {
+                    logger.log('Binary has been extracted')
+                    try {
+                        await fsPromises.rm(zipFilepath)
+                    } finally {
+                        resolve(`${extractedPath}/${url.split('/').at(-1).replace('.tar.gz', '')}/bin/mysqld`)
+                    }
+                }).catch(error => {
+                    logger.error(error)
+                    reject(error)
+                })
+            }
         })
 
         fileStream.on('error', (err) => {
