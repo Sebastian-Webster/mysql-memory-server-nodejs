@@ -20,9 +20,9 @@ function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     })
 }
 
-function handleTarExtraction(filepath: string, dirpath: string): Promise<void> {
+function handleTarExtraction(filepath: string, extractedPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
-        exec(`tar -xf ${filepath}`, {cwd: dirpath}, (error, stdout, stderr) => {
+        exec(`tar -xf ${filepath} -C ${extractedPath}`, (error, stdout, stderr) => {
             if (error || stderr) {
                 return reject(error || stderr)
             }
@@ -101,7 +101,7 @@ export function downloadBinary(url: string, logger: Logger): Promise<string> {
                 }
                 resolve(normalizePath(`${extractedPath}/${mysqldPath}`))
             } else {
-                handleTarExtraction(zipFilepath, dirpath).then(async () => {
+                handleTarExtraction(zipFilepath, extractedPath).then(async () => {
                     logger.log('Binary has been extracted')
                     try {
                         await fsPromises.rm(zipFilepath)
