@@ -15,7 +15,7 @@ export default function getBinaryURL(versions: MySQLVersion[], versionToGet: str
 
     availableVersions = availableVersions.filter(v => satisfies(os.release(), v.osKernelVersionsSupported))
 
-    if (availableVersions.length === 0) throw `No MySQL binary could be found that supports your OS version: ${os.version()}`
+    if (availableVersions.length === 0) throw `No MySQL binary could be found that supports your OS version: ${os.release()} | ${os.version()}`
 
     availableVersions = availableVersions.filter(v => satisfies(v.version, versionToGet))
 
