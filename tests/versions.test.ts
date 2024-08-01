@@ -8,7 +8,7 @@ jest.setTimeout(1_000_000_000);
 
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
-        const db = await createDB({version, dbName: 'testingdata'})
+        const db = await createDB({version, dbName: 'testingdata', loglevel: 'LOG'})
         const connection = await sql.createConnection({
             host: '127.0.0.1',
             user: 'root',

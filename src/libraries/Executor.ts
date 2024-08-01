@@ -130,6 +130,8 @@ class Executor {
                         return resolve(null)
                     }
 
+                    this.logger.log(servers)
+
                     const versions: {version: string, path: string}[] = []
 
                     for (const dir of servers) {
