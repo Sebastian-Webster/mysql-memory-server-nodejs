@@ -1,6 +1,6 @@
 import { MySQLVersion } from "../../types";
 import * as os from 'os'
-import { satisfies } from "semver";
+import { satisfies, coerce } from "semver";
 
 export default function getBinaryURL(versions: MySQLVersion[], versionToGet: string = "9.x") {
     let availableVersions = versions;
@@ -13,7 +13,7 @@ export default function getBinaryURL(versions: MySQLVersion[], versionToGet: str
 
     if (availableVersions.length === 0) throw `No MySQL binary could be found for your OS: ${process.platform}`
 
-    availableVersions = availableVersions.filter(v => satisfies(os.release(), v.osKernelVersionsSupported))
+    availableVersions = availableVersions.filter(v => satisfies(coerce(os.release()).version, v.osKernelVersionsSupported))
 
     if (availableVersions.length === 0) throw `No MySQL binary could be found that supports your OS version: ${os.release()} | ${os.version()}`
 
