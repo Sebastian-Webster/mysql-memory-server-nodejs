@@ -1,4 +1,4 @@
-import {expect, test, jest} from '@jest/globals'
+import {expect, test, jest, beforeEach, afterEach} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 

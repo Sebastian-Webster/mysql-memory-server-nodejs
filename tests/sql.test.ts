@@ -5,8 +5,17 @@ import { MySQLDB } from '../types';
 
 jest.setTimeout(1_000_000_000);
 
+let db: MySQLDB;
+
+beforeEach(async () => {
+    db = await createDB({loglevel: 'LOG', dbName: 'test'})
+})
+
+afterEach(async () => {
+    await db.stop();
+})
+
 test('Runs with installed version (or downloads version if one is not available)', async () => {
-    const db = await createDB({loglevel: 'LOG', dbName: 'test'})
     const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: 'root',
@@ -18,5 +27,4 @@ test('Runs with installed version (or downloads version if one is not available)
     expect(result[0][0]['1 + 1']).toBe(2)
 
     await connection.end();
-    await db.stop();
 })
