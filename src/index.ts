@@ -36,9 +36,9 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
         } catch (e) {
             logger.error(e)
             if (options.version) {
-                throw `A MySQL version ${options.version} binary could not be found that supports your OS and CPU architecture.`
+                throw `A MySQL version ${options.version} binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}).`
             }
-            throw `A MySQL binary could not be found that supports your OS and CPU architecture.`
+            throw `A MySQL binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}).`
         }
 
         try {
