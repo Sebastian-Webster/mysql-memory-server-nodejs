@@ -195,6 +195,11 @@ class Executor {
                     this.logger.error(err || stderr)
                     return reject('The mysqld command failed to run. MySQL needs Microsoft Visual C++ Redistributable Package. Do you have this installed? MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions.')
                 }
+
+                if (process.platform === 'linux' && err.message.includes('libaio.so')) {
+                    this.logger.error(err || stderr)
+                    return reject('The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html')
+                }
                 return reject(err || stderr)
             }
 
