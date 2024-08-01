@@ -2,11 +2,11 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as fsPromises from 'fs/promises'
 import * as os from 'os';
-import { v4 as uuidv4 } from 'uuid';
 import Logger from './Logger';
 import * as tar from 'tar';
 import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
+import { randomUUID } from 'crypto';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ export function downloadBinary(url: string, logger: Logger): Promise<string> {
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
 
-        const uuid = uuidv4()
+        const uuid = randomUUID()
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
         const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
