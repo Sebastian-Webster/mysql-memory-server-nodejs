@@ -50,8 +50,6 @@ class Executor {
                         //Delete the binary folder
                         await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
                     }
-                } catch (e) {
-                    this.logger.error(e)
                 } finally {
                     if (resolveFunction) {
                         resolveFunction()
@@ -97,8 +95,17 @@ class Executor {
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
-
-                                    const killed = process.kill()
+                                    let killed = false;
+                                    if (os.platform() === 'win32') {
+                                        const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
+                                        if (!error && !stderr) {
+                                            killed = true;
+                                        } else {
+                                            this.logger.error(error || stderr)
+                                        }
+                                    } else {
+                                        killed = process.kill()
+                                    }
                                     
                                     if (!killed) {
                                        reject()
