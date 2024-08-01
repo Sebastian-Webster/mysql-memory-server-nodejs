@@ -162,7 +162,7 @@ class Executor {
                 }
             } else {
                 const {error, stdout, stderr} = await this.#execute('mysqld --version')
-                if (stderr && stderr.includes('command not found')) {
+                if (stderr && stderr.includes('not found')) {
                     resolve(null)
                 } else if (error || stderr) {
                     reject(error || stderr)
