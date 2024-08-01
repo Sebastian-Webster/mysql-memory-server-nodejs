@@ -4,9 +4,9 @@ import * as fsPromises from 'fs/promises'
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import Logger from './Logger';
-import * as tar from 'tar';
 import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
+import { exec } from 'child_process';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -16,6 +16,17 @@ function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
             } else {
                 resolve(data)
             }
+        })
+    })
+}
+
+function handleTarExtraction(filepath: string, dirpath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        exec(`tar -xf ${filepath}`, {cwd: dirpath}, (error, stdout, stderr) => {
+            if (error || stderr) {
+                return reject(error || stderr)
+            }
+            resolve()
         })
     })
 }
@@ -90,23 +101,15 @@ export function downloadBinary(url: string, logger: Logger): Promise<string> {
                 }
                 resolve(normalizePath(`${extractedPath}/${mysqldPath}`))
             } else {
-                tar.extract({
-                    file: zipFilepath,
-                    cwd: extractedPath,
-                    onwarn: (code, message, data) => {
-                        logger.warn('tar emitted warning:\ncode:', code, '\nmessage:', message, '\ndata:', data)
-                    },
-                    noMtime: true
-                }).then(async () => {
+                handleTarExtraction(zipFilepath, dirpath).then(async () => {
                     logger.log('Binary has been extracted')
                     try {
                         await fsPromises.rm(zipFilepath)
                     } finally {
-                        resolve(`${extractedPath}/${url.split('/').at(-1).replace('.tar.gz', '')}/bin/mysqld`)
+                        resolve(`${extractedPath}/${url.split('/').at(-1).replace(`.${fileExtension}`, '')}/bin/mysqld`)
                     }
                 }).catch(error => {
-                    logger.error(error)
-                    reject(error)
+                    reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
                 })
             }
         })
