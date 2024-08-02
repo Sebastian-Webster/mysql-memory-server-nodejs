@@ -1,6 +1,5 @@
 import { exec, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
-import {v4 as uuidv4} from 'uuid'
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
@@ -9,6 +8,7 @@ import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath} from 'path'
+import { randomUUID } from "crypto";
 
 class Executor {
     logger: Logger;
@@ -181,7 +181,7 @@ class Executor {
     startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         return new Promise(async (resolve, reject) => {
             //mysqlmsn = MySQL Memory Server Node.js
-            const dbPath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`)
+            const dbPath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`)
             const datadir = normalizePath(`${dbPath}/data`)
 
             this.logger.log('Created data directory for database at:', datadir)
