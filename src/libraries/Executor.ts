@@ -32,7 +32,7 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath, [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
@@ -188,12 +188,17 @@ class Executor {
             await fsPromises.mkdir(datadir, {recursive: true})
             
 
-            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --datadir=${datadir} --initialize-insecure`)
+            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
             
             if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
                 if (process.platform === 'win32' && err.message.includes('Command failed')) {
                     this.logger.error(err || stderr)
                     return reject('The mysqld command failed to run. MySQL needs Microsoft Visual C++ Redistributable Package. Do you have this installed? MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions.')
+                }
+
+                if (process.platform === 'linux' && err.message.includes('libaio.so')) {
+                    this.logger.error(err || stderr)
+                    return reject('The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html')
                 }
                 return reject(err || stderr)
             }
