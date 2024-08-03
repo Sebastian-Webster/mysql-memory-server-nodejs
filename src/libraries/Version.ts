@@ -17,14 +17,14 @@ export default function getBinaryURL(versions: MySQLVersion[], versionToGet: str
 
     if (availableVersions.length === 0) throw `No MySQL binary could be found that supports your OS version: ${os.release()} | ${os.version()}`
 
-    availableVersions = availableVersions.filter(v => satisfies(v.version, versionToGet))
+    const wantedVersions = availableVersions.filter(v => satisfies(v.version, versionToGet))
 
-    if (availableVersions.length === 0) throw `No MySQL binary could be found that meets your version requirement: ${versionToGet} for OS ${process.platform} version ${os.release()} on arch ${process.arch}`
+    if (wantedVersions.length === 0) throw `No MySQL binary could be found that meets your version requirement: ${versionToGet} for OS ${process.platform} version ${os.release()} on arch ${process.arch}. The available versions for download are: ${availableVersions.map(v => v.version)}`
 
     //Sorts versions in descending order
-    availableVersions.sort((a, b) => a.version < b.version ? 1 : a.version === b.version ? 0 : -1)
+    wantedVersions.sort((a, b) => a.version < b.version ? 1 : a.version === b.version ? 0 : -1)
 
-    const v = availableVersions[0]
+    const v = wantedVersions[0]
 
     return {
         url: v.url,
