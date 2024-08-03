@@ -6,14 +6,20 @@ export type ServerOptions = {
     version?: string,
     dbName: string,
     loglevel?: LOG_LEVEL,
-    portRetries?: number
+    portRetries?: number,
+    downloadBinaryOnce?: boolean,
+    lockRetries?: number,
+    lockRetryWait?: number
 }
 
 export type InternalServerOptions = {
     version?: string,
     dbName: string,
     logLevel: LOG_LEVEL,
-    portRetries: number
+    portRetries: number,
+    downloadBinaryOnce: boolean,
+    lockRetries: number,
+    lockRetryWait: number
 }
 
 export type ExecutorOptions = {
@@ -44,4 +50,9 @@ export type MySQLVersion = {
 export type InstalledMySQLVersion = {
     version: string,
     path: string
+}
+
+export type BinaryInfo = {
+    url: string,
+    version: string
 }

@@ -3,7 +3,7 @@ import * as os from 'node:os'
 import Executor from "./libraries/Executor"
 import { satisfies } from "semver"
 import DBDestroySignal from "./libraries/AbortSignal"
-import { InternalServerOptions, ServerOptions } from '../types'
+import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
@@ -11,7 +11,10 @@ import { downloadBinary } from './libraries/Downloader'
 const defaultOptions: InternalServerOptions = {
     dbName: 'dbdata',
     logLevel: 'ERROR',
-    portRetries: 10
+    portRetries: 10,
+    downloadBinaryOnce: true,
+    lockRetries: 1_000,
+    lockRetryWait: 1_000
 }
 
 process.on('exit', () => {
@@ -28,11 +31,11 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
     const version = await executor.getMySQLVersion(options.version)
     logger.log('Version currently installed:', version)
     if (version === null || (options.version && !satisfies(version.version, options.version))) {
-        let binaryURL: string;
+        let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
         try {
-            binaryURL = getBinaryURL(MySQLVersions, options.version)
-            logger.log('Downloading binary from url:', binaryURL)
+            binaryInfo = getBinaryURL(MySQLVersions, options.version)
+            logger.log('Downloading binary:', binaryInfo.version, 'from URL:', binaryInfo.url)
         } catch (e) {
             logger.error(e)
             if (options.version) {
@@ -42,7 +45,7 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
         }
 
         try {
-            binaryFilepath = await downloadBinary(binaryURL, logger);
+            binaryFilepath = await downloadBinary(binaryInfo, options, logger);
         } catch (error) {
             logger.error('Failed to download binary')
             throw error

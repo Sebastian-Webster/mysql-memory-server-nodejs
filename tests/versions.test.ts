@@ -5,7 +5,7 @@ import { coerce } from 'semver';
 
 const versions = ['9.0.1', '8.4.2', '8.0.39']
 
-jest.setTimeout(1_000_000_000);
+jest.setTimeout(900_000);
 
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
