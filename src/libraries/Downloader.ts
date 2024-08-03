@@ -156,7 +156,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: ServerOptions, l
             const extractedPath = `${dirpath}/${version}`
             await fsPromises.mkdir(extractedPath, {recursive: true})
 
-            const binaryPath = `${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`
+            const binaryPath = normalizePath(`${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`)
 
             const binaryExists = fs.existsSync(binaryPath)
 
