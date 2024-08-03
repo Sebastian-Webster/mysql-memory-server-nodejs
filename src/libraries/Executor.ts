@@ -193,7 +193,7 @@ class Executor {
             if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
                 if (process.platform === 'win32' && err.message.includes('Command failed')) {
                     this.logger.error(err || stderr)
-                    return reject('The mysqld command failed to run. MySQL needs Microsoft Visual C++ Redistributable Package. Do you have this installed? MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions.')
+                    return reject('The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.')
                 }
 
                 if (process.platform === 'linux' && err.message.includes('libaio.so')) {
