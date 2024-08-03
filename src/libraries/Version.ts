@@ -24,5 +24,10 @@ export default function getBinaryURL(versions: MySQLVersion[], versionToGet: str
     //Sorts versions in descending order
     availableVersions.sort((a, b) => a.version < b.version ? 1 : a.version === b.version ? 0 : -1)
 
-    return availableVersions[0].url
+    const v = availableVersions[0]
+
+    return {
+        url: v.url,
+        version: v.version
+    }
 }

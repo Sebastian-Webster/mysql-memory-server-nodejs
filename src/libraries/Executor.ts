@@ -42,7 +42,7 @@ class Executor {
             process.on('close', async (code, signal) => {
                 try {
                     await fsPromises.rm(dbPath, {recursive: true, force: true})
-                    if (binaryFilepath.includes(os.tmpdir())) {
+                    if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
                         const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
                         const binariesIndex = splitPath.indexOf('binaries')
                         //The path will be the directory path for the binary download

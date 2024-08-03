@@ -7,8 +7,8 @@ import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
-import { lockSync, checkSync } from 'proper-lockfile';
-import { ServerOptions } from '../../types';
+import { lockSync, checkSync, unlockSync } from 'proper-lockfile';
+import { BinaryInfo, ServerOptions } from '../../types';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -84,36 +84,38 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
 
 function extractBinary(url: string, archiveLocation: string, extractedLocation: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
-        const lastDashIndex = archiveLocation.lastIndexOf('-')
-        const fileExtension = archiveLocation.slice(lastDashIndex).split('.').splice(1).join('.')
+        const lastDashIndex = url.lastIndexOf('-')
+        const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
 
         await fsPromises.mkdir(extractedLocation, {recursive: true})
+
+        const folderName = url.split('/').at(-1).replace(`.${fileExtension}`, '')
 
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
             const zip = new AdmZip(archiveLocation)
             const entries = zip.getEntries()
-            let mysqldPath = '';
             for (const entry of entries) {
                 if (entry.isDirectory) {
-                    await fsPromises.mkdir(`${extractedLocation}/${entry.entryName}`, {recursive: true})
-                } else {
-                    if (entry.name === 'mysqld.exe') {
-                        mysqldPath = entry.entryName
+                    if (entry.name === folderName) {
+                        await fsPromises.mkdir(`${extractedLocation}/mysql`, {recursive: true})
+                    } else {
+                        await fsPromises.mkdir(`${extractedLocation}/${entry.entryName}`, {recursive: true})
                     }
-
+                } else {
                     const data = await getZipData(entry)
                     await fsPromises.writeFile(`${extractedLocation}/${entry.entryName}`, data)
                 }
             }
-            return resolve(normalizePath(`${extractedLocation}/${mysqldPath}`))
+            return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
         }
 
         handleTarExtraction(archiveLocation, extractedLocation).then(async () => {
             try {
                 await fsPromises.rm(archiveLocation)
             } finally {
-                resolve(`${extractedLocation}/${url.split('/').at(-1).replace(`.${fileExtension}`, '')}/bin/mysqld`)
+                fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
+                resolve(`${extractedLocation}/mysql/bin/mysqld`)
             }
         }).catch(error => {
             reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
@@ -121,15 +123,70 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
     })
 }
 
-export function downloadBinary(url: string, options: ServerOptions, logger: Logger): Promise<string> {
+function waitForLock(path: string, options: ServerOptions): Promise<void> {
     return new Promise(async (resolve, reject) => {
+        let retries = 0;
+        while (retries <= options.lockRetries) {
+            retries++
+            try {
+                const locked = checkSync(path);
+                if (!locked) {
+                    resolve()
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, options.lockRetryWait))
+                }
+            } catch (e) {
+                reject(e)
+            }
+        }
+    })
+}
+
+export function downloadBinary(binaryInfo: BinaryInfo, options: ServerOptions, logger: Logger): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+        const {url, version} = binaryInfo;
         const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
 
-        const uuid = randomUUID()
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
+
+        if (options.downloadBinaryOnce) {
+            const extractedPath = `${dirpath}/${version}`
+            await fsPromises.mkdir(extractedPath, {recursive: true})
+
+            const binaryPath = `${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`
+
+            const binaryExists = fs.existsSync(binaryPath)
+
+            if (binaryExists) {
+                return resolve(binaryPath)
+            }
+
+            try {
+                lockSync(extractedPath)
+                const archivePath = `${dirpath}/${version}.${fileExtension}`
+                await downloadFromCDN(url, archivePath, logger)
+                await extractBinary(url, archivePath, extractedPath)
+                try {
+                    unlockSync(extractedPath)
+                } catch (e) {
+                    return reject(e)
+                }
+                return resolve(binaryPath)
+            } catch (e) {
+                if (String(e) === 'Error: Lock file is already being held') {
+                    logger.log('Waiting for lock for MySQL version', version)
+                    await waitForLock(extractedPath, options)
+                    logger.log('Lock is gone for version', version)
+                    return resolve(binaryPath)
+                }
+                return reject(e)
+            }
+        }
+
+        const uuid = randomUUID()
         const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
         logger.log('Binary filepath:', zipFilepath)
         const extractedPath = `${dirpath}/${uuid}`
