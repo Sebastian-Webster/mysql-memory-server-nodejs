@@ -107,7 +107,12 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
                     await fsPromises.writeFile(`${extractedLocation}/${entry.entryName}`, data)
                 }
             }
-            return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
+            try {
+                await fsPromises.rm(archiveLocation)
+            } finally {
+                fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
+                return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
+            }
         }
 
         handleTarExtraction(archiveLocation, extractedLocation).then(async () => {
