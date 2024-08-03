@@ -136,14 +136,15 @@ function waitForLock(path: string, options: ServerOptions): Promise<void> {
             try {
                 const locked = checkSync(path);
                 if (!locked) {
-                    resolve()
+                    return resolve()
                 } else {
                     await new Promise(resolve => setTimeout(resolve, options.lockRetryWait))
                 }
             } catch (e) {
-                reject(e)
+                return reject(e)
             }
         }
+        reject(`lockRetries has been exceeded. Lock had not been released after ${options.lockRetryWait} * ${options.lockRetries} milliseconds.`)
     })
 }
 
