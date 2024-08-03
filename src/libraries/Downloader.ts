@@ -82,10 +82,12 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
     })
 }
 
-function extractBinary(archiveLocation: string, extractedLocation: string): Promise<string> {
+function extractBinary(url: string, archiveLocation: string, extractedLocation: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const lastDashIndex = archiveLocation.lastIndexOf('-')
         const fileExtension = archiveLocation.slice(lastDashIndex).split('.').splice(1).join('.')
+
+        await fsPromises.mkdir(extractedLocation, {recursive: true})
 
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
@@ -111,7 +113,7 @@ function extractBinary(archiveLocation: string, extractedLocation: string): Prom
             try {
                 await fsPromises.rm(archiveLocation)
             } finally {
-                resolve(`${extractedLocation}/${archiveLocation.split('/').at(-1).replace(`.${fileExtension}`, '')}/bin/mysqld`)
+                resolve(`${extractedLocation}/${url.split('/').at(-1).replace(`.${fileExtension}`, '')}/bin/mysqld`)
             }
         }).catch(error => {
             reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
@@ -132,65 +134,17 @@ export function downloadBinary(url: string, options: ServerOptions, logger: Logg
         logger.log('Binary filepath:', zipFilepath)
         const extractedPath = `${dirpath}/${uuid}`
 
-        const fileStream = fs.createWriteStream(zipFilepath);
+        try {
+            await downloadFromCDN(url, zipFilepath, logger)
+        } catch (e) {
+            reject(e)
+        }
 
-        fileStream.on('open', () => {
-            const request = https.get(url, (response) => {
-                response.pipe(fileStream)
-            })
-
-            request.on('error', (err) => {
-                logger.error(err)
-                fileStream.end()
-                fs.unlink(zipFilepath, () => {
-                    reject(err);
-                })
-            })
-        })
-
-        fileStream.on('finish', async () => {
-            logger.log('Extracting binary...')
-
-            await fsPromises.mkdir(extractedPath)
-
-            if (fileExtension === 'zip') {
-                //Only Windows MySQL files use the .zip extension
-                const zip = new AdmZip(zipFilepath)
-                const entries = zip.getEntries()
-                let mysqldPath = '';
-                for (const entry of entries) {
-                    if (entry.isDirectory) {
-                        await fsPromises.mkdir(`${extractedPath}/${entry.entryName}`, {recursive: true})
-                    } else {
-                        if (entry.name === 'mysqld.exe') {
-                            mysqldPath = entry.entryName
-                        }
-
-                        const data = await getZipData(entry)
-                        await fsPromises.writeFile(`${extractedPath}/${entry.entryName}`, data)
-                    }
-                }
-                resolve(normalizePath(`${extractedPath}/${mysqldPath}`))
-            } else {
-                handleTarExtraction(zipFilepath, extractedPath).then(async () => {
-                    logger.log('Binary has been extracted')
-                    try {
-                        await fsPromises.rm(zipFilepath)
-                    } finally {
-                        resolve(`${extractedPath}/${url.split('/').at(-1).replace(`.${fileExtension}`, '')}/bin/mysqld`)
-                    }
-                }).catch(error => {
-                    reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
-                })
-            }
-        })
-
-        fileStream.on('error', (err) => {
-            logger.error(err)
-            fileStream.end()
-            fs.unlink(zipFilepath, () => {
-                reject(err)
-            })
-        })
+        try {
+            const binaryPath = await extractBinary(url, zipFilepath, extractedPath)
+            resolve(binaryPath)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
