@@ -6,14 +6,16 @@ export type ServerOptions = {
     version?: string,
     dbName: string,
     loglevel?: LOG_LEVEL,
-    portRetries?: number
+    portRetries?: number,
+    downloadBinaryOnce?: boolean
 }
 
 export type InternalServerOptions = {
     version?: string,
     dbName: string,
     logLevel: LOG_LEVEL,
-    portRetries: number
+    portRetries: number,
+    downloadBinaryOnce: boolean
 }
 
 export type ExecutorOptions = {
