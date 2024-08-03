@@ -7,6 +7,8 @@ import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
+import { lockSync, checkSync } from 'proper-lockfile';
+import { ServerOptions } from '../../types';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -48,7 +50,76 @@ export function downloadVersions(): Promise<string> {
     })
 }
 
-export function downloadBinary(url: string, logger: Logger): Promise<string> {
+function downloadFromCDN(url: string, downloadLocation: string, logger: Logger): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const fileStream = fs.createWriteStream(downloadLocation);
+
+        fileStream.on('open', () => {
+            const request = https.get(url, (response) => {
+                response.pipe(fileStream)
+            })
+
+            request.on('error', (err) => {
+                logger.error(err)
+                fileStream.close()
+                fs.unlink(downloadLocation, (err) => {
+                    reject(err);
+                })
+            })
+        })
+
+        fileStream.on('finish', () => {
+            resolve()
+        })
+
+        fileStream.on('error', (err) => {
+            logger.error(err)
+            fileStream.end()
+            fs.unlink(downloadLocation, () => {
+                reject(err)
+            })
+        })
+    })
+}
+
+function extractBinary(archiveLocation: string, extractedLocation: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+        const lastDashIndex = archiveLocation.lastIndexOf('-')
+        const fileExtension = archiveLocation.slice(lastDashIndex).split('.').splice(1).join('.')
+
+        if (fileExtension === 'zip') {
+            //Only Windows MySQL files use the .zip extension
+            const zip = new AdmZip(archiveLocation)
+            const entries = zip.getEntries()
+            let mysqldPath = '';
+            for (const entry of entries) {
+                if (entry.isDirectory) {
+                    await fsPromises.mkdir(`${extractedLocation}/${entry.entryName}`, {recursive: true})
+                } else {
+                    if (entry.name === 'mysqld.exe') {
+                        mysqldPath = entry.entryName
+                    }
+
+                    const data = await getZipData(entry)
+                    await fsPromises.writeFile(`${extractedLocation}/${entry.entryName}`, data)
+                }
+            }
+            return resolve(normalizePath(`${extractedLocation}/${mysqldPath}`))
+        }
+
+        handleTarExtraction(archiveLocation, extractedLocation).then(async () => {
+            try {
+                await fsPromises.rm(archiveLocation)
+            } finally {
+                resolve(`${extractedLocation}/${archiveLocation.split('/').at(-1).replace(`.${fileExtension}`, '')}/bin/mysqld`)
+            }
+        }).catch(error => {
+            reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
+        })
+    })
+}
+
+export function downloadBinary(url: string, options: ServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
         logger.log('Binary path:', dirpath)

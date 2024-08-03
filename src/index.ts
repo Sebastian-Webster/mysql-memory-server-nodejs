@@ -11,7 +11,8 @@ import { downloadBinary } from './libraries/Downloader'
 const defaultOptions: InternalServerOptions = {
     dbName: 'dbdata',
     logLevel: 'ERROR',
-    portRetries: 10
+    portRetries: 10,
+    downloadBinaryOnce: true
 }
 
 process.on('exit', () => {
@@ -42,7 +43,7 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
         }
 
         try {
-            binaryFilepath = await downloadBinary(binaryURL, logger);
+            binaryFilepath = await downloadBinary(binaryURL, options, logger);
         } catch (error) {
             logger.error('Failed to download binary')
             throw error
