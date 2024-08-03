@@ -4,7 +4,7 @@ export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR'
 
 export type ServerOptions = {
     version?: string,
-    dbName: string,
+    dbName?: string,
     loglevel?: LOG_LEVEL,
     portRetries?: number,
     downloadBinaryOnce?: boolean,
