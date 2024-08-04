@@ -49,8 +49,19 @@ await db.stop()
 
 ## Documentation
 
-##### `createDB(ServerOptions): Promise<MySQLDB>`
-**Options:**
+##### `createDB(options: ServerOptions): Promise<MySQLDB>`
+###### On success, resolves with an object with the following properties:
+
+- `port: number`
+The port that the MySQL database is listening on
+- `xPort: number`
+The port that MySQLX is listening on
+- `dbName: string`
+The database that was created on database initialization
+- `stop: () => Promise<void>`
+The method to stop the database. The returned promise resolves when the database has successfully stopped.
+
+###### Options:
 - `version: string`
 
 Required: No
