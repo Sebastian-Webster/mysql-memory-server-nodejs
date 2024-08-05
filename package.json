@@ -1,12 +1,13 @@
 {
   "name": "mysql-memory-server",
   "version": "1.0.0",
-  "description": "Spin up an ephemeral MySQL from your JavaScript code",
+  "description": "Spin up an ephemeral MySQL database from your JavaScript code",
   "main": "dist/src/index.js",
   "types": "dist/types/index.d.ts",
   "files": [
     "/dist"
   ],
+  "keywords": ["MySQL", "ephemeral database", "continuous integration", "CI", "CI/CD", "memory database"],
   "scripts": {
     "test": "jest"
   },
