@@ -212,7 +212,7 @@ class Executor {
             do {
                 const port = GenerateRandomPort()
                 const mySQLXPort = GenerateRandomPort();
-                this.logger.log('Using port:', port, 'on retry:', retries)
+                this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
 
                 try {
                     const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, dbPath, binaryFilepath)
