@@ -30,5 +30,9 @@
     "adm-zip": "^0.5.14",
     "proper-lockfile": "^4.1.2",
     "semver": "^7.6.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sebastian-Webster/mysql-memory-server-nodejs.git"
   }
 }
