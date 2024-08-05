@@ -11,7 +11,7 @@ Download with your package manager of choice. The package name is `mysql-memory-
 #### Requirements
 
 - Node.js 16+
-- macOS 13+, Windows, or Linux (Only Ubuntu has been tested. Other Linux distributions may or may not work at this time. Ubuntu 24.04 is not supported at this time)
+- macOS 13+, Windows, or Linux (Only Ubuntu has been tested. Other Linux distributions may or may not work at this time. Ubuntu 24.04 and newer is not fully supported at this time - go to the bottom of this file to learn more)
 
 Windows only requirements:
 - `Microsoft Visual C++ 2019 Redistributable Package` needs to be installed
@@ -121,3 +121,7 @@ Required: No
 Default: 1,000
 
 Description: If `downloadBinaryOnce` is set to `true`, `lockRetryWait` is the number of milliseconds to wait before checking if the lock has been released.
+
+## If using Ubuntu 24.04 and newer
+
+Selecting what MySQL version to use is not currently supported on Ubuntu 24.04 and newer. To use this package on Ubuntu 24.04 and newer you must have the `mysql-server` package installed on your system and `ServerOptions.version` must either be the version that is installed on the system or undefined.
