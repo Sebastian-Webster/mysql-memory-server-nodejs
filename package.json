@@ -2,8 +2,8 @@
   "name": "mysql-memory-server",
   "version": "1.0.0",
   "description": "Spin up an ephemeral MySQL from your JavaScript code",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/types/index.d.ts",
   "files": [
     "/dist"
   ],
