@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "author": "Sebastian-Webster",
+  "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.24.9",
     "@babel/preset-env": "^7.24.8",
