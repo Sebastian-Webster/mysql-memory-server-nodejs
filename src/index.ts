@@ -39,9 +39,9 @@ export async function createDB(opts: ServerOptions = defaultOptions) {
         } catch (e) {
             logger.error(e)
             if (options.version) {
-                throw `A MySQL version ${options.version} binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}).`
+                throw `A MySQL version ${options.version} binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support the version you want to use, feel free to make a pull request to add support!`
             }
-            throw `A MySQL binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}).`
+            throw `A MySQL binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support your OS and CPU architecture, feel free to make a pull request to add support!`
         }
 
         try {
