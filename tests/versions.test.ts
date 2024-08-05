@@ -1,10 +1,11 @@
 import {expect, test, jest, beforeEach, afterEach} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
+import { coerce } from 'semver';
 
-const versions = ['9.0.1', '8.4.2', '8.0.39']
+const versions = ['9.0.1', '8.4.2', '8.0.39', '8.1.0', '8.2.0', '8.3.0']
 
-jest.setTimeout(1_000_000_000);
+jest.setTimeout(900_000);
 
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
@@ -20,6 +21,6 @@ for (const version of versions) {
         await connection.end();
         await db.stop();
 
-        expect(mySQLVersion).toBe(version)
+        expect(coerce(mySQLVersion)?.version).toBe(version)
     })
 }

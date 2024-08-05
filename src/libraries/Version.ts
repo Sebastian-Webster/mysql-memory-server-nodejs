@@ -1,6 +1,6 @@
 import { MySQLVersion } from "../../types";
 import * as os from 'os'
-import { satisfies } from "semver";
+import { satisfies, coerce } from "semver";
 
 export default function getBinaryURL(versions: MySQLVersion[], versionToGet: string = "9.x") {
     let availableVersions = versions;
@@ -13,16 +13,21 @@ export default function getBinaryURL(versions: MySQLVersion[], versionToGet: str
 
     if (availableVersions.length === 0) throw `No MySQL binary could be found for your OS: ${process.platform}`
 
-    availableVersions = availableVersions.filter(v => satisfies(os.release(), v.osKernelVersionsSupported))
+    availableVersions = availableVersions.filter(v => satisfies(coerce(os.release()).version, v.osKernelVersionsSupported))
 
-    if (availableVersions.length === 0) throw `No MySQL binary could be found that supports your OS version: ${os.version()}`
+    if (availableVersions.length === 0) throw `No MySQL binary could be found that supports your OS version: ${os.release()} | ${os.version()}`
 
-    availableVersions = availableVersions.filter(v => satisfies(v.version, versionToGet))
+    const wantedVersions = availableVersions.filter(v => satisfies(v.version, versionToGet))
 
-    if (availableVersions.length === 0) throw `No MySQL binary could be found that meets your version requirement: ${versionToGet} for OS ${process.platform} version ${os.release()} on arch ${process.arch}`
+    if (wantedVersions.length === 0) throw `No MySQL binary could be found that meets your version requirement: ${versionToGet} for OS ${process.platform} version ${os.release()} on arch ${process.arch}. The available versions for download are: ${availableVersions.map(v => v.version)}`
 
     //Sorts versions in descending order
-    availableVersions.sort((a, b) => a.version < b.version ? 1 : a.version === b.version ? 0 : -1)
+    wantedVersions.sort((a, b) => a.version < b.version ? 1 : a.version === b.version ? 0 : -1)
 
-    return availableVersions[0].url
+    const v = wantedVersions[0]
+
+    return {
+        url: v.url,
+        version: v.version
+    }
 }

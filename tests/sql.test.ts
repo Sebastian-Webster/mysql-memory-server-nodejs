@@ -3,7 +3,7 @@ import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { MySQLDB } from '../types';
 
-jest.setTimeout(1_000_000_000);
+jest.setTimeout(900_000);
 
 let db: MySQLDB;
 

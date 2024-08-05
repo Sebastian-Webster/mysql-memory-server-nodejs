@@ -1,6 +1,5 @@
 import { exec, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
-import {v4 as uuidv4} from 'uuid'
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
@@ -9,6 +8,7 @@ import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath} from 'path'
+import { randomUUID } from "crypto";
 
 class Executor {
     logger: Logger;
@@ -32,7 +32,7 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath, [`--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
@@ -42,7 +42,7 @@ class Executor {
             process.on('close', async (code, signal) => {
                 try {
                     await fsPromises.rm(dbPath, {recursive: true, force: true})
-                    if (binaryFilepath.includes(os.tmpdir())) {
+                    if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
                         const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
                         const binariesIndex = splitPath.indexOf('binaries')
                         //The path will be the directory path for the binary download
@@ -164,7 +164,7 @@ class Executor {
                 }
             } else {
                 const {error, stdout, stderr} = await this.#execute('mysqld --version')
-                if (stderr && stderr.includes('command not found')) {
+                if (stderr && stderr.includes('not found')) {
                     resolve(null)
                 } else if (error || stderr) {
                     reject(error || stderr)
@@ -183,19 +183,24 @@ class Executor {
     startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         return new Promise(async (resolve, reject) => {
             //mysqlmsn = MySQL Memory Server Node.js
-            const dbPath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${uuidv4().replace(/-/g, '')}`)
+            const dbPath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`)
             const datadir = normalizePath(`${dbPath}/data`)
 
             this.logger.log('Created data directory for database at:', datadir)
             await fsPromises.mkdir(datadir, {recursive: true})
             
 
-            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --datadir=${datadir} --initialize-insecure`)
+            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
             
             if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
                 if (process.platform === 'win32' && err.message.includes('Command failed')) {
                     this.logger.error(err || stderr)
-                    return reject('The mysqld command failed to run. MySQL needs Microsoft Visual C++ Redistributable Package. Do you have this installed? MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions.')
+                    return reject('The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.')
+                }
+
+                if (process.platform === 'linux' && err.message.includes('libaio.so')) {
+                    this.logger.error(err || stderr)
+                    return reject('The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html')
                 }
                 return reject(err || stderr)
             }
