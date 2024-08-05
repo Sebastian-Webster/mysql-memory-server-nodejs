@@ -34,7 +34,7 @@ const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: 'root',
         port: db.port,
-        database: "dbdata"
+        database: db.dbName
 })
 
 // Run your queries here
