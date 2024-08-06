@@ -40,6 +40,11 @@ class Executor {
             let resolveFunction: () => void;
 
             process.on('close', async (code, signal) => {
+                const errorString = errors.join('\n')
+                if (errorString.includes('Address already in use')) {
+                    return reject('Port is already in use')
+                }
+
                 try {
                     await fsPromises.rm(dbPath, {recursive: true, force: true})
                     if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -60,13 +65,8 @@ class Executor {
                         return reject('Database exited early')
                     }
     
-                    const errorString = errors.join('\n')
-                    this.logger.error(errorString)
-                    if (errorString.includes('Address already in use')) {
-                        return reject('Port is already in use')
-                    }
-    
                     if (code) {
+                        this.logger.error(errorString)
                         return reject(errorString)
                     }
                 }
