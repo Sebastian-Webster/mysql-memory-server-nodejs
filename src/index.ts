@@ -14,7 +14,8 @@ const defaultOptions: InternalServerOptions = {
     portRetries: 10,
     downloadBinaryOnce: true,
     lockRetries: 1_000,
-    lockRetryWait: 1_000
+    lockRetryWait: 1_000,
+    username: 'root'
 }
 
 process.on('exit', () => {
