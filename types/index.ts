@@ -9,7 +9,8 @@ export type ServerOptions = {
     portRetries?: number,
     downloadBinaryOnce?: boolean,
     lockRetries?: number,
-    lockRetryWait?: number
+    lockRetryWait?: number,
+    username?: string
 }
 
 export type InternalServerOptions = {
@@ -19,7 +20,8 @@ export type InternalServerOptions = {
     portRetries: number,
     downloadBinaryOnce: boolean,
     lockRetries: number,
-    lockRetryWait: number
+    lockRetryWait: number,
+    username: string
 }
 
 export type ExecutorOptions = {
