@@ -9,10 +9,9 @@ let db: MySQLDB;
 let connection: sql.Connection;
 
 beforeEach(async () => {
-    db = await createDB({username: 'exampleusername'})
+    db = await createDB({username: ''})
     connection = await sql.createConnection({
         host: '127.0.0.1',
-        user: 'exampleusername',
         port: db.port
     })
 })
