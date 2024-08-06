@@ -92,6 +92,7 @@ class Executor {
                             port,
                             xPort: mySQLXPort,
                             dbName: options.dbName,
+                            username: options.username,
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
@@ -203,7 +204,13 @@ class Executor {
                 return reject(err || stderr)
             }
 
-            await fsPromises.writeFile(`${dbPath}/init.sql`, `CREATE DATABASE ${options.dbName};`, {encoding: 'utf8'})
+            let initText = `CREATE DATABASE ${options.dbName};`;
+
+            if (options.username !== 'root') {
+                initText += `RENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+            }
+
+            await fsPromises.writeFile(`${dbPath}/init.sql`, initText, {encoding: 'utf8'})
 
             let retries = 0;
 

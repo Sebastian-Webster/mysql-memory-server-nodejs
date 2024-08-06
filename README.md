@@ -58,6 +58,8 @@ The port that the MySQL database is listening on
 The port that MySQLX is listening on
 - `dbName: string`
 The database that was created on database initialization
+- `username: string`
+The name of the user to use to login to the database
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
@@ -121,6 +123,14 @@ Required: No
 Default: 1,000
 
 Description: If `downloadBinaryOnce` is set to `true`, `lockRetryWait` is the number of milliseconds to wait before checking if the lock has been released.
+
+- `username: string`
+
+Required: No
+
+Default: root
+
+Description: The username of the user that is used to login to the database.
 
 ## If using Ubuntu 24.04 and newer
 
