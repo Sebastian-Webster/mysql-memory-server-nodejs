@@ -32,7 +32,7 @@ const db = await createDB()
 // Connect to the new database with the port provided
 const connection = await sql.createConnection({
         host: '127.0.0.1',
-        user: 'root',
+        user: db.username,
         port: db.port,
         database: db.dbName
 })
