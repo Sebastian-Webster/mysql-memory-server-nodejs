@@ -18,6 +18,7 @@ afterEach(async () => {
 test('Runs with installed version (or downloads version if one is not available)', async () => {
     const connection = await sql.createConnection({
         host: '127.0.0.1',
+        user: db.username,
         port: db.port
     })
 

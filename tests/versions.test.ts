@@ -12,6 +12,7 @@ for (const version of versions) {
         const db = await createDB({version, dbName: 'testingdata', username: '', logLevel: 'LOG'})
         const connection = await sql.createConnection({
             host: '127.0.0.1',
+            user: db.username,
             port: db.port
         })
 
