@@ -8,7 +8,7 @@ jest.setTimeout(900_000);
 let db: MySQLDB;
 
 beforeEach(async () => {
-    db = await createDB({username: '', logLevel: 'LOG'})
+    db = await createDB({username: 'root', logLevel: 'LOG'})
 })
 
 afterEach(async () => {
