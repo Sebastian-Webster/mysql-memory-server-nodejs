@@ -38,6 +38,7 @@ export type MySQLDB = {
     port: number,
     xPort: number,
     dbName: string,
+    username: string,
     stop: () => Promise<void>
 }
 

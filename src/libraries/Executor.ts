@@ -92,6 +92,7 @@ class Executor {
                             port,
                             xPort: mySQLXPort,
                             dbName: options.dbName,
+                            username: options.username,
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
