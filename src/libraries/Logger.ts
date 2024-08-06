@@ -15,19 +15,19 @@ class Logger {
 
     log(...args: any) {
         if (this.LOG_LEVEL === 0) {
-            console.log.apply(null, args)
+            console.log(...args)
         }
     }
 
     warn(...args: any) {
         if (this.LOG_LEVEL <= 1) {
-            console.warn.apply(null, args)
+            console.warn(...args)
         }
     }
 
     error(...args: any) {
         if (this.LOG_LEVEL <= 2) {
-            console.error.apply(null, args)
+            console.error(...args)
         }
     }
 }
