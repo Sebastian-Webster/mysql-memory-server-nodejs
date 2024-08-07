@@ -32,7 +32,7 @@ const db = await createDB()
 // Connect to the new database with the port provided
 const connection = await sql.createConnection({
         host: '127.0.0.1',
-        user: 'root',
+        user: db.username,
         port: db.port,
         database: db.dbName
 })
@@ -131,6 +131,16 @@ Required: No
 Default: root
 
 Description: The username of the user that is used to login to the database.
+
+- `deleteDBAfterStopped: boolean`
+
+Required: No
+
+Default: true
+
+Gotchas: This option is intended to be for internal debugging purposes only and not meant for people to use. As such, this option will not follow Semantic Versioning.
+
+Description: Changes whether or not the database will be deleted after it has been stopped. If set to `true`, the database WILL be deleted after it has been stopped.
 
 ## If using Ubuntu 24.04 and newer
 

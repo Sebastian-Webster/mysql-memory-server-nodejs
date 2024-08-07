@@ -10,7 +10,8 @@ export type ServerOptions = {
     downloadBinaryOnce?: boolean,
     lockRetries?: number,
     lockRetryWait?: number,
-    username?: string
+    username?: string,
+    deleteDBAfterStopped?: boolean
 }
 
 export type InternalServerOptions = {
@@ -21,7 +22,8 @@ export type InternalServerOptions = {
     downloadBinaryOnce: boolean,
     lockRetries: number,
     lockRetryWait: number,
-    username: string
+    username: string,
+    deleteDBAfterStopped: boolean
 }
 
 export type ExecutorOptions = {

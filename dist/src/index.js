@@ -41,7 +41,8 @@ const defaultOptions = {
     portRetries: 10,
     downloadBinaryOnce: true,
     lockRetries: 1000,
-    lockRetryWait: 1000
+    lockRetryWait: 1000,
+    username: 'root'
 };
 process.on('exit', () => {
     AbortSignal_1.default.abort('Process is exiting');

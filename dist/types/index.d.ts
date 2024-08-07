@@ -8,6 +8,7 @@ export type ServerOptions = {
     downloadBinaryOnce?: boolean;
     lockRetries?: number;
     lockRetryWait?: number;
+    username?: string;
 };
 export type InternalServerOptions = {
     version?: string;
@@ -17,6 +18,7 @@ export type InternalServerOptions = {
     downloadBinaryOnce: boolean;
     lockRetries: number;
     lockRetryWait: number;
+    username: string;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;
@@ -30,6 +32,7 @@ export type MySQLDB = {
     port: number;
     xPort: number;
     dbName: string;
+    username: string;
     stop: () => Promise<void>;
 };
 export type MySQLVersion = {

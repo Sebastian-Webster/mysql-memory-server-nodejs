@@ -112,17 +112,19 @@ function extractBinary(url, archiveLocation, extractedLocation) {
             const zip = new adm_zip_1.default(archiveLocation);
             const entries = zip.getEntries();
             for (const entry of entries) {
-                if (entry.isDirectory) {
-                    if (entry.name === folderName) {
-                        await fsPromises.mkdir(`${extractedLocation}/mysql`, { recursive: true });
+                if (entry.entryName.indexOf('..') === -1) {
+                    if (entry.isDirectory) {
+                        if (entry.name === folderName) {
+                            await fsPromises.mkdir(`${extractedLocation}/mysql`, { recursive: true });
+                        }
+                        else {
+                            await fsPromises.mkdir(`${extractedLocation}/${entry.entryName}`, { recursive: true });
+                        }
                     }
                     else {
-                        await fsPromises.mkdir(`${extractedLocation}/${entry.entryName}`, { recursive: true });
+                        const data = await getZipData(entry);
+                        await fsPromises.writeFile(`${extractedLocation}/${entry.entryName}`, data);
                     }
-                }
-                else {
-                    const data = await getZipData(entry);
-                    await fsPromises.writeFile(`${extractedLocation}/${entry.entryName}`, data);
                 }
             }
             try {
