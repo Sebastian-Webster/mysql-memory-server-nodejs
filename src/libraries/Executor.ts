@@ -46,28 +46,33 @@ class Executor {
                 }
 
                 try {
-                    await fsPromises.rm(dbPath, {recursive: true, force: true})
-                    if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
-                        const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
-                        const binariesIndex = splitPath.indexOf('binaries')
-                        //The path will be the directory path for the binary download
-                        splitPath.splice(binariesIndex + 2)
-                        //Delete the binary folder
-                        await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                    if (options.deleteDBAfterStopped) {
+                        await fsPromises.rm(dbPath, {recursive: true, force: true})
                     }
                 } finally {
-                    if (resolveFunction) {
-                        resolveFunction()
-                        return
-                    }
-                    
-                    if (code === 0) {
-                        return reject('Database exited early')
-                    }
-    
-                    if (code) {
-                        this.logger.error(errorString)
-                        return reject(errorString)
+                    try {
+                        if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
+                            const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
+                            const binariesIndex = splitPath.indexOf('binaries')
+                            //The path will be the directory path for the binary download
+                            splitPath.splice(binariesIndex + 2)
+                            //Delete the binary folder
+                            await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                        }
+                    } finally {
+                        if (resolveFunction) {
+                            resolveFunction()
+                            return
+                        }
+                        
+                        if (code === 0) {
+                            return reject('Database exited early')
+                        }
+        
+                        if (code) {
+                            this.logger.error(errorString)
+                            return reject(errorString)
+                        }
                     }
                 }
             })

@@ -15,7 +15,8 @@ const defaultOptions: InternalServerOptions = {
     downloadBinaryOnce: true,
     lockRetries: 1_000,
     lockRetryWait: 1_000,
-    username: 'root'
+    username: 'root',
+    deleteDBAfterStopped: true
 }
 
 process.on('exit', () => {
