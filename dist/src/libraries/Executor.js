@@ -123,7 +123,11 @@ class Executor {
                 }
                 return reject(err || stderr);
             }
-            await fsPromises.writeFile(`${dbPath}/init.sql`, `CREATE DATABASE ${options.dbName};`, { encoding: 'utf8' });
+            let initText = `CREATE DATABASE ${options.dbName};`;
+            if (options.username !== 'root') {
+                initText += `RENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`;
+            }
+            await fsPromises.writeFile(`${dbPath}/init.sql`, initText, { encoding: 'utf8' });
             let retries = 0;
             do {
                 const port = (0, Port_1.GenerateRandomPort)();
@@ -164,6 +168,10 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
         //Once ran, resolveFunction will be called.
         let resolveFunction;
         process.on('close', async (code, signal) => {
+            const errorString = errors.join('\n');
+            if (errorString.includes('Address already in use')) {
+                return reject('Port is already in use');
+            }
             try {
                 await fsPromises.rm(dbPath, { recursive: true, force: true });
                 if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -183,12 +191,8 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                 if (code === 0) {
                     return reject('Database exited early');
                 }
-                const errorString = errors.join('\n');
-                this.logger.error(errorString);
-                if (errorString.includes('Address already in use')) {
-                    return reject('Port is already in use');
-                }
                 if (code) {
+                    this.logger.error(errorString);
                     return reject(errorString);
                 }
             }
@@ -213,6 +217,7 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                         port,
                         xPort: mySQLXPort,
                         dbName: options.dbName,
+                        username: options.username,
                         stop: () => {
                             return new Promise(async (resolve, reject) => {
                                 resolveFunction = resolve;
