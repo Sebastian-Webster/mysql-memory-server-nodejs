@@ -9,7 +9,8 @@
   ],
   "keywords": ["MySQL", "ephemeral database", "continuous integration", "CI", "CI/CD", "memory database"],
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:ci": "jest --setupFilesAfterEnv ./tests/ciSetup.mjs"
   },
   "author": "Sebastian-Webster",
   "license": "MIT",
