@@ -20,18 +20,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup node ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: Install packages
         run: npm ci
-      - name: Create dbs folder
-        run: mkdir dbs
+
+      - name: Create dbs folder (Linux/macOS)
+        if: ${{ runner.os }} != 'Windows'
+        run: mkdir /tmp/dbs
+
+      - name: Create dbs folder (Windows)
+        if: ${{ runner.os }} == 'Windows'
+        run: mkdir %TEMP%/dbs
+
       - name: Run tests
         run: npm test
-      - name: Upload test dbs
+
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os }} != 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: ${{ github.workspace }}/dbs
+          path: /tmp/dbs
+
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os }} == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: "%TEMP%/dbs"
