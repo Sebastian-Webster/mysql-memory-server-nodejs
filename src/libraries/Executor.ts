@@ -78,20 +78,7 @@ class Executor {
 
             process.stderr.on('data', (data) => {
                 if (!resolveFunction) {
-                    if (Buffer.isBuffer(data)) {
-                        errors.push(data.toString())
-                    } else {
-                        errors.push(data)
-                    }
-                }
-            })
-
-            fs.watchFile(logFile, async (curr) => {
-                if (curr.dev !== 0) {
-                    //File exists
-                    const file = await fsPromises.readFile(logFile, {encoding: 'utf8'})
-                    if (file.includes('started with:')) {
-                        fs.unwatchFile(logFile)
+                    if (String(data).includes('ready for connections. Version:')) {
                         resolve({
                             port,
                             xPort: mySQLXPort,
@@ -118,6 +105,13 @@ class Executor {
                                 })
                             }
                         })
+                    }
+
+                    
+                    if (Buffer.isBuffer(data)) {
+                        errors.push(data.toString())
+                    } else {
+                        errors.push(data)
                     }
                 }
             })
