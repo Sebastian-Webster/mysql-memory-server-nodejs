@@ -11,7 +11,7 @@ let db: MySQLDB;
 const dbPathPrefix = process.platform === 'win32' ? '%TEMP%\\dbs' : '/tmp/dbs'
 
 beforeEach(async () => {
-    db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${randomUUID()}` : undefined})
+    db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${randomUUID()}` : undefined})
 })
 
 afterEach(async () => {
