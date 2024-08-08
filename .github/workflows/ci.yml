@@ -34,4 +34,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: dbs
+          path: ./dbs
