@@ -35,7 +35,7 @@ jobs:
 
       - name: Create dbs folder (Windows)
         if: ${{ runner.os == 'Windows' }}
-        run: mkdir %TEMP%/dbs
+        run: mkdir %USERPROFILE%/dbs
 
       - name: Run tests
         run: npm test
@@ -52,4 +52,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "%TEMP%/dbs"
+          path: "%USERPROFILE%/dbs"
