@@ -70,8 +70,9 @@ class Executor {
                         }
         
                         if (code) {
-                            this.logger.error(errorString)
-                            return reject(errorString)
+                            const errorMessage = `The database exited early with code ${code}. The stderr output was: "${errorString}".`
+                            this.logger.error(errorMessage)
+                            return reject(errorMessage)
                         }
                     }
                 }
@@ -196,12 +197,12 @@ class Executor {
             const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
             
             if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
-                if (process.platform === 'win32' && err.message.includes('Command failed')) {
+                if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
                     this.logger.error(err || stderr)
                     return reject('The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.')
                 }
 
-                if (process.platform === 'linux' && err.message.includes('libaio.so')) {
+                if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
                     this.logger.error(err || stderr)
                     return reject('The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html')
                 }
