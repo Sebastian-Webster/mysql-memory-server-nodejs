@@ -29,14 +29,6 @@ jobs:
       - name: Install packages
         run: npm ci
 
-      - name: Create dbs folder (Linux/macOS)
-        if: ${{ runner.os != 'Windows' }}
-        run: mkdir /tmp/dbs
-
-      - name: Create dbs folder (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        run: mkdir %USERPROFILE%/dbs
-
       - name: Run tests
         run: npm test
 
