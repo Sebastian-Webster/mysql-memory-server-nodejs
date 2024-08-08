@@ -9,7 +9,7 @@ let db: MySQLDB;
 let connection: sql.Connection;
 
 beforeEach(async () => {
-    db = await createDB({username: ''})
+    db = await createDB({username: '', logLevel: 'LOG', dbPath: '/Users/sebastianwebster/Downloads/loldb'})
     connection = await sql.createConnection({
         host: '127.0.0.1',
         port: db.port
