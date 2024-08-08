@@ -2,6 +2,7 @@ import {expect, test, jest, beforeEach, afterEach} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { MySQLDB } from '../types';
+import { randomUUID } from 'crypto';
 
 jest.setTimeout(900_000);
 
@@ -10,7 +11,7 @@ let db: MySQLDB;
 const dbPathPrefix = process.platform === 'win32' ? '%TEMP%\\dbs' : '/tmp/dbs'
 
 beforeEach(async () => {
-    db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${Math.random().toString().slice(2)}` : undefined})
+    db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${randomUUID()}` : undefined})
 })
 
 afterEach(async () => {
