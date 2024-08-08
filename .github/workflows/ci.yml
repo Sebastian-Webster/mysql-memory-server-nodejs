@@ -25,5 +25,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install packages
         run: npm ci
+      - name: Create dbs folder
+        run: mkdir dbs
       - name: Run tests
         run: npm test
+      - name: Upload test dbs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases
+          path: dbs
