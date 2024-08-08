@@ -8,7 +8,7 @@ jest.setTimeout(900_000);
 
 let db: MySQLDB;
 
-const dbPathPrefix = process.platform === 'win32' ? '%USERPROFILE%\\dbs' : '/tmp/dbs'
+const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
 
 beforeEach(async () => {
     db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${randomUUID()}` : undefined})
