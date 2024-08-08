@@ -11,14 +11,17 @@ let db: MySQLDB;
 const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
 
 beforeEach(async () => {
+    Error.stackTraceLimit = Infinity
     db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${randomUUID()}` : undefined})
 })
 
 afterEach(async () => {
+    Error.stackTraceLimit = Infinity
     await db.stop();
 })
 
 test('Runs with installed version (or downloads version if one is not available)', async () => {
+    Error.stackTraceLimit = Infinity
     const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: db.username,
