@@ -2,14 +2,13 @@ import {expect, test, jest, beforeEach, afterEach} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { MySQLDB } from '../types';
-import { nanoid } from 'nanoid';
 
 jest.setTimeout(900_000);
 
 let db: MySQLDB;
 
 beforeEach(async () => {
-    db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${process.cwd()}/dbs/${nanoid(8)}` : undefined})
+    db = await createDB({username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${process.cwd()}/dbs/${Math.random().toString().slice(2)}}` : undefined})
 })
 
 afterEach(async () => {
