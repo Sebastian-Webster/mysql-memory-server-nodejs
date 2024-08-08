@@ -3,6 +3,7 @@ import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { coerce } from 'semver';
 import { randomUUID } from 'crypto';
+import { ServerOptions } from '../types';
 
 const versions = ['9.0.1', '8.4.2', '8.0.39', '8.1.0', '8.2.0', '8.3.0']
 
@@ -13,7 +14,13 @@ jest.setTimeout(900_000);
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
         Error.stackTraceLimit = Infinity
-        const db = await createDB({version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.CI, dbPath: process.env.CI ? `${dbPathPrefix}/${randomUUID()}` : undefined})
+        const options: ServerOptions = {version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.CI}
+
+        if (process.env.CI) {
+            options.dbPath = `${dbPathPrefix}/${randomUUID()}`
+        }
+
+        const db = await createDB(options)
         const connection = await sql.createConnection({
             host: '127.0.0.1',
             user: db.username,
