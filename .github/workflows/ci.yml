@@ -32,5 +32,5 @@ jobs:
       - name: Upload test dbs
         uses: actions/upload-artifact@v4
         with:
-          name: Databases
+          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: dbs
