@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci:
+  ci-node:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -31,6 +31,44 @@ jobs:
 
       - name: Run tests
         run: npm run test:ci
+
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: /tmp/dbs
+
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: "C:\\Users\\RUNNER~1\\dbs"
+
+  ci-bun:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        bun-version: [1.1.22]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun ${{ matrix.bun-version }}
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Install packages
+        run: bun install
+
+      - name: Run tests
+        run: bun run test:ci
 
       - name: Upload test dbs (Linux/macOS)
         if: ${{ runner.os != 'Windows' && always() }}
