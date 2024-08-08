@@ -188,6 +188,8 @@ class Executor {
     startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         return new Promise(async (resolve, reject) => {
             const datadir = normalizePath(`${options.dbPath}/data`)
+
+            await fsPromises.mkdir(options.dbPath, {recursive: true})
             
 
             const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
