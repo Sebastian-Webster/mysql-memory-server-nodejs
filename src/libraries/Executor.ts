@@ -136,6 +136,8 @@ class Executor {
                         return resolve(null)
                     }
 
+                    this.logger.log(servers)
+
                     const versions: {version: string, path: string}[] = []
 
                     for (const dir of servers) {
@@ -190,7 +192,6 @@ class Executor {
 
             this.logger.log('Created data directory for database at:', datadir)
             await fsPromises.mkdir(datadir, {recursive: true})
-            
 
             const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
             
@@ -220,7 +221,7 @@ class Executor {
             do {
                 const port = GenerateRandomPort()
                 const mySQLXPort = GenerateRandomPort();
-                this.logger.log('Using port:', port, 'on retry:', retries)
+                this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
 
                 try {
                     const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)

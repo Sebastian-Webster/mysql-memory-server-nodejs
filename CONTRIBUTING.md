@@ -30,6 +30,8 @@ There are also automated tests which you can run by running the command:
 npm test
 ```
 
+Please do not run the `npm run test:ci` command to test your code locally. That command is meant to only be used in disposable CI environments.
+
 # Building
 
 To build the code, you can run the command:
