@@ -8,7 +8,7 @@ import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
 import { lockSync, checkSync, unlockSync } from 'proper-lockfile';
-import { BinaryInfo, ServerOptions } from '../../types';
+import { BinaryInfo, InternalServerOptions } from '../../types';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -89,7 +89,11 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
         await fsPromises.mkdir(extractedLocation, {recursive: true})
 
-        const folderName = url.split('/').at(-1).replace(`.${fileExtension}`, '')
+        const mySQLFolderName = url.split('/').at(-1)
+        if (!mySQLFolderName) {
+            return reject(`Folder name is undefined for url: ${url}`)
+        }
+        const folderName = mySQLFolderName.replace(`.${fileExtension}`, '')
 
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
@@ -130,7 +134,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
     })
 }
 
-function waitForLock(path: string, options: ServerOptions): Promise<void> {
+function waitForLock(path: string, options: InternalServerOptions): Promise<void> {
     return new Promise(async (resolve, reject) => {
         let retries = 0;
         while (retries <= options.lockRetries) {
@@ -150,7 +154,7 @@ function waitForLock(path: string, options: ServerOptions): Promise<void> {
     })
 }
 
-export function downloadBinary(binaryInfo: BinaryInfo, options: ServerOptions, logger: Logger): Promise<string> {
+export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const {url, version} = binaryInfo;
         const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
