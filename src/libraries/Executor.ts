@@ -27,11 +27,12 @@ class Executor {
     #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
+        const errorLogFile = `${datadir}/errorlog.err`
 
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF'], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', `--log-error=${errorLogFile}`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
@@ -86,12 +87,12 @@ class Executor {
                 }
             })
 
-            fs.watchFile(logFile, async (curr) => {
+            fs.watchFile(errorLogFile, async (curr) => {
                 if (curr.dev !== 0) {
                     //File exists
-                    const file = await fsPromises.readFile(logFile, {encoding: 'utf8'})
-                    if (file.includes('started with:')) {
-                        fs.unwatchFile(logFile)
+                    const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
+                    if (file.includes('ready for connections. Version:')) {
+                        fs.unwatchFile(errorLogFile)
                         resolve({
                             port,
                             xPort: mySQLXPort,
