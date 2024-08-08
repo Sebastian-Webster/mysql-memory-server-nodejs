@@ -2,6 +2,7 @@ import {expect, test, jest} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { coerce } from 'semver';
+import { nanoid } from 'nanoid';
 
 const versions = ['9.0.1', '8.4.2', '8.0.39', '8.1.0', '8.2.0', '8.3.0']
 
@@ -9,7 +10,7 @@ jest.setTimeout(900_000);
 
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
-        const db = await createDB({version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${process.cwd()}/dbs/${process.env.JEST_WORKER_ID}` : undefined})
+        const db = await createDB({version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !!process.env.CI, dbPath: process.env.CI ? `${process.cwd()}/dbs/${nanoid(8)}` : undefined})
         const connection = await sql.createConnection({
             host: '127.0.0.1',
             user: db.username,
