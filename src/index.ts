@@ -54,7 +54,7 @@ export async function createDB(opts?: ServerOptions) {
             binaryFilepath = await downloadBinary(binaryInfo, options, logger);
         } catch (error) {
             logger.error('Failed to download binary')
-            throw error
+            throw `Failed to download binary. The error was: "${error}"`
         }
 
         logger.log('Running downloaded binary')

@@ -63,7 +63,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                 logger.error(err)
                 fileStream.close()
                 fs.unlink(downloadLocation, (err) => {
-                    reject(err);
+                    reject(err?.message || String(err));
                 })
             })
         })
@@ -76,7 +76,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
             logger.error(err)
             fileStream.end()
             fs.unlink(downloadLocation, () => {
-                reject(err)
+                reject(err.message)
             })
         })
     })
