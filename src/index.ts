@@ -7,23 +7,27 @@ import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
-
-const defaultOptions: InternalServerOptions = {
-    dbName: 'dbdata',
-    logLevel: 'ERROR',
-    portRetries: 10,
-    downloadBinaryOnce: true,
-    lockRetries: 1_000,
-    lockRetryWait: 1_000,
-    username: 'root',
-    deleteDBAfterStopped: true
-}
+import { randomUUID } from "crypto";
+import {normalize as normalizePath} from 'path'
 
 process.on('exit', () => {
     DBDestroySignal.abort('Process is exiting')
 })
 
-export async function createDB(opts: ServerOptions = defaultOptions) {
+export async function createDB(opts?: ServerOptions) {
+    const defaultOptions: InternalServerOptions = {
+        dbName: 'dbdata',
+        logLevel: 'ERROR',
+        portRetries: 10,
+        downloadBinaryOnce: true,
+        lockRetries: 1_000,
+        lockRetryWait: 1_000,
+        username: 'root',
+        deleteDBAfterStopped: true,
+        //mysqlmsn = MySQL Memory Server Node.js
+        dbPath: normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`)
+    }
+    
     const options: InternalServerOptions = {...defaultOptions, ...opts}
 
     const logger = new Logger(options.logLevel)

@@ -142,6 +142,16 @@ Gotchas: This option is intended to be for internal debugging purposes only and 
 
 Description: Changes whether or not the database will be deleted after it has been stopped. If set to `true`, the database WILL be deleted after it has been stopped.
 
+- `dataPath: string`
+
+Required: No
+
+Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes)
+
+Gotchas: This option is intended to be for internal debugging purposes only and not meant for people to use. As such, this option will not follow Semantic Versioning.
+
+Description: The folder to store database-related data in
+
 ## If using Ubuntu 24.04 and newer
 
 Selecting what MySQL version to use is not currently supported on Ubuntu 24.04 and newer. To use this package on Ubuntu 24.04 and newer you must have the `mysql-server` package installed on your system and `ServerOptions.version` must either be the version that is installed on the system or undefined.

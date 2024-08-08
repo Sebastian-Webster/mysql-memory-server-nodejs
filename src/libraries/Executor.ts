@@ -8,7 +8,6 @@ import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath} from 'path'
-import { randomUUID } from "crypto";
 
 class Executor {
     logger: Logger;
@@ -188,9 +187,7 @@ class Executor {
 
     startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         return new Promise(async (resolve, reject) => {
-            //mysqlmsn = MySQL Memory Server Node.js
-            const dbPath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`)
-            const datadir = normalizePath(`${dbPath}/data`)
+            const datadir = normalizePath(`${options.dbPath}/data`)
 
             this.logger.log('Created data directory for database at:', datadir)
             await fsPromises.mkdir(datadir, {recursive: true})
@@ -217,7 +214,7 @@ class Executor {
                 initText += `RENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
             }
 
-            await fsPromises.writeFile(`${dbPath}/init.sql`, initText, {encoding: 'utf8'})
+            await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
 
             let retries = 0;
 
@@ -227,7 +224,7 @@ class Executor {
                 this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
 
                 try {
-                    const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, dbPath, binaryFilepath)
+                    const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
                     return resolve(resolved)
                 } catch (e) {
                     if (e !== 'Port is already in use') {
