@@ -30,25 +30,25 @@ jobs:
         run: npm ci
 
       - name: Create dbs folder (Linux/macOS)
-        if: ${{ runner.os }} != 'Windows'
+        if: ${{ runner.os != 'Windows' }}
         run: mkdir /tmp/dbs
 
       - name: Create dbs folder (Windows)
-        if: ${{ runner.os }} == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
         run: mkdir %TEMP%/dbs
 
       - name: Run tests
         run: npm test
 
       - name: Upload test dbs (Linux/macOS)
-        if: ${{ runner.os }} != 'Windows'
+        if: ${{ runner.os != 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: /tmp/dbs
 
       - name: Upload test dbs (Windows)
-        if: ${{ runner.os }} == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
