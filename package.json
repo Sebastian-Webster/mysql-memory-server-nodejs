@@ -17,7 +17,8 @@
   ],
   "scripts": {
     "test": "jest",
-    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js"
+    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js",
+    "stress": "jest --runTestsByPath stress-tests/stress.test.ts"
   },
   "author": "Sebastian-Webster",
   "license": "MIT",

@@ -131,3 +131,79 @@ jobs:
 
       - name: Run tests
         run: bun run test
+
+  stress-node:
+    runs-on: ${{ matrix.os }}
+    needs: [test-node, test-bun]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}
+          path: /tmp/dbs
+
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}
+          path: "C:\\Users\\RUNNER~1\\dbs"
+
+  stress-bun:
+    runs-on: ${{ matrix.os }}
+    needs: [test-node, test-bun]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun 1.1.22
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1.22
+
+      - name: Install packages
+        run: bun install
+
+      - name: Run tests
+        run: bun run stress
+
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}
+          path: /tmp/dbs
+
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Databases-${{ matrix.os }}
+          path: "C:\\Users\\RUNNER~1\\dbs"
