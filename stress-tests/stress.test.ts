@@ -24,18 +24,20 @@ for (let i = 0; i < 100; i++) {
         }
         
         const db = await createDB(options)
-        const connection = await sql.createConnection({
-            host: '127.0.0.1',
-            user: db.username,
-            port: db.port
-        })
-    
-        const result = await connection.query('SELECT 1 + 1')
-    
-        await connection.end();
-    
-        await db.stop();
-    
-        expect(result[0][0]['1 + 1']).toBe(2)
+        try {
+            const connection = await sql.createConnection({
+                host: '127.0.0.1',
+                user: db.username,
+                port: db.port
+            })
+        
+            const result = await connection.query('SELECT 1 + 1')
+        
+            await connection.end();
+
+            expect(result[0][0]['1 + 1']).toBe(2)
+        } finally {
+            await db.stop();
+        }
     })
 }
