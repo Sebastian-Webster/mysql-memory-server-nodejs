@@ -62,8 +62,8 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
             request.on('error', (err) => {
                 logger.error(err)
                 fileStream.close()
-                fs.unlink(downloadLocation, (err) => {
-                    reject(err?.message || String(err));
+                fs.unlink(downloadLocation, () => {
+                    reject(err.message);
                 })
             })
         })
