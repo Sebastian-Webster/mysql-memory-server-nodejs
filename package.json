@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "test:ci": "jest --setupFilesAfterEnv ./tests/ciSetup.js"
+    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js"
   },
   "author": "Sebastian-Webster",
   "license": "MIT",
