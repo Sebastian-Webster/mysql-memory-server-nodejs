@@ -16,8 +16,8 @@
     "memory database"
   ],
   "scripts": {
-    "test": "jest",
-    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js",
+    "test": "jest --testPathIgnorePatterns=/stress-tests/",
+    "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js",
     "stress": "jest --runTestsByPath stress-tests/stress.test.ts"
   },
   "author": "Sebastian-Webster",
