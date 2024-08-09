@@ -9,7 +9,7 @@ jest.setTimeout(215_000);
 const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
 
 for (let i = 0; i < 100; i++) {
-    test.concurrent('if it runs', async () => {
+    test.concurrent(`if run ${i} is successful`, async () => {
         Error.stackTraceLimit = Infinity
         console.log('CI:', process.env.useCIDBPath)
     
@@ -20,7 +20,7 @@ for (let i = 0; i < 100; i++) {
         }
     
         if (process.env.useCIDBPath) {
-            options.dbPath = `${dbPathPrefix}/${randomUUID()}`
+            options.dbPath = `${dbPathPrefix}/${randomUUID()}-db${i}`
         }
         
         const db = await createDB(options)
