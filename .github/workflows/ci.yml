@@ -170,7 +170,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test:ci
+        run: npm run stress
 
       - name: Upload test dbs (Linux/macOS)
         if: ${{ runner.os != 'Windows' && failure() }}
