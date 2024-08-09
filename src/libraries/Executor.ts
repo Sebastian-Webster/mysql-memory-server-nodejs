@@ -238,6 +238,7 @@ class Executor {
                     return resolve(resolved)
                 } catch (e) {
                     if (e !== 'Port is already in use') {
+                        this.logger.error('Error:', e)
                         return reject(e)
                     }
                     retries++
