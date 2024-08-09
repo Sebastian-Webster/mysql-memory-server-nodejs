@@ -14,7 +14,6 @@ jest.setTimeout(900_000);
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
         Error.stackTraceLimit = Infinity
-        console.log('CI:', process.env.useCIDBPath)
         const options: ServerOptions = {version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.useCIDBPath}
 
         if (process.env.useCIDBPath) {
