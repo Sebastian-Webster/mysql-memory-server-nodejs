@@ -161,7 +161,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}
-          path: /tmp/dbs
+          path: |
+            /tmp/dbs
+            !/temp/dbs/*/*.sock
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && always() }}
@@ -199,7 +201,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Databases-${{ matrix.os }}
-          path: /tmp/dbs
+          path: |
+            /tmp/dbs
+            !/temp/dbs/*/*.sock
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && always() }}
