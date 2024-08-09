@@ -48,7 +48,7 @@ class Executor {
                     errorLog = `ERROR WHILE READING LOG: ${e}`
                 }
 
-                if (errorLogFile.includes('Address already in use')) {
+                if (errorLogFile.includes("Can't start server: Bind on TCP/IP port")) {
                     return reject('Port is already in use')
                 }
 
