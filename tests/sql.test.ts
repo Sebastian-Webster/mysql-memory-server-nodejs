@@ -15,10 +15,10 @@ beforeEach(async () => {
     const options: ServerOptions = {
         username: 'root',
         logLevel: 'LOG',
-        deleteDBAfterStopped: !process.env.CI
+        deleteDBAfterStopped: !process.env.useCIDBPath
     }
 
-    if (process.env.CI) {
+    if (process.env.useCIDBPath) {
         options.dbPath = `${dbPathPrefix}/${randomUUID()}`
     }
     
@@ -32,7 +32,7 @@ afterEach(async () => {
 
 test('Runs with installed version (or downloads version if one is not available)', async () => {
     Error.stackTraceLimit = Infinity
-    console.log('CI:', process.env.CI)
+    console.log('CI:', process.env.useCIDBPath)
     const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: db.username,
