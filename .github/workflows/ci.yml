@@ -34,14 +34,14 @@ jobs:
 
       - name: Upload test dbs (Linux/macOS)
         if: ${{ runner.os != 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: /tmp/dbs
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: "C:\\Users\\RUNNER~1\\dbs"
@@ -72,14 +72,14 @@ jobs:
 
       - name: Upload test dbs (Linux/macOS)
         if: ${{ runner.os != 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-bun
           path: /tmp/dbs
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-bun
           path: "C:\\Users\\RUNNER~1\\dbs"
@@ -158,7 +158,7 @@ jobs:
 
       - name: Upload test dbs (Linux/macOS)
         if: ${{ runner.os != 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}
           path: |
@@ -167,7 +167,7 @@ jobs:
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}
           path: "C:\\Users\\RUNNER~1\\dbs"
@@ -198,7 +198,7 @@ jobs:
 
       - name: Upload test dbs (Linux/macOS)
         if: ${{ runner.os != 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}
           path: |
@@ -207,7 +207,7 @@ jobs:
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}
           path: "C:\\Users\\RUNNER~1\\dbs"
