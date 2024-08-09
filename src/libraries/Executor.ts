@@ -40,8 +40,15 @@ class Executor {
             let resolveFunction: () => void;
 
             process.on('close', async (code, signal) => {
-                const errorString = errors.join('\n')
-                if (errorString.includes('Address already in use')) {
+                let errorLog: string;
+
+                try {
+                    errorLog = await fsPromises.readFile(errorLogFile, {encoding: 'utf-8'})
+                } catch (e) {
+                    errorLog = `ERROR WHILE READING LOG: ${e}`
+                }
+
+                if (errorLogFile.includes("Can't start server: Bind on TCP/IP port")) {
                     return reject('Port is already in use')
                 }
 
@@ -64,13 +71,15 @@ class Executor {
                             resolveFunction()
                             return
                         }
+
+                        const errorString = errors.join('\n')
                         
                         if (code === 0) {
-                            return reject('Database exited early')
+                            return reject(`Database exited early.\nError log: ${errorLog}\nError string: "${errorString}`)
                         }
         
                         if (code) {
-                            const errorMessage = `The database exited early with code ${code}. The stderr output was: "${errorString}".`
+                            const errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`
                             this.logger.error(errorMessage)
                             return reject(errorMessage)
                         }
