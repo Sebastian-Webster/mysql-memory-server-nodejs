@@ -48,7 +48,7 @@ class Executor {
                     errorLog = `ERROR WHILE READING LOG: ${e}`
                 }
 
-                if (errorLogFile.includes("Can't start server: Bind on TCP/IP port")) {
+                if (errorLogFile.includes("Do you already have another mysqld server running")) {
                     return reject('Port is already in use')
                 }
 
