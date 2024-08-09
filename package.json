@@ -18,7 +18,7 @@
   "scripts": {
     "test": "jest --testPathIgnorePatterns=/stress-tests/",
     "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js",
-    "stress": "jest --runTestsByPath stress-tests/stress.test.ts"
+    "stress": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js"
   },
   "author": "Sebastian-Webster",
   "license": "MIT",
