@@ -54,12 +54,15 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
     return new Promise((resolve, reject) => {
         const fileStream = fs.createWriteStream(downloadLocation);
 
+        let error: Error;
+
         fileStream.on('open', () => {
             const request = https.get(url, (response) => {
                 response.pipe(fileStream)
             })
 
             request.on('error', (err) => {
+                error = err;
                 logger.error(err)
                 fileStream.close()
                 fs.unlink(downloadLocation, () => {
@@ -69,10 +72,13 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
         })
 
         fileStream.on('finish', () => {
-            resolve()
+            if (!error) {
+                resolve()
+            }
         })
 
         fileStream.on('error', (err) => {
+            error = err;
             logger.error(err)
             fileStream.end()
             fs.unlink(downloadLocation, () => {
