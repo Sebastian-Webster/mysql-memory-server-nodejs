@@ -38,7 +38,6 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: /tmp/dbs
-          compression-level: 0
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && failure() }}
@@ -46,7 +45,6 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 0
 
   ci-bun:
     runs-on: ${{ matrix.os }}
@@ -78,7 +76,6 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-bun
           path: /tmp/dbs
-          compression-level: 0
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && failure() }}
@@ -86,7 +83,6 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-bun
           path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 0
 
   test-node:
     runs-on: ${{ matrix.os }}
@@ -180,7 +176,6 @@ jobs:
           path: |
             /tmp/dbs
             !/temp/dbs/*/*.sock
-          compression-level: 0
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && failure() }}
@@ -188,7 +183,6 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-node
           path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 0
 
   stress-bun:
     runs-on: ${{ matrix.os }}
@@ -234,7 +228,6 @@ jobs:
           path: |
             /tmp/dbs
             !/temp/dbs/*/*.sock
-          compression-level: 0
 
       - name: Upload test dbs (Windows)
         if: ${{ runner.os == 'Windows' && failure() }}
@@ -242,4 +235,3 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-bun
           path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 0
