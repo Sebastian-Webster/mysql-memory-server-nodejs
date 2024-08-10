@@ -50,10 +50,16 @@ class Executor {
 
                 const portIssue = errorLog.includes("Do you already have another mysqld server running")
                 const xPortIssue = errorLog.includes("X Plugin can't bind to it")
-                this.logger.log('Exiting because of mysqld port issue:', portIssue, '. Exiting because of MySQL X Plugin port issue:', xPortIssue)
+                this.logger.log('Exiting because of a port issue:', portIssue, '. MySQL X Plugin failed to bind:', xPortIssue)
 
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
+                    try {
+                        await fsPromises.rm(options.dbPath, {recursive: true, force: true})
+                    } catch (e) {
+                        this.logger.error(e)
+                        return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
+                    }
                     return reject('Port is already in use')
                 }
 
@@ -261,12 +267,6 @@ class Executor {
                 retries++
                 if (retries <= options.portRetries) {
                     this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
-                    try {
-                        await fsPromises.rm(options.dbPath, {recursive: true, force: true})
-                    } catch (e) {
-                        this.logger.error(e)
-                        throw `Could not delete database directory to retry port. The error was: ${e}`
-                    }
                 } else {
                     throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`
                 }
