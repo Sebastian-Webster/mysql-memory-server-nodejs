@@ -224,7 +224,7 @@ class Executor {
             let initText = `CREATE DATABASE ${options.dbName};`;
 
             if (options.username !== 'root') {
-                initText += `RENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+                initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
             }
 
             await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
