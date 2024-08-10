@@ -240,6 +240,7 @@ class Executor {
                     const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
                     return resolve(resolved)
                 } catch (e) {
+                    this.logger.error('Caught error:', e, `\nRetries: ${retries} | options.portRetries: ${options.portRetries}`)
                     if (e !== 'Port is already in use') {
                         this.logger.error('Error:', e)
                         return reject(e)
