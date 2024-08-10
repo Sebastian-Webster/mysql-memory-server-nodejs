@@ -1,4 +1,4 @@
-import { exec, spawn } from "child_process"
+import { ChildProcess, exec, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
@@ -22,6 +22,21 @@ class Executor {
                 resolve({error, stdout, stderr})
             })
         })
+    }
+
+    async #killProcess(process: ChildProcess): Promise<boolean> {
+        let killed = false;
+        if (os.platform() === 'win32') {
+            const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
+            if (!error && !stderr) {
+                killed = true;
+            } else {
+                this.logger.error(error || stderr)
+            }
+        } else {
+            killed = process.kill('SIGKILL')
+        }
+        return killed;
     }
 
     #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
@@ -117,7 +132,10 @@ class Executor {
                         //when the MySQL X Plugin fails to bind to an address, it does not prevent the MySQL server startup because MySQL X is not a mandatory plugin.
                         //It doesn't seem like there is a way to prevent server startup when that happens. The workaround to that is to shutdown the MySQL server ourselves when the X plugin
                         //cannot bind to an address. If there is a way to prevent server startup when binding fails, this workaround can be removed.
-                        process.kill()
+                        const killed = await this.#killProcess(process)
+                        if (!killed) {
+                            reject('Failed to kill MySQL process to retry listening on a free port.')
+                        }
                     } else if (file.includes('ready for connections. Version:')) {
                         fs.unwatchFile(errorLogFile)
                         resolve({
@@ -128,17 +146,8 @@ class Executor {
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
-                                    let killed = false;
-                                    if (os.platform() === 'win32') {
-                                        const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
-                                        if (!error && !stderr) {
-                                            killed = true;
-                                        } else {
-                                            this.logger.error(error || stderr)
-                                        }
-                                    } else {
-                                        killed = process.kill()
-                                    }
+                                   
+                                    const killed = await this.#killProcess(process)
                                     
                                     if (!killed) {
                                        reject()
