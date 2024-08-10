@@ -237,7 +237,9 @@ class Executor {
                 this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
 
                 try {
+                    this.logger.log('Starting MySQL process')
                     const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
+                    this.logger.log('Starting process was successful')
                     return resolve(resolved)
                 } catch (e) {
                     this.logger.error('Caught error:', e, `\nRetries: ${retries} | options.portRetries: ${options.portRetries}`)
