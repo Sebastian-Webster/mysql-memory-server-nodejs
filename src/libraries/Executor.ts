@@ -49,9 +49,10 @@ class Executor {
                 }
 
                 const portIssue = errorLog.includes("Do you already have another mysqld server running")
-                this.logger.log('Exiting because of port issue:', portIssue)
+                const xPortIssue = errorLog.includes("X Plugin can't bind to it")
+                this.logger.log('Exiting because of mysqld port issue:', portIssue, '. Exiting because of MySQL X Plugin port issue:', xPortIssue)
 
-                if (portIssue) {
+                if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     return reject('Port is already in use')
                 }
@@ -105,7 +106,13 @@ class Executor {
                 if (curr.dev !== 0) {
                     //File exists
                     const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
-                    if (file.includes('ready for connections. Version:')) {
+                    if (file.includes("X Plugin can't bind to it")) {
+                        //As stated in the MySQL X Plugin documentation at https://dev.mysql.com/doc/refman/8.4/en/x-plugin-options-system-variables.html#sysvar_mysqlx_bind_address
+                        //when the MySQL X Plugin fails to bind to an address, it does not prevent the MySQL server startup because MySQL X is not a mandatory plugin.
+                        //It doesn't seem like there is a way to prevent server startup when that happens. The workaround to that is to shutdown the MySQL server ourselves when the X plugin
+                        //cannot bind to an address. If there is a way to prevent server startup when binding fails, this workaround can be removed.
+                        process.kill()
+                    } else if (file.includes('ready for connections. Version:')) {
                         fs.unwatchFile(errorLogFile)
                         resolve({
                             port,
