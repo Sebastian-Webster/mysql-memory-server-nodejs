@@ -199,63 +199,71 @@ class Executor {
         })
     }
 
-    startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
-        return new Promise(async (resolve, reject) => {
-            const datadir = normalizePath(`${options.dbPath}/data`)
+    async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string): Promise<void> {
+        this.logger.log('Created data directory for database at:', datadir)
+        await fsPromises.mkdir(datadir, {recursive: true})
 
-            this.logger.log('Created data directory for database at:', datadir)
-            await fsPromises.mkdir(datadir, {recursive: true})
-
-            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
+        const {error: err, stderr} = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
             
-            if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
-                if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
-                    this.logger.error(err || stderr)
-                    return reject('The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.')
-                }
-
-                if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                    this.logger.error(err || stderr)
-                    return reject('The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html')
-                }
-                return reject(err || stderr)
+        if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
+            if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
+                this.logger.error(err || stderr)
+                throw 'The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.'
             }
 
-            let initText = `CREATE DATABASE ${options.dbName};`;
-
-            if (options.username !== 'root') {
-                initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+            if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
+                this.logger.error(err || stderr)
+                throw 'The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
             }
+            throw err || stderr
+        }
 
-            await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+        let initText = `CREATE DATABASE ${options.dbName};`;
 
-            let retries = 0;
+        if (options.username !== 'root') {
+            initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+        }
 
-            do {
-                const port = GenerateRandomPort()
-                const mySQLXPort = GenerateRandomPort();
-                this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
+        await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+    }
 
-                try {
-                    this.logger.log('Starting MySQL process')
-                    const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
-                    this.logger.log('Starting process was successful')
-                    return resolve(resolved)
-                } catch (e) {
-                    this.logger.error('Caught error:', e, `\nRetries: ${retries} | options.portRetries: ${options.portRetries}`)
-                    if (e !== 'Port is already in use') {
-                        this.logger.error('Error:', e)
-                        return reject(e)
-                    }
-                    retries++
-                    if (retries < options.portRetries) {
-                        this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
-                    }
+    async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
+        let retries = 0;
+
+        const datadir = normalizePath(`${options.dbPath}/data`)
+
+        do {
+            await this.#setupDataDirectories(options, binaryFilepath, datadir);
+
+            const port = GenerateRandomPort()
+            const mySQLXPort = GenerateRandomPort();
+            this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
+
+            try {
+                this.logger.log('Starting MySQL process')
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
+                this.logger.log('Starting process was successful')
+                return resolved
+            } catch (e) {
+                this.logger.warn('Caught error:', e, `\nRetries: ${retries} | options.portRetries: ${options.portRetries}`)
+                if (e !== 'Port is already in use') {
+                    this.logger.error('Error:', e)
+                    throw e
                 }
-            } while (retries < options.portRetries)
-
-            reject(`The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`)
-        })
+                retries++
+                if (retries <= options.portRetries) {
+                    this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
+                    try {
+                        await fsPromises.rm(options.dbPath, {recursive: true, force: true})
+                    } catch (e) {
+                        this.logger.error(e)
+                        throw `Could not delete database directory to retry port. The error was: ${e}`
+                    }
+                } else {
+                    throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`
+                }
+            }
+        } while (retries <= options.portRetries)
     }
 }
 
