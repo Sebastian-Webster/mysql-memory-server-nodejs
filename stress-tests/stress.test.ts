@@ -2,7 +2,6 @@ import {expect, test, jest} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { ServerOptions } from '../types';
-import { randomUUID } from 'crypto';
 
 jest.setTimeout(215_000);
 
@@ -20,7 +19,7 @@ for (let i = 0; i < 100; i++) {
         }
     
         if (process.env.useCIDBPath) {
-            options.dbPath = `${dbPathPrefix}/${randomUUID()}-db${i}`
+            options.dbPath = `${dbPathPrefix}/${i}`
         }
         
         const db = await createDB(options)
