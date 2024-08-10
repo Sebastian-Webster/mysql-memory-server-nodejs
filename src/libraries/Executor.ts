@@ -48,7 +48,7 @@ class Executor {
                     errorLog = `ERROR WHILE READING LOG: ${e}`
                 }
 
-                const portIssue = errorLogFile.includes("Do you already have another mysqld server running")
+                const portIssue = errorLog.includes("Do you already have another mysqld server running")
                 this.logger.log('Exiting because of port issue:', portIssue)
 
                 if (portIssue) {
