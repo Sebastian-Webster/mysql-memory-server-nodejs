@@ -39,6 +39,29 @@ class Executor {
         return killed;
     }
 
+    async deleteDatabaseDirectory(path: string): Promise<void> {
+        let retries = 0;
+        //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
+        const waitTime = 500;
+        const maxRetries = 20;
+
+        //Since the database processes are killed instantly (SIGKILL) sometimes the database file handles may still be open
+        //This would cause an EBUSY error. Retrying the deletions for 10 seconds should give the OS enough time to close
+        //the file handles.
+        while (retries <= maxRetries) {
+            try {
+                await fsPromises.rm(path, {recursive: true, force: true})
+                return
+            } catch (e) {
+                if (retries === maxRetries) {
+                    throw e
+                }
+                await new Promise(resolve => setTimeout(resolve, waitTime))
+                retries++
+            }
+        }
+    }
+
     #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
@@ -70,7 +93,7 @@ class Executor {
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
-                        await fsPromises.rm(options.dbPath, {recursive: true, force: true})
+                        await this.deleteDatabaseDirectory(options.dbPath)
                     } catch (e) {
                         this.logger.error(e)
                         return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
@@ -80,7 +103,7 @@ class Executor {
 
                 try {
                     if (options.deleteDBAfterStopped) {
-                        await fsPromises.rm(dbPath, {recursive: true, force: true})
+                        await this.deleteDatabaseDirectory(dbPath)
                     }
                 } finally {
                     try {
