@@ -58,6 +58,7 @@ class Executor {
                 }
                 await new Promise(resolve => setTimeout(resolve, waitTime))
                 retries++
+                this.logger.log('DB data directory deletion failed. Now on retry', retries)
             }
         }
     }
