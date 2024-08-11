@@ -34,7 +34,7 @@ class Executor {
                 this.logger.error(error || stderr)
             }
         } else {
-            killed = process.kill('SIGKILL')
+            killed = process.kill()
         }
         return killed;
     }
