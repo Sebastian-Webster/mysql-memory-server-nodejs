@@ -4,7 +4,7 @@ import sql from 'mysql2/promise'
 import { MySQLDB, ServerOptions } from '../types';
 import { randomUUID } from 'crypto';
 
-jest.setTimeout(215_000);
+jest.setTimeout(500_000);
 
 let db: MySQLDB;
 

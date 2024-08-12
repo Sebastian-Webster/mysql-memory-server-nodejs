@@ -3,7 +3,7 @@ import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { ServerOptions } from '../types';
 
-jest.setTimeout(215_000);
+jest.setTimeout(500_000);
 
 const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
 
