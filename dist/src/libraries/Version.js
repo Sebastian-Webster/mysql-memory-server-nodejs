@@ -34,7 +34,12 @@ function getBinaryURL(versions, versionToGet = "9.x") {
     availableVersions = availableVersions.filter(v => v.os === process.platform);
     if (availableVersions.length === 0)
         throw `No MySQL binary could be found for your OS: ${process.platform}`;
-    availableVersions = availableVersions.filter(v => (0, semver_1.satisfies)((0, semver_1.coerce)(os.release()).version, v.osKernelVersionsSupported));
+    availableVersions = availableVersions.filter(v => {
+        const release = (0, semver_1.coerce)(os.release());
+        if (!release)
+            return false;
+        return (0, semver_1.satisfies)(release.version, v.osKernelVersionsSupported);
+    });
     if (availableVersions.length === 0)
         throw `No MySQL binary could be found that supports your OS version: ${os.release()} | ${os.version()}`;
     const wantedVersions = availableVersions.filter(v => (0, semver_1.satisfies)(v.version, versionToGet));

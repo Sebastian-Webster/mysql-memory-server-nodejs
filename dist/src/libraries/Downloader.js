@@ -77,26 +77,31 @@ function downloadVersions() {
 function downloadFromCDN(url, downloadLocation, logger) {
     return new Promise((resolve, reject) => {
         const fileStream = fs.createWriteStream(downloadLocation);
+        let error;
         fileStream.on('open', () => {
             const request = https.get(url, (response) => {
                 response.pipe(fileStream);
             });
             request.on('error', (err) => {
+                error = err;
                 logger.error(err);
                 fileStream.close();
-                fs.unlink(downloadLocation, (err) => {
-                    reject(err);
+                fs.unlink(downloadLocation, () => {
+                    reject(err.message);
                 });
             });
         });
         fileStream.on('finish', () => {
-            resolve();
+            if (!error) {
+                resolve();
+            }
         });
         fileStream.on('error', (err) => {
+            error = err;
             logger.error(err);
             fileStream.end();
             fs.unlink(downloadLocation, () => {
-                reject(err);
+                reject(err.message);
             });
         });
     });
@@ -106,7 +111,11 @@ function extractBinary(url, archiveLocation, extractedLocation) {
         const lastDashIndex = url.lastIndexOf('-');
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.');
         await fsPromises.mkdir(extractedLocation, { recursive: true });
-        const folderName = url.split('/').at(-1).replace(`.${fileExtension}`, '');
+        const mySQLFolderName = url.split('/').at(-1);
+        if (!mySQLFolderName) {
+            return reject(`Folder name is undefined for url: ${url}`);
+        }
+        const folderName = mySQLFolderName.replace(`.${fileExtension}`, '');
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
             const zip = new adm_zip_1.default(archiveLocation);

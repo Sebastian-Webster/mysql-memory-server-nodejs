@@ -35,19 +35,24 @@ const AbortSignal_1 = __importDefault(require("./libraries/AbortSignal"));
 const Version_1 = __importDefault(require("./libraries/Version"));
 const versions_json_1 = __importDefault(require("./versions.json"));
 const Downloader_1 = require("./libraries/Downloader");
-const defaultOptions = {
-    dbName: 'dbdata',
-    logLevel: 'ERROR',
-    portRetries: 10,
-    downloadBinaryOnce: true,
-    lockRetries: 1000,
-    lockRetryWait: 1000,
-    username: 'root'
-};
+const crypto_1 = require("crypto");
+const path_1 = require("path");
 process.on('exit', () => {
     AbortSignal_1.default.abort('Process is exiting');
 });
-async function createDB(opts = defaultOptions) {
+async function createDB(opts) {
+    const defaultOptions = {
+        dbName: 'dbdata',
+        logLevel: 'ERROR',
+        portRetries: 10,
+        downloadBinaryOnce: true,
+        lockRetries: 1000,
+        lockRetryWait: 1000,
+        username: 'root',
+        deleteDBAfterStopped: true,
+        //mysqlmsn = MySQL Memory Server Node.js
+        dbPath: (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`)
+    };
     const options = { ...defaultOptions, ...opts };
     const logger = new Logger_1.default(options.logLevel);
     const executor = new Executor_1.default(logger);
@@ -63,16 +68,16 @@ async function createDB(opts = defaultOptions) {
         catch (e) {
             logger.error(e);
             if (options.version) {
-                throw `A MySQL version ${options.version} binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support the version you want to use, feel free to make a pull request to add support!`;
+                throw `A MySQL version ${options.version} binary could not be found that supports your OS (${os.platform()} | ${os.version()} | ${os.release()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support the version you want to use, feel free to make a pull request to add support!`;
             }
-            throw `A MySQL binary could not be found that supports your OS (${os.platform()} | ${os.version()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support your OS and CPU architecture, feel free to make a pull request to add support!`;
+            throw `A MySQL binary could not be found that supports your OS (${os.platform()} | ${os.version()} | ${os.release()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support your OS and CPU architecture, feel free to make a pull request to add support!`;
         }
         try {
             binaryFilepath = await (0, Downloader_1.downloadBinary)(binaryInfo, options, logger);
         }
         catch (error) {
             logger.error('Failed to download binary');
-            throw error;
+            throw `Failed to download binary. The error was: "${error}"`;
         }
         logger.log('Running downloaded binary');
         return await executor.startMySQL(options, binaryFilepath);

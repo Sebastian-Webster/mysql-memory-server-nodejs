@@ -11,17 +11,17 @@ class Logger {
     }
     log(...args) {
         if (this.LOG_LEVEL === 0) {
-            console.log.apply(null, args);
+            console.log(...args);
         }
     }
     warn(...args) {
         if (this.LOG_LEVEL <= 1) {
-            console.warn.apply(null, args);
+            console.warn(...args);
         }
     }
     error(...args) {
         if (this.LOG_LEVEL <= 2) {
-            console.error.apply(null, args);
+            console.error(...args);
         }
     }
 }
