@@ -1,4 +1,4 @@
-import { exec, spawn } from "child_process"
+import { ChildProcess, exec, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
@@ -24,6 +24,45 @@ class Executor {
         })
     }
 
+    async #killProcess(process: ChildProcess): Promise<boolean> {
+        let killed = false;
+        if (os.platform() === 'win32') {
+            const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
+            if (!error && !stderr) {
+                killed = true;
+            } else {
+                this.logger.error(error || stderr)
+            }
+        } else {
+            killed = process.kill()
+        }
+        return killed;
+    }
+
+    async deleteDatabaseDirectory(path: string): Promise<void> {
+        let retries = 0;
+        //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
+        const waitTime = 500;
+        const maxRetries = 20;
+
+        //Since the database processes are killed instantly (SIGKILL) sometimes the database file handles may still be open
+        //This would cause an EBUSY error. Retrying the deletions for 10 seconds should give the OS enough time to close
+        //the file handles.
+        while (retries <= maxRetries) {
+            try {
+                await fsPromises.rm(path, {recursive: true, force: true})
+                return
+            } catch (e) {
+                if (retries === maxRetries) {
+                    throw e
+                }
+                await new Promise(resolve => setTimeout(resolve, waitTime))
+                retries++
+                this.logger.log('DB data directory deletion failed. Now on retry', retries)
+            }
+        }
+    }
+
     #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
@@ -32,7 +71,7 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', `--log-error=${errorLogFile}`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
@@ -49,15 +88,23 @@ class Executor {
                 }
 
                 const portIssue = errorLog.includes("Do you already have another mysqld server running")
-                this.logger.log('Exiting because of port issue:', portIssue)
+                const xPortIssue = errorLog.includes("X Plugin can't bind to it")
+                this.logger.log('Exiting because of a port issue:', portIssue, '. MySQL X Plugin failed to bind:', xPortIssue)
 
-                if (portIssue) {
+                if (portIssue || xPortIssue) {
+                    this.logger.log('Error log when exiting for port in use error:', errorLog)
+                    try {
+                        await this.deleteDatabaseDirectory(options.dbPath)
+                    } catch (e) {
+                        this.logger.error(e)
+                        return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
+                    }
                     return reject('Port is already in use')
                 }
 
                 try {
                     if (options.deleteDBAfterStopped) {
-                        await fsPromises.rm(dbPath, {recursive: true, force: true})
+                        await this.deleteDatabaseDirectory(dbPath)
                     }
                 } finally {
                     try {
@@ -104,7 +151,16 @@ class Executor {
                 if (curr.dev !== 0) {
                     //File exists
                     const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
-                    if (file.includes('ready for connections. Version:')) {
+                    if (file.includes("X Plugin can't bind to it")) {
+                        //As stated in the MySQL X Plugin documentation at https://dev.mysql.com/doc/refman/8.4/en/x-plugin-options-system-variables.html#sysvar_mysqlx_bind_address
+                        //when the MySQL X Plugin fails to bind to an address, it does not prevent the MySQL server startup because MySQL X is not a mandatory plugin.
+                        //It doesn't seem like there is a way to prevent server startup when that happens. The workaround to that is to shutdown the MySQL server ourselves when the X plugin
+                        //cannot bind to an address. If there is a way to prevent server startup when binding fails, this workaround can be removed.
+                        const killed = await this.#killProcess(process)
+                        if (!killed) {
+                            reject('Failed to kill MySQL process to retry listening on a free port.')
+                        }
+                    } else if (file.includes('ready for connections. Version:')) {
                         fs.unwatchFile(errorLogFile)
                         resolve({
                             port,
@@ -114,17 +170,8 @@ class Executor {
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
-                                    let killed = false;
-                                    if (os.platform() === 'win32') {
-                                        const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
-                                        if (!error && !stderr) {
-                                            killed = true;
-                                        } else {
-                                            this.logger.error(error || stderr)
-                                        }
-                                    } else {
-                                        killed = process.kill()
-                                    }
+                                   
+                                    const killed = await this.#killProcess(process)
                                     
                                     if (!killed) {
                                        reject()
@@ -199,60 +246,65 @@ class Executor {
         })
     }
 
-    startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
-        return new Promise(async (resolve, reject) => {
-            const datadir = normalizePath(`${options.dbPath}/data`)
+    async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string): Promise<void> {
+        this.logger.log('Created data directory for database at:', datadir)
+        await fsPromises.mkdir(datadir, {recursive: true})
 
-            this.logger.log('Created data directory for database at:', datadir)
-            await fsPromises.mkdir(datadir, {recursive: true})
-
-            const {error: err, stderr}  = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
+        const {error: err, stderr} = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
             
-            if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
-                if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
-                    this.logger.error(err || stderr)
-                    return reject('The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.')
-                }
-
-                if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                    this.logger.error(err || stderr)
-                    return reject('The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html')
-                }
-                return reject(err || stderr)
+        if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
+            if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
+                this.logger.error(err || stderr)
+                throw 'The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.'
             }
 
-            let initText = `CREATE DATABASE ${options.dbName};`;
-
-            if (options.username !== 'root') {
-                initText += `RENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+            if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
+                this.logger.error(err || stderr)
+                throw 'The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
             }
+            throw err || stderr
+        }
 
-            await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+        let initText = `CREATE DATABASE ${options.dbName};`;
 
-            let retries = 0;
+        if (options.username !== 'root') {
+            initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+        }
 
-            do {
-                const port = GenerateRandomPort()
-                const mySQLXPort = GenerateRandomPort();
-                this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
+        await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+    }
 
-                try {
-                    const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
-                    return resolve(resolved)
-                } catch (e) {
-                    if (e !== 'Port is already in use') {
-                        this.logger.error('Error:', e)
-                        return reject(e)
-                    }
-                    retries++
-                    if (retries < options.portRetries) {
-                        this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
-                    }
+    async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
+        let retries = 0;
+
+        const datadir = normalizePath(`${options.dbPath}/data`)
+
+        do {
+            await this.#setupDataDirectories(options, binaryFilepath, datadir);
+
+            const port = GenerateRandomPort()
+            const mySQLXPort = GenerateRandomPort();
+            this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
+
+            try {
+                this.logger.log('Starting MySQL process')
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
+                this.logger.log('Starting process was successful')
+                return resolved
+            } catch (e) {
+                this.logger.warn('Caught error:', e, `\nRetries: ${retries} | options.portRetries: ${options.portRetries}`)
+                if (e !== 'Port is already in use') {
+                    this.logger.error('Error:', e)
+                    throw e
                 }
-            } while (retries < options.portRetries)
-
-            reject(`The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`)
-        })
+                retries++
+                if (retries <= options.portRetries) {
+                    this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
+                } else {
+                    throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`
+                }
+            }
+        } while (retries <= options.portRetries)
     }
 }
 

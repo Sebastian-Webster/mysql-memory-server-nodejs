@@ -9,7 +9,7 @@ const versions = ['9.0.1', '8.4.2', '8.0.39', '8.1.0', '8.2.0', '8.3.0']
 
 const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
 
-jest.setTimeout(900_000);
+jest.setTimeout(500_000);
 
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
