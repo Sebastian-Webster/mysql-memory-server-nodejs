@@ -14,7 +14,7 @@ jest.setTimeout(500_000);
 for (const version of versions) {
     test(`running on version ${version}`, async () => {
         Error.stackTraceLimit = Infinity
-        const options: ServerOptions = {version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.useCIDBPath}
+        const options: ServerOptions = {version, dbName: 'testingdata', username: 'root', logLevel: 'LOG', deleteDBAfterStopped: !process.env.useCIDBPath, ignoreUnsupportedSystemVersion: true}
 
         if (process.env.useCIDBPath) {
             options.dbPath = `${dbPathPrefix}/${randomUUID()}`

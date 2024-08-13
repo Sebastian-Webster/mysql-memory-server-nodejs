@@ -15,7 +15,8 @@ beforeEach(async () => {
     const options: ServerOptions = {
         username: 'root',
         logLevel: 'LOG',
-        deleteDBAfterStopped: !process.env.useCIDBPath
+        deleteDBAfterStopped: !process.env.useCIDBPath,
+        ignoreUnsupportedSystemVersion: true
     }
 
     if (process.env.useCIDBPath) {
