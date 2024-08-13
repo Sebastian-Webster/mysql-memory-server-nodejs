@@ -76,7 +76,13 @@ Default: undefined
 
 Description: Version of MySQL to use for the database. Uses semver for getting the version, so valid semver versions are allowed. For example, `8.x` is a valid version and will use the latest 8.x MySQL version. 
 
-If left undefined and the system has MySQL already installed, the system installed version of MySQL will be used. If left undefined and the system does not have MySQL installed, the latest version of MySQL in the `versions.json` file in this package will be downloaded. If defined and the system has that version of MySQL installed, the system installed version will be used. If defined and the system does not have that version of MySQL installed, that version will be downloaded as long as it is found in the `versions.json` file in this package.
+If left undefined:
+- If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <8.0.20), an error will be thrown unless `ignoreOutdatedSystemVersion` is set to `true`.
+- If the system does not have MySQL installed, the latest version of MySQL in the `versions.json` file in this package will be downloaded.
+
+If defined:
+- If the version is 8.0.19 or older, an error will be thrown as this package does not currently support those versions of MySQL.
+- If MySQL is installed on the system, the installed version will be used. Otherwise the selected version will be downloaded from the MySQL CDN as long as it can be found in the `versions.json` file. If it cannot be found in that file, an error will be thrown.
 
 - `dbName: string`
 
