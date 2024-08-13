@@ -46,6 +46,12 @@ export async function createDB(opts?: ServerOptions) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreOutdatedSystemVersion" to true.`
     }
 
+    if (options.version && lt(options.version, CONSTANTS.MIN_SUPPORTED_MYSQL)) {
+        //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
+        //The throw above is because the system-installed MySQL is out of date and "ignoreOutdatedSystemVersion" is not set to true.
+        throw `The selected version of MySQL ${options.version} is not currently supported by this package. Please choose a different version to use.`
+    }
+
     logger.log('Version currently installed:', version)
     if (version === null || (options.version && !satisfies(version.version, options.version)) || unsupportedMySQLIsInstalled) {
         let binaryInfo: BinaryInfo;
