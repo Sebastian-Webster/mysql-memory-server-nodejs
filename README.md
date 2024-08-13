@@ -10,7 +10,7 @@ Download with your package manager of choice. The package name is `mysql-memory-
 
 #### Requirements
 
-- Node.js 16+
+- Node.js 16.6.0 and newer
 - macOS 13+, Windows, or Linux (Only Ubuntu has been tested. Other Linux distributions may or may not work at this time. Ubuntu 24.04 and newer is not fully supported at this time - go to the bottom of this file to learn more)
 
 Windows only requirements:
