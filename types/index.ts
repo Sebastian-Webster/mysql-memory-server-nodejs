@@ -13,7 +13,7 @@ export type ServerOptions = {
     username?: string,
     deleteDBAfterStopped?: boolean,
     dbPath?: string,
-    ignoreOutdatedSystemVersion?: boolean
+    ignoreUnsupportedSystemVersion?: boolean
 }
 
 export type InternalServerOptions = {
@@ -27,7 +27,7 @@ export type InternalServerOptions = {
     username: string,
     deleteDBAfterStopped: boolean,
     dbPath: string,
-    ignoreOutdatedSystemVersion: boolean
+    ignoreUnsupportedSystemVersion: boolean
 }
 
 export type ExecutorOptions = {

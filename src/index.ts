@@ -27,7 +27,7 @@ export async function createDB(opts?: ServerOptions) {
         deleteDBAfterStopped: true,
         //mysqlmsn = MySQL Memory Server Node.js
         dbPath: normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
-        ignoreOutdatedSystemVersion: false
+        ignoreUnsupportedSystemVersion: false
     }
     
     const options: InternalServerOptions = {...defaultOptions, ...opts}
@@ -40,15 +40,15 @@ export async function createDB(opts?: ServerOptions) {
 
     const unsupportedMySQLIsInstalled = version && lt(version.version, CONSTANTS.MIN_SUPPORTED_MYSQL)
 
-    const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreOutdatedSystemVersion && !options.version
+    const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreUnsupportedSystemVersion && !options.version
 
     if (throwUnsupportedError) {
-        throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreOutdatedSystemVersion" to true.`
+        throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`
     }
 
     if (options.version && lt(options.version, CONSTANTS.MIN_SUPPORTED_MYSQL)) {
         //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
-        //The throw above is because the system-installed MySQL is out of date and "ignoreOutdatedSystemVersion" is not set to true.
+        //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
         throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`
     }
 

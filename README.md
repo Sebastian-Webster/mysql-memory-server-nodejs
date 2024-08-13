@@ -77,7 +77,7 @@ Default: undefined
 Description: Version of MySQL to use for the database. Uses semver for getting the version, so valid semver versions are allowed. For example, `8.x` is a valid version and will use the latest 8.x MySQL version. 
 
 If left undefined:
-- If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <8.0.20), an error will be thrown unless `ignoreOutdatedSystemVersion` is set to `true`.
+- If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <8.0.20), an error will be thrown unless `ignoreUnsupportedSystemVersion` is set to `true`.
 - If the system does not have MySQL installed, the latest version of MySQL in the `versions.json` file in this package will be downloaded.
 
 If defined:
@@ -142,7 +142,7 @@ Default: root
 
 Description: The username of the user that is used to login to the database.
 
-- `ignoreOutdatedSystemVersion: boolean`
+- `ignoreUnsupportedSystemVersion: boolean`
 
 Required: No
 
