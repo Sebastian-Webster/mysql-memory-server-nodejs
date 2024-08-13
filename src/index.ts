@@ -40,7 +40,7 @@ export async function createDB(opts?: ServerOptions) {
 
     const unsupportedMySQLIsInstalled = version && lt(version.version, CONSTANTS.MIN_SUPPORTED_MYSQL)
 
-    const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreOutdatedSystemVersion
+    const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreOutdatedSystemVersion && !options.version
 
     if (throwUnsupportedError) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreOutdatedSystemVersion" to true.`
