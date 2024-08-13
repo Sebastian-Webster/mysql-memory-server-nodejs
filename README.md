@@ -136,6 +136,14 @@ Default: root
 
 Description: The username of the user that is used to login to the database.
 
+- `ignoreOutdatedSystemVersion: boolean`
+
+Required: No
+
+Default: false
+
+Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20). If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
+
 - `deleteDBAfterStopped: boolean`
 
 Required: No
