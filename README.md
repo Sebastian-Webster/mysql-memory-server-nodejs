@@ -21,7 +21,7 @@ Linux only requirements:
 - The `tar` package needs to be installed
 
 Currently supported MySQL versions:
-- If using the system installed MySQL server: 8.0.2 and newer
+- If using the system installed MySQL server: 8.0.20 and newer
 - If not using the system installed MySQL server: 8.0.39, 8.1.0, 8.2.0, 8.3.0, 8.4.2, 9.0.1
 
 ## Usage
