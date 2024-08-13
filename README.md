@@ -20,6 +20,10 @@ Linux only requirements:
 - The `libaio1` package needs to be installed
 - The `tar` package needs to be installed
 
+Currently supported MySQL versions:
+- If using the system installed MySQL server: 8+
+- If not using the system installed MySQL server: 8.0.39, 8.1.0, 8.2.0, 8.3.0, 8.4.2, 9.0.1
+
 ## Usage
 
 ```javascript
