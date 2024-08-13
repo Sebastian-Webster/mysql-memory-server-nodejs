@@ -49,7 +49,7 @@ export async function createDB(opts?: ServerOptions) {
     if (options.version && lt(options.version, CONSTANTS.MIN_SUPPORTED_MYSQL)) {
         //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
         //The throw above is because the system-installed MySQL is out of date and "ignoreOutdatedSystemVersion" is not set to true.
-        throw `The selected version of MySQL ${options.version} is not currently supported by this package. Please choose a different version to use.`
+        throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`
     }
 
     logger.log('Version currently installed:', version)
