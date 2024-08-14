@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
         # We only support Node.js 16 and newer
         node-version: [16.6.0, 16.x, 17.0.0, 17.x, 18.x, 19.x, 20.x, 21.x, 22.x]
 
@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
         bun-version: [1.1.22]
 
     steps:
@@ -91,7 +91,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
 
     steps:
       - name: Checkout
@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
 
     steps:
       - name: Checkout
@@ -139,7 +139,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -191,7 +191,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04]
 
     steps:
       - name: Free Disk Space (Ubuntu)
