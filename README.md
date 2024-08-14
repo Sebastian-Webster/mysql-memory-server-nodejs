@@ -148,7 +148,7 @@ Required: No
 
 Default: false
 
-Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20). If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
+Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
 
 - `deleteDBAfterStopped: boolean`
 
