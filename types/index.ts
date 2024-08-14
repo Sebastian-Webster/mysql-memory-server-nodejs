@@ -12,7 +12,8 @@ export type ServerOptions = {
     lockRetryWait?: number,
     username?: string,
     deleteDBAfterStopped?: boolean,
-    dbPath?: string
+    dbPath?: string,
+    ignoreUnsupportedSystemVersion?: boolean
 }
 
 export type InternalServerOptions = {
@@ -25,7 +26,8 @@ export type InternalServerOptions = {
     lockRetryWait: number,
     username: string,
     deleteDBAfterStopped: boolean,
-    dbPath: string
+    dbPath: string,
+    ignoreUnsupportedSystemVersion: boolean
 }
 
 export type ExecutorOptions = {

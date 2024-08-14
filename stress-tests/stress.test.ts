@@ -15,7 +15,8 @@ for (let i = 0; i < 100; i++) {
         const options: ServerOptions = {
             username: 'dbuser',
             logLevel: 'LOG',
-            deleteDBAfterStopped: !process.env.useCIDBPath
+            deleteDBAfterStopped: !process.env.useCIDBPath,
+            ignoreUnsupportedSystemVersion: true
         }
     
         if (process.env.useCIDBPath) {
