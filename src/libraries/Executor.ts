@@ -284,14 +284,16 @@ class Executor {
                     }
                     const libaioEntry = libaioFound[0]
                     const libaioPathIndex = libaioEntry.indexOf('=>')
-                    const libaioPath = libaioEntry.slice(libaioPathIndex + 3)
+                    const libaioSymlinkPath = libaioEntry.slice(libaioPathIndex + 3)
+
+                    const libaioPath = await fsPromises.readlink(libaioSymlinkPath)
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
                     try {
                         lockSync(copyPath, {realpath: false})
 
-                        this.logger.log('libaio copy path:', copyPath)
+                        this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath)
                         let copyError: Error;
 
                         try {
