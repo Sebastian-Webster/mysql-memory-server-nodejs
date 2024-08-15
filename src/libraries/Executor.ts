@@ -248,7 +248,7 @@ class Executor {
         })
     }
 
-    async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string): Promise<void> {
+    async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string, retry: boolean): Promise<void> {
         this.logger.log('Created data directory for database at:', datadir)
         await fsPromises.mkdir(datadir, {recursive: true})
 
@@ -261,9 +261,13 @@ class Executor {
             }
 
             if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                this.logger.log('Handling error that occurred because of libaio...')
+                this.logger.log('An error occurred while initializing database:', err || stderr)
                 if (binaryFilepath === 'mysqld') {
                     throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                }
+
+                if (retry === false) {
+                    throw 'Tried to copy libaio into lib folder and MySQL is still failing to initialize. Please check the console for more information.'
                 }
 
                 if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
@@ -286,16 +290,6 @@ class Executor {
 
                     try {
                         lockSync(copyPath, {realpath: false})
-
-                        if (fs.existsSync(copyPath)) {
-                            //If this ever gets called, that means even after copying libaio into the folder, there is still some libaio related error.
-                            //We do not want an infinite loop happening, so just throw here.
-                            try {
-                                unlockSync(copyPath)
-                            } finally {
-                                throw `libaio already exists in binary folder after calling lock for it. MySQL initialization is failing. The error was: ${err || stderr}`
-                            }
-                        }
 
                         this.logger.log('libaio copy path:', copyPath)
                         let copyError: Error;
@@ -325,7 +319,7 @@ class Executor {
                             //Retry setting up directory now that libaio has been copied
                             this.logger.log('Retrying directory setup')
                             await this.deleteDatabaseDirectory(datadir)
-                            await this.#setupDataDirectories(options, binaryFilepath, datadir)
+                            await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
                         }
                     } catch (error) {
                         if (String(error) === 'Error: Lock file is already being held') {
@@ -357,7 +351,7 @@ class Executor {
         const datadir = normalizePath(`${options.dbPath}/data`)
 
         do {
-            await this.#setupDataDirectories(options, binaryFilepath, datadir);
+            await this.#setupDataDirectories(options, binaryFilepath, datadir, true);
 
             const port = GenerateRandomPort()
             const mySQLXPort = GenerateRandomPort();
