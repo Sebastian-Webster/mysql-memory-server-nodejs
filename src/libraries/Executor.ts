@@ -8,6 +8,8 @@ import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
+import { lockSync, unlockSync } from 'proper-lockfile';
+import { waitForLock } from "./FileLock";
 
 class Executor {
     logger: Logger;
@@ -281,19 +283,38 @@ class Executor {
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
-                    this.logger.log('libaio copy path:', copyPath)
-
-                    if (fs.existsSync(copyPath)) {
-                        //If this ever gets called, that means even after copying libaio into the folder, there is still some libaio related error.
-                        //We do not want an infinite loop happening, so just throw here.
-                        throw `libaio already exists in binary folder. MySQL initialization is failing. The error was: ${err || stderr}`
-                    }
-
                     try {
-                        await fsPromises.cp(libaioPath, copyPath)
-                    } catch (e) {
-                        this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
-                        throw 'An error occurred while copying libaio1t64 into lib folder. Please check the console for errors.'
+                        lockSync(copyPath)
+
+                        if (fs.existsSync(copyPath)) {
+                            //If this ever gets called, that means even after copying libaio into the folder, there is still some libaio related error.
+                            //We do not want an infinite loop happening, so just throw here.
+                            try {
+                                unlockSync(copyPath)
+                            } finally {
+                                throw `libaio already exists in binary folder after calling lock for it. MySQL initialization is failing. The error was: ${err || stderr}`
+                            }
+                        }
+
+                        this.logger.log('libaio copy path:', copyPath)
+
+                        try {
+                            await fsPromises.copyFile(libaioPath, copyPath)
+                        } catch (e) {
+                            this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
+                            try {
+                                await fsPromises.rm(copyPath, {force: true})
+                            } finally {
+                                throw 'An error occurred while copying libaio1t64 into lib folder. Please check the console for errors.'
+                            }
+                        }
+                    } catch (error) {
+                        if (String(error) === 'Error: Lock file is already being held') {
+                            this.logger.log('Waiting for lock for libaio copy')
+                            await waitForLock(copyPath, options)
+                            this.logger.log('Lock is gone for libaio copy')
+                        }
+                        throw error
                     }
                     
                     //Retry setting up directory now that libaio has been copied
