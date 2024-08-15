@@ -261,7 +261,7 @@ class Executor {
             }
 
             if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                this.logger.log('An error occurred while initializing database:', err || stderr)
+                this.logger.error('An error occurred while initializing database:', err || stderr)
                 if (binaryFilepath === 'mysqld') {
                     throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
                 }
