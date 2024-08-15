@@ -284,7 +284,7 @@ class Executor {
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
                     try {
-                        lockSync(copyPath)
+                        lockSync(copyPath, {realpath: false})
 
                         if (fs.existsSync(copyPath)) {
                             //If this ever gets called, that means even after copying libaio into the folder, there is still some libaio related error.
