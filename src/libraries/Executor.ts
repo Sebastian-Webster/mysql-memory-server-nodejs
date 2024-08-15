@@ -7,7 +7,7 @@ import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
-import {normalize as normalizePath} from 'path'
+import {normalize as normalizePath, resolve as resolvePath} from 'path'
 
 class Executor {
     logger: Logger;
@@ -259,8 +259,47 @@ class Executor {
             }
 
             if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                this.logger.error(err || stderr)
-                throw 'The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                if (binaryFilepath === 'mysqld') {
+                    throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                }
+
+                if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
+                    const {error: lderror, stdout, stderr: ldstderr} = await this.#execute('ldconfig -p')
+                    if (lderror || ldstderr) {
+                        this.logger.error('The following libaio error occurred:', err || stderr)
+                        this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr)
+                        throw 'The ldconfig command failed to run. This command was ran to find libaio because libaio could not be found on the system. libaio is needed for MySQL to run. Do you have ldconfig and libaio installed? Learn more about libaio at Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                    }
+                    const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'))
+                    if (!libaioFound.length) {
+                        throw 'libaio1 and libaio1t64 could not be found. Either libaio1 or libaio1t64 must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                    }
+                    const libaioEntry = libaioFound[0]
+                    const libaioPathIndex = libaioEntry.indexOf('=>')
+                    const libaioPath = libaioEntry.slice(libaioPathIndex + 3)
+
+                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
+
+                    this.logger.log('libaio copy path:', copyPath)
+
+                    if (fs.existsSync(copyPath)) {
+                        //If this ever gets called, that means even after copying libaio into the folder, there is still some libaio related error.
+                        //We do not want an infinite loop happening, so just throw here.
+                        throw `libaio already exists in binary folder. MySQL initialization is failing. The error was: ${err || stderr}`
+                    }
+
+                    try {
+                        await fsPromises.cp(libaioPath, copyPath)
+                    } catch (e) {
+                        this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
+                        throw 'An error occurred while copying libaio1t64 into lib folder. Please check the console for errors.'
+                    }
+                    
+                    //Retry setting up directory now that libaio has been copied
+                    await this.#setupDataDirectories(options, binaryFilepath, datadir)
+                } else {
+                    throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                }
             }
             throw err || stderr
         }
