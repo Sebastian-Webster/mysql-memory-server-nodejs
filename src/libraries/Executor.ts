@@ -286,7 +286,7 @@ class Executor {
                     const libaioPathIndex = libaioEntry.indexOf('=>')
                     const libaioSymlinkPath = libaioEntry.slice(libaioPathIndex + 3)
 
-                    const libaioPath = await fsPromises.readlink(libaioSymlinkPath)
+                    const libaioPath = await fsPromises.realpath(libaioSymlinkPath)
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
