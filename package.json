@@ -16,7 +16,7 @@
     "memory database"
   ],
   "scripts": {
-    "test": "jest --testPathIgnorePatterns=/stress-tests/",
+    "test": "jest --testPathIgnorePatterns=/stress-tests/ --verbose",
     "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js",
     "stress": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js"
   },

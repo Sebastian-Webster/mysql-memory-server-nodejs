@@ -272,7 +272,8 @@ class Executor {
                     }
                     const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'))
                     if (!libaioFound.length) {
-                        throw 'libaio1 and libaio1t64 could not be found. Either libaio1 or libaio1t64 must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                        this.logger.error('Error from launching MySQL:', err || stderr)
+                        throw 'An error occurred while launching MySQL. The most likely cause is that libaio1 and libaio1t64 could not be found. Either libaio1 or libaio1t64 must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html. Check error in console for more information.'
                     }
                     const libaioEntry = libaioFound[0]
                     const libaioPathIndex = libaioEntry.indexOf('=>')
