@@ -318,6 +318,7 @@ class Executor {
                     }
                     
                     //Retry setting up directory now that libaio has been copied
+                    await this.deleteDatabaseDirectory(datadir)
                     await this.#setupDataDirectories(options, binaryFilepath, datadir)
                 } else {
                     throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
