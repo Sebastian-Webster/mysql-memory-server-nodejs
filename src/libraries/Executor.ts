@@ -298,16 +298,34 @@ class Executor {
                         }
 
                         this.logger.log('libaio copy path:', copyPath)
+                        let copyError: Error;
 
                         try {
                             await fsPromises.copyFile(libaioPath, copyPath)
                         } catch (e) {
+                            copyError = e
                             this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
+                        } finally {
                             try {
                                 await fsPromises.rm(copyPath, {force: true})
-                            } finally {
-                                throw 'An error occurred while copying libaio1t64 into lib folder. Please check the console for errors.'
+                            } catch (e) {
+                                this.logger.error('An error occurred while deleting libaio file:', e)
                             }
+
+                            try {
+                                unlockSync(copyPath, {realpath: false})
+                            } catch (e) {
+                                this.logger.error('Error unlocking libaio file:', e)
+                            }
+
+                            if (copyError) {
+                                throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.'
+                            }
+
+                            //Retry setting up directory now that libaio has been copied
+                            this.logger.log('Retrying directory setup')
+                            await this.deleteDatabaseDirectory(datadir)
+                            await this.#setupDataDirectories(options, binaryFilepath, datadir)
                         }
                     } catch (error) {
                         if (String(error) === 'Error: Lock file is already being held') {
@@ -317,11 +335,6 @@ class Executor {
                         }
                         throw error
                     }
-                    
-                    //Retry setting up directory now that libaio has been copied
-                    this.logger.log('Retrying directory setup')
-                    await this.deleteDatabaseDirectory(datadir)
-                    await this.#setupDataDirectories(options, binaryFilepath, datadir)
                 } else {
                     throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
                 }
