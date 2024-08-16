@@ -255,7 +255,7 @@ class Executor {
             this.logger.log('Created data directory for database at:', datadir)
             let stderr = ''
 
-            const process = spawn(binaryFilepath, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], {cwd: datadir, shell: true})
+            const process = spawn(`"binaryFilepath"`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], {cwd: datadir, shell: true})
 
             process.stderr.on('data', (data) => {
                 if (Buffer.isBuffer(data)) {
