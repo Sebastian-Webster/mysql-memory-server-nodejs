@@ -27,14 +27,9 @@ class Executor {
     }
 
     #executeFile(command: string, args: string[], cwd: string): Promise<{stdout: string, stderr: string}> {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             execFile(command, args, {signal: DBDestroySignal.signal, shell: true, cwd}, (error, stdout, stderr) => {
-                if (error) {
-                    this.logger.error('An error occurred while executing a file:', error)
-                    return reject(error)
-                }
-
-                resolve({stdout, stderr})
+                resolve({stdout, stderr: error.message || stderr})
             })
         })
     }
