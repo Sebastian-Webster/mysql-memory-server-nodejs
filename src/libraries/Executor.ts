@@ -270,8 +270,14 @@ class Executor {
                 throw 'An error occurred while initializing database with system-installed MySQL. Please check the console for more information.'
             }
         } else {
-            const result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
-            stderr = result.stderr
+            let result: {stderr: string, stdout: string};
+            try {
+                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
+            } catch (e) {
+                this.logger.error('Error occurred from executeFile:', e)
+                throw e
+            }
+            stderr = result?.stderr
         }
 
         if (retry === false) {
