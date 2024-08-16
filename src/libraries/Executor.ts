@@ -249,7 +249,7 @@ class Executor {
     }
 
     #initializeDatabase(binaryFilepath: string, datadir: string): Promise<string> {
-        return new Promise(async resolve => {
+        return new Promise(async (resolve, reject) => {
             await fsPromises.mkdir(datadir, {recursive: true})
 
             this.logger.log('Created data directory for database at:', datadir)
@@ -268,6 +268,11 @@ class Executor {
             process.on('close', (code, signal) => {
                 this.logger.log('Database initialization process closed with code:', code, 'and signal:', signal)
                 resolve(stderr)
+            })
+
+            process.on('error', (e) => {
+                this.logger.error('An error occurred while initializing database:', e)
+                reject('An error occurred while initializing database. Please check the console for more information.')
             })
         })
     }
