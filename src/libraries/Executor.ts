@@ -273,6 +273,10 @@ class Executor {
             const result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
             stderr = result.stderr
         }
+
+        if (retry === false) {
+            this.logger.warn('Retry is false and stderr is:', stderr)
+        }
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
