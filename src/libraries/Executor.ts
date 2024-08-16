@@ -248,20 +248,45 @@ class Executor {
         })
     }
 
+    #initializeDatabase(binaryFilepath: string, datadir: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            let stderr = ''
+
+            const process = spawn(binaryFilepath, ['--no-defaults', ` --datadir=${datadir}`, '--initialize-insecure'])
+
+            process.stderr.on('data', (data) => {
+                if (Buffer.isBuffer(data)) {
+                    stderr += data.toString()
+                } else {
+                    stderr += data
+                }
+            })
+
+            process.on('close', (code, signal) => {
+                this.logger.log('Database initialization process closed with code:', code, 'and signal:', signal)
+                if (code !== 0) {
+                    this.logger.error(stderr)
+                    reject('An error occurred while initializing database. Please check the console for more information.')
+                }
+                resolve(stderr)
+            })
+        })
+    }
+
     async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string, retry: boolean): Promise<void> {
         this.logger.log('Created data directory for database at:', datadir)
         await fsPromises.mkdir(datadir, {recursive: true})
 
-        const {error: err, stderr} = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
+        const stderr = await this.#initializeDatabase(binaryFilepath, datadir)
             
-        if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
-            if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
-                this.logger.error(err || stderr)
+        if (stderr && !stderr.includes('InnoDB initialization has ended')) {
+            if (process.platform === 'win32' && stderr.includes('Command failed')) {
+                this.logger.error(stderr)
                 throw 'The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.'
             }
 
-            if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                this.logger.error('An error occurred while initializing database:', err || stderr)
+            if (process.platform === 'linux' && stderr.includes('libaio.so')) {
+                this.logger.error('An error occurred while initializing database:', stderr)
                 if (binaryFilepath === 'mysqld') {
                     throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
                 }
@@ -273,13 +298,13 @@ class Executor {
                 if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
                     const {error: lderror, stdout, stderr: ldstderr} = await this.#execute('ldconfig -p')
                     if (lderror || ldstderr) {
-                        this.logger.error('The following libaio error occurred:', err || stderr)
+                        this.logger.error('The following libaio error occurred:', stderr)
                         this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr)
                         throw 'The ldconfig command failed to run. This command was ran to find libaio because libaio could not be found on the system. libaio is needed for MySQL to run. Do you have ldconfig and libaio installed? Learn more about libaio at Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
                     }
                     const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'))
                     if (!libaioFound.length) {
-                        this.logger.error('Error from launching MySQL:', err || stderr)
+                        this.logger.error('Error from launching MySQL:', stderr)
                         throw 'An error occurred while launching MySQL. The most likely cause is that libaio1 and libaio1t64 could not be found. Either libaio1 or libaio1t64 must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html. Check error in console for more information.'
                     }
                     const libaioEntry = libaioFound[0]
@@ -336,7 +361,7 @@ class Executor {
                     throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
                 }
             }
-            throw err || stderr
+            throw stderr
         }
 
         let initText = `CREATE DATABASE ${options.dbName};`;
