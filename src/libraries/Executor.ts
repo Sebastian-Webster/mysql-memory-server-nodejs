@@ -365,13 +365,19 @@ class Executor {
             throw stderr
         }
 
+        this.logger.log('Creating init text')
+
         let initText = `CREATE DATABASE ${options.dbName};`;
 
         if (options.username !== 'root') {
             initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
         }
 
+        this.logger.log('Writing init file')
+
         await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+
+        this.logger.log('Finished writing init file')
     }
 
     async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
