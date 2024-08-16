@@ -355,6 +355,7 @@ class Executor {
                             await waitForLock(copyPath, options)
                             this.logger.log('Lock is gone for libaio copy')
                         }
+                        this.logger.error('An error occurred from locking libaio section:', error)
                         throw error
                     }
                 } else {
