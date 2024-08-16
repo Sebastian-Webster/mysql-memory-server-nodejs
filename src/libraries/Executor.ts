@@ -301,12 +301,13 @@ class Executor {
                         } catch (e) {
                             copyError = e
                             this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
-                        } finally {
+
                             try {
                                 await fsPromises.rm(copyPath, {force: true})
                             } catch (e) {
                                 this.logger.error('An error occurred while deleting libaio file:', e)
                             }
+                        } finally {
 
                             try {
                                 unlockSync(copyPath, {realpath: false})
