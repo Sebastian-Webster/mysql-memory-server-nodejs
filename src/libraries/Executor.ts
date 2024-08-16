@@ -309,7 +309,7 @@ class Executor {
                             }
 
                             try {
-                                unlockSync(copyPath)
+                                unlockSync(copyPath, {realpath: false})
                             } catch (e) {
                                 this.logger.error('Error unlocking libaio file:', e)
                             }
