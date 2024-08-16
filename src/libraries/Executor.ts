@@ -250,6 +250,7 @@ class Executor {
 
     #initializeDatabase(binaryFilepath: string, datadir: string): Promise<string> {
         return new Promise((resolve, reject) => {
+            this.logger.log('Created data directory for database at:', datadir)
             let stderr = ''
 
             const process = spawn(binaryFilepath, [`--no-defaults --datadir=${datadir} --initialize-insecure`])
@@ -274,7 +275,6 @@ class Executor {
     }
 
     async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string, retry: boolean): Promise<void> {
-        this.logger.log('Created data directory for database at:', datadir)
         await fsPromises.mkdir(datadir, {recursive: true})
 
         const stderr = await this.#initializeDatabase(binaryFilepath, datadir)
