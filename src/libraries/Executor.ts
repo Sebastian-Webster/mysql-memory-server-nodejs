@@ -30,6 +30,7 @@ class Executor {
         return new Promise((resolve, reject) => {
             execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
                 if (error) {
+                    this.logger.error('An error occurred while executing a file:', error)
                     return reject(error)
                 }
 
