@@ -1,4 +1,4 @@
-import { ChildProcess, exec, spawn } from "child_process"
+import { ChildProcess, exec, execFile, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
@@ -22,6 +22,18 @@ class Executor {
         return new Promise(resolve => {
             exec(command, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
                 resolve({error, stdout, stderr})
+            })
+        })
+    }
+
+    #executeFile(command: string, args: string[]): Promise<{stdout: string, stderr: string}> {
+        return new Promise((resolve, reject) => {
+            execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
+                if (error) {
+                    return reject(error)
+                }
+
+                resolve({stdout, stderr})
             })
         })
     }
@@ -248,37 +260,11 @@ class Executor {
         })
     }
 
-    #initializeDatabase(binaryFilepath: string, datadir: string): Promise<string> {
-        return new Promise(async (resolve, reject) => {
-            await fsPromises.mkdir(datadir, {recursive: true})
-
-            this.logger.log('Created data directory for database at:', datadir)
-            let stderr = ''
-
-            const process = spawn(os.platform() === 'win32' ? 'mysqld.exe' : 'mysqld', [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], {cwd: datadir})
-
-            process.stderr.on('data', (data) => {
-                if (Buffer.isBuffer(data)) {
-                    stderr += data.toString()
-                } else {
-                    stderr += data
-                }
-            })
-
-            process.on('close', (code, signal) => {
-                this.logger.log('Database initialization process closed with code:', code, 'and signal:', signal)
-                resolve(stderr)
-            })
-
-            process.on('error', (e) => {
-                this.logger.error('An error occurred while initializing database:', e)
-                reject('An error occurred while initializing database. Please check the console for more information.')
-            })
-        })
-    }
-
     async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string, retry: boolean): Promise<void> {
-        const stderr = await this.#initializeDatabase(binaryFilepath, datadir)
+        this.logger.log('Created data directory for database at:', datadir)
+        await fsPromises.mkdir(datadir, {recursive: true})
+
+        const {stderr} = await this.#executeFile(`"${binaryFilepath}"`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`])
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
