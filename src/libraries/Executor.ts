@@ -265,7 +265,19 @@ class Executor {
         this.logger.log('Created data directory for database at:', datadir)
         await fsPromises.mkdir(datadir, {recursive: true})
 
-        const {stderr} = await this.#executeFile(`"${binaryFilepath}"`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`])
+        let stderr: string;
+
+        if (binaryFilepath === 'mysqld') {
+            const {error, stderr: output} = await this.#execute(`mysqld --no-defaults --datadir=${datadir} --initialize-insecure`)
+            stderr = output
+            if (error) {
+                this.logger.error('An error occurred while initializing database with system-installed MySQL:', error)
+                throw 'An error occurred while initializing database with system-installed MySQL. Please check the console for more information.'
+            }
+        } else {
+            const result = await this.#executeFile(`"${binaryFilepath}"`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`])
+            stderr = result.stderr
+        }
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
