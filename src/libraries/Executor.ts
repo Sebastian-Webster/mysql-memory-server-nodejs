@@ -252,7 +252,7 @@ class Executor {
         return new Promise((resolve, reject) => {
             let stderr = ''
 
-            const process = spawn(binaryFilepath, ['--no-defaults', ` --datadir=${datadir}`, '--initialize-insecure'])
+            const process = spawn(binaryFilepath, [`--no-defaults --datadir=${datadir} --initialize-insecure`])
 
             process.stderr.on('data', (data) => {
                 if (Buffer.isBuffer(data)) {
