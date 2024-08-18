@@ -1,4 +1,4 @@
-import { ChildProcess, exec, spawn } from "child_process"
+import { ChildProcess, exec, execFile, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
@@ -7,7 +7,9 @@ import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
-import {normalize as normalizePath} from 'path'
+import {normalize as normalizePath, resolve as resolvePath} from 'path'
+import { lockSync, unlockSync } from 'proper-lockfile';
+import { waitForLock } from "./FileLock";
 
 class Executor {
     logger: Logger;
@@ -20,6 +22,14 @@ class Executor {
         return new Promise(resolve => {
             exec(command, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
                 resolve({error, stdout, stderr})
+            })
+        })
+    }
+
+    #executeFile(command: string, args: string[], cwd: string): Promise<{stdout: string, stderr: string}> {
+        return new Promise(resolve => {
+            execFile(command, args, {signal: DBDestroySignal.signal, cwd}, (error, stdout, stderr) => {
+                resolve({stdout, stderr: error?.message || stderr})
             })
         })
     }
@@ -246,24 +256,118 @@ class Executor {
         })
     }
 
-    async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string): Promise<void> {
+    async #setupDataDirectories(options: InternalServerOptions, binaryFilepath: string, datadir: string, retry: boolean): Promise<void> {
         this.logger.log('Created data directory for database at:', datadir)
         await fsPromises.mkdir(datadir, {recursive: true})
 
-        const {error: err, stderr} = await this.#execute(`"${binaryFilepath}" --no-defaults --datadir=${datadir} --initialize-insecure`)
+        let stderr: string;
+
+        if (binaryFilepath === 'mysqld') {
+            const {error, stderr: output} = await this.#execute(`mysqld --no-defaults --datadir=${datadir} --initialize-insecure`)
+            stderr = output
+            if (error) {
+                this.logger.error('An error occurred while initializing database with system-installed MySQL:', error)
+                throw 'An error occurred while initializing database with system-installed MySQL. Please check the console for more information.'
+            }
+        } else {
+            let result: {stderr: string, stdout: string};
+            try {
+                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
+            } catch (e) {
+                this.logger.error('Error occurred from executeFile:', e)
+                throw e
+            }
+            stderr = result?.stderr
+        }
             
-        if (err || (stderr && !stderr.includes('InnoDB initialization has ended'))) {
-            if (process.platform === 'win32' && (err?.message.includes('Command failed') || stderr.includes('Command failed'))) {
-                this.logger.error(err || stderr)
+        if (stderr && !stderr.includes('InnoDB initialization has ended')) {
+            if (process.platform === 'win32' && stderr.includes('Command failed')) {
+                this.logger.error(stderr)
                 throw 'The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.'
             }
 
-            if (process.platform === 'linux' && (err?.message.includes('libaio.so') || stderr.includes('libaio.so'))) {
-                this.logger.error(err || stderr)
-                throw 'The mysqld command failed to run. MySQL needs the libaio package installed on Linux systems to run. Do you have this installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
+            if (process.platform === 'linux' && stderr.includes('libaio.so')) {
+                if (binaryFilepath === 'mysqld') {
+                    throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                }
+
+                if (retry === false) {
+                    this.logger.error('An error occurred while initializing database:', stderr)
+                    throw 'Tried to copy libaio into lib folder and MySQL is still failing to initialize. Please check the console for more information.'
+                }
+
+                if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
+                    const {error: lderror, stdout, stderr: ldstderr} = await this.#execute('ldconfig -p')
+                    if (lderror || ldstderr) {
+                        this.logger.error('The following libaio error occurred:', stderr)
+                        this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr)
+                        throw 'The ldconfig command failed to run. This command was ran to find libaio because libaio could not be found on the system. libaio is needed for MySQL to run. Do you have ldconfig and libaio installed? Learn more about libaio at Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                    }
+                    const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'))
+                    if (!libaioFound.length) {
+                        this.logger.error('Error from launching MySQL:', stderr)
+                        throw 'An error occurred while launching MySQL. The most likely cause is that libaio1 and libaio1t64 could not be found. Either libaio1 or libaio1t64 must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html. Check error in console for more information.'
+                    }
+                    const libaioEntry = libaioFound[0]
+                    const libaioPathIndex = libaioEntry.indexOf('=>')
+                    const libaioSymlinkPath = libaioEntry.slice(libaioPathIndex + 3)
+
+                    const libaioPath = await fsPromises.realpath(libaioSymlinkPath)
+
+                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
+
+                    try {
+                        lockSync(copyPath, {realpath: false})
+
+                        this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath)
+                        let copyError: Error;
+
+                        try {
+                            await fsPromises.copyFile(libaioPath, copyPath)
+                        } catch (e) {
+                            copyError = e
+                            this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
+
+                            try {
+                                await fsPromises.rm(copyPath, {force: true})
+                            } catch (e) {
+                                this.logger.error('An error occurred while deleting libaio file:', e)
+                            }
+                        } finally {
+
+                            try {
+                                unlockSync(copyPath, {realpath: false})
+                            } catch (e) {
+                                this.logger.error('Error unlocking libaio file:', e)
+                            }
+
+                            if (copyError) {
+                                throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.'
+                            }
+
+                            //Retry setting up directory now that libaio has been copied
+                            this.logger.log('Retrying directory setup')
+                            await this.deleteDatabaseDirectory(datadir)
+                            await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
+                            return
+                        }
+                    } catch (error) {
+                        if (String(error) === 'Error: Lock file is already being held') {
+                            this.logger.log('Waiting for lock for libaio copy')
+                            await waitForLock(copyPath, options)
+                            this.logger.log('Lock is gone for libaio copy')
+                        }
+                        this.logger.error('An error occurred from locking libaio section:', error)
+                        throw error
+                    }
+                } else {
+                    throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
+                }
             }
-            throw err || stderr
+            throw stderr
         }
+
+        this.logger.log('Creating init text')
 
         let initText = `CREATE DATABASE ${options.dbName};`;
 
@@ -271,7 +375,11 @@ class Executor {
             initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
         }
 
+        this.logger.log('Writing init file')
+
         await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+
+        this.logger.log('Finished writing init file')
     }
 
     async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
@@ -280,7 +388,8 @@ class Executor {
         const datadir = normalizePath(`${options.dbPath}/data`)
 
         do {
-            await this.#setupDataDirectories(options, binaryFilepath, datadir);
+            await this.#setupDataDirectories(options, binaryFilepath, datadir, true);
+            this.logger.log('Setting up directories was successful')
 
             const port = GenerateRandomPort()
             const mySQLXPort = GenerateRandomPort();

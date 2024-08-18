@@ -11,14 +11,15 @@ Download with your package manager of choice. The package name is `mysql-memory-
 #### Requirements
 
 - Node.js 16.6.0 and newer
-- macOS 13+, Windows, or Linux (Only Ubuntu has been tested. Other Linux distributions may or may not work at this time. Ubuntu 24.04 and newer is not fully supported at this time - go to the bottom of this file to learn more)
+- macOS 13+, Windows, or Linux (Only Ubuntu has been tested. Other Linux distributions may or may not work at this time.)
 
 Windows only requirements:
 - `Microsoft Visual C++ 2019 Redistributable Package` needs to be installed
 
 Linux only requirements:
-- The `libaio1` package needs to be installed
-- The `tar` package needs to be installed
+- The `libaio1` or `libaio1t64` package needs to be installed
+- If `libaio1` is not available but `libaio1t64` is, the `ldconfig` command needs to be available to run
+- The `tar` package needs to be installed if you want to use MySQL versions that aren't system installed
 
 Currently supported MySQL versions:
 - If using the system installed MySQL server: 8.0.20 and newer
@@ -169,7 +170,3 @@ Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory
 Gotchas: This option is intended to be for internal debugging purposes only and not meant for people to use. As such, this option will not follow Semantic Versioning.
 
 Description: The folder to store database-related data in
-
-## If using Ubuntu 24.04 and newer
-
-Selecting what MySQL version to use is not currently supported on Ubuntu 24.04 and newer. To use this package on Ubuntu 24.04 and newer you must have the `mysql-server` package installed on your system and `ServerOptions.version` must either be the version that is installed on the system or undefined.

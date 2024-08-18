@@ -16,9 +16,9 @@
     "memory database"
   ],
   "scripts": {
-    "test": "jest --testPathIgnorePatterns=/stress-tests/",
-    "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js",
-    "stress": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js"
+    "test": "jest --testPathIgnorePatterns=/stress-tests/ --verbose",
+    "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js --verbose",
+    "stress": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js --verbose"
   },
   "author": "Sebastian-Webster",
   "license": "MIT",

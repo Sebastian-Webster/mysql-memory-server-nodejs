@@ -7,8 +7,9 @@ import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
-import { lockSync, checkSync, unlockSync } from 'proper-lockfile';
+import { lockSync, unlockSync } from 'proper-lockfile';
 import { BinaryInfo, InternalServerOptions } from '../../types';
+import { waitForLock } from './FileLock';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -137,26 +138,6 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
         }).catch(error => {
             reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
         })
-    })
-}
-
-function waitForLock(path: string, options: InternalServerOptions): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-        let retries = 0;
-        while (retries <= options.lockRetries) {
-            retries++
-            try {
-                const locked = checkSync(path);
-                if (!locked) {
-                    return resolve()
-                } else {
-                    await new Promise(resolve => setTimeout(resolve, options.lockRetryWait))
-                }
-            } catch (e) {
-                return reject(e)
-            }
-        }
-        reject(`lockRetries has been exceeded. Lock had not been released after ${options.lockRetryWait} * ${options.lockRetries} milliseconds.`)
     })
 }
 
