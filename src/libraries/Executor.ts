@@ -393,6 +393,7 @@ class Executor {
 
         do {
             await this.#setupDataDirectories(options, binaryFilepath, datadir, true);
+            this.logger.log('Setting up directories was successful')
 
             const port = GenerateRandomPort()
             const mySQLXPort = GenerateRandomPort();
