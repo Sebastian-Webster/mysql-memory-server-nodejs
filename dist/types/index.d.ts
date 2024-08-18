@@ -11,6 +11,7 @@ export type ServerOptions = {
     username?: string;
     deleteDBAfterStopped?: boolean;
     dbPath?: string;
+    ignoreUnsupportedSystemVersion?: boolean;
 };
 export type InternalServerOptions = {
     version?: string;
@@ -23,6 +24,7 @@ export type InternalServerOptions = {
     username: string;
     deleteDBAfterStopped: boolean;
     dbPath: string;
+    ignoreUnsupportedSystemVersion: boolean;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;

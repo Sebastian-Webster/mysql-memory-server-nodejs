@@ -37,6 +37,7 @@ const path_1 = require("path");
 const crypto_1 = require("crypto");
 const child_process_1 = require("child_process");
 const proper_lockfile_1 = require("proper-lockfile");
+const FileLock_1 = require("./FileLock");
 function getZipData(entry) {
     return new Promise((resolve, reject) => {
         entry.getDataAsync((data, err) => {
@@ -157,27 +158,6 @@ function extractBinary(url, archiveLocation, extractedLocation) {
         });
     });
 }
-function waitForLock(path, options) {
-    return new Promise(async (resolve, reject) => {
-        let retries = 0;
-        while (retries <= options.lockRetries) {
-            retries++;
-            try {
-                const locked = (0, proper_lockfile_1.checkSync)(path);
-                if (!locked) {
-                    return resolve();
-                }
-                else {
-                    await new Promise(resolve => setTimeout(resolve, options.lockRetryWait));
-                }
-            }
-            catch (e) {
-                return reject(e);
-            }
-        }
-        reject(`lockRetries has been exceeded. Lock had not been released after ${options.lockRetryWait} * ${options.lockRetries} milliseconds.`);
-    });
-}
 function downloadBinary(binaryInfo, options, logger) {
     return new Promise(async (resolve, reject) => {
         const { url, version } = binaryInfo;
@@ -210,7 +190,7 @@ function downloadBinary(binaryInfo, options, logger) {
             catch (e) {
                 if (String(e) === 'Error: Lock file is already being held') {
                     logger.log('Waiting for lock for MySQL version', version);
-                    await waitForLock(extractedPath, options);
+                    await (0, FileLock_1.waitForLock)(extractedPath, options);
                     logger.log('Lock is gone for version', version);
                     return resolve(binaryPath);
                 }

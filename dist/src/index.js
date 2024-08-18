@@ -37,6 +37,7 @@ const versions_json_1 = __importDefault(require("./versions.json"));
 const Downloader_1 = require("./libraries/Downloader");
 const crypto_1 = require("crypto");
 const path_1 = require("path");
+const constants_1 = __importDefault(require("./constants"));
 process.on('exit', () => {
     AbortSignal_1.default.abort('Process is exiting');
 });
@@ -51,14 +52,25 @@ async function createDB(opts) {
         username: 'root',
         deleteDBAfterStopped: true,
         //mysqlmsn = MySQL Memory Server Node.js
-        dbPath: (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`)
+        dbPath: (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
+        ignoreUnsupportedSystemVersion: false
     };
     const options = { ...defaultOptions, ...opts };
     const logger = new Logger_1.default(options.logLevel);
     const executor = new Executor_1.default(logger);
     const version = await executor.getMySQLVersion(options.version);
+    const unsupportedMySQLIsInstalled = version && (0, semver_1.lt)(version.version, constants_1.default.MIN_SUPPORTED_MYSQL);
+    const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreUnsupportedSystemVersion && !options.version;
+    if (throwUnsupportedError) {
+        throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`;
+    }
+    if (options.version && (0, semver_1.lt)(options.version, constants_1.default.MIN_SUPPORTED_MYSQL)) {
+        //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
+        //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
+        throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`;
+    }
     logger.log('Version currently installed:', version);
-    if (version === null || (options.version && !(0, semver_1.satisfies)(version.version, options.version))) {
+    if (version === null || (options.version && !(0, semver_1.satisfies)(version.version, options.version)) || unsupportedMySQLIsInstalled) {
         let binaryInfo;
         let binaryFilepath;
         try {
