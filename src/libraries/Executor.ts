@@ -279,11 +279,6 @@ class Executor {
             }
             stderr = result?.stderr
         }
-
-        if (retry === false) {
-            this.logger.warn('Retry is false and stderr is:', stderr)
-            this.logger.warn(stderr && !stderr.includes('InnoDB initialization has ended'))
-        }
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
