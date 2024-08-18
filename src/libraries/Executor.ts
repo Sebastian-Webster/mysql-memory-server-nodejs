@@ -354,6 +354,7 @@ class Executor {
                             this.logger.log('Retrying directory setup')
                             await this.deleteDatabaseDirectory(datadir)
                             await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
+                            return
                         }
                     } catch (error) {
                         if (String(error) === 'Error: Lock file is already being held') {
