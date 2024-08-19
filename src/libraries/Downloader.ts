@@ -184,8 +184,8 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                 try {
                     await Promise.all([
-                        fsPromises.rm(extractedPath, {force: true}),
-                        fsPromises.rm(archivePath, {force: true})
+                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                        fsPromises.rm(archivePath, {force: true, recursive: true})
                     ])
                 } finally {
                     try {
