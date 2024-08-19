@@ -156,6 +156,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             await fsPromises.mkdir(extractedPath, {recursive: true})
 
             const binaryPath = normalizePath(`${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`)
+            const archivePath = `${dirpath}/${version}.${fileExtension}`
 
             const binaryExists = fs.existsSync(binaryPath)
 
@@ -165,7 +166,6 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             try {
                 lockSync(extractedPath)
-                const archivePath = `${dirpath}/${version}.${fileExtension}`
                 await downloadFromCDN(url, archivePath, logger)
                 await extractBinary(url, archivePath, extractedPath)
                 try {
@@ -180,6 +180,19 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     await waitForLock(extractedPath, options)
                     logger.log('Lock is gone for version', version)
                     return resolve(binaryPath)
+                }
+
+                try {
+                    await Promise.all([
+                        fsPromises.rm(extractedPath, {force: true}),
+                        fsPromises.rm(archivePath, {force: true})
+                    ])
+                } finally {
+                    try {
+                        unlockSync(extractedPath)
+                    } catch (e) {
+                        logger.error('An error occurred while unlocking path:', e)
+                    }
                 }
                 return reject(e)
             }
