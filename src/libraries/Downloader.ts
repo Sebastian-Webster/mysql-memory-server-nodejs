@@ -189,7 +189,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     ])
                 } finally {
                     try {
-                        unlockSync(extractedPath)
+                        unlockSync(extractedPath, {realpath: false})
                     } catch (e) {
                         logger.error('An error occurred while unlocking path:', e)
                     }
