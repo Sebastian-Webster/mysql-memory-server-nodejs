@@ -164,8 +164,11 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
+            let lockedByUs = false;
+
             try {
                 lockSync(extractedPath)
+                lockedByUs = true;
                 await downloadFromCDN(url, archivePath, logger)
                 await extractBinary(url, archivePath, extractedPath)
                 try {
@@ -182,18 +185,21 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     return resolve(binaryPath)
                 }
 
-                try {
-                    await Promise.all([
-                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                        fsPromises.rm(archivePath, {force: true, recursive: true})
-                    ])
-                } finally {
+                if (lockedByUs) {
                     try {
-                        unlockSync(extractedPath, {realpath: false})
-                    } catch (e) {
-                        logger.error('An error occurred while unlocking path:', e)
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                            fsPromises.rm(archivePath, {force: true, recursive: true})
+                        ])
+                    } finally {
+                        try {
+                            unlockSync(extractedPath, {realpath: false})
+                        } catch (e) {
+                            logger.error('An error occurred while unlocking path:', e)
+                        }
                     }
                 }
+                
                 return reject(e)
             }
         }
