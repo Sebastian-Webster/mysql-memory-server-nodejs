@@ -178,7 +178,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 }
                 return resolve(binaryPath)
             } catch (e) {
-                if (String(e) === 'Error: Lock file is already being held') {
+                if (String(e).includes('Lock file is already being held')) {
                     logger.log('Waiting for lock for MySQL version', version)
                     await waitForLock(extractedPath, options)
                     logger.log('Lock is gone for version', version)
