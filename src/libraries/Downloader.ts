@@ -123,7 +123,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             try {
                 await fsPromises.rm(archiveLocation)
             } finally {
-                fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
+                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
                 return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
             }
         }
@@ -132,7 +132,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             try {
                 await fsPromises.rm(archiveLocation)
             } finally {
-                fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
+                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
                 resolve(`${extractedLocation}/mysql/bin/mysqld`)
             }
         }).catch(error => {
