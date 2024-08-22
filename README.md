@@ -151,6 +151,14 @@ Default: 0
 
 Description: The port that the database will listen on. If set to 0, a randomly generated port is used.
 
+- `xPort: number`
+
+Required: No
+
+Default: 0
+
+Description: The port that the MySQL X Plugin will listen on. If set to 0, a randomly generated port is used.
+
 - `ignoreUnsupportedSystemVersion: boolean`
 
 Required: No
