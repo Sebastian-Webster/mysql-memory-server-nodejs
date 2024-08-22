@@ -240,7 +240,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: fedora:40
-      options: --user $(id -u)
+      options: --user "$(id -u):$(id -g)"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
