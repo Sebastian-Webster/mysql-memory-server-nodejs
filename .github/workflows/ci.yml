@@ -247,8 +247,8 @@ jobs:
       - name: Install Node.js
         run: sudo dnf install nodejs -y
 
-      - name: Install libaio
-        run: sudo dnf install libaio -y
+      - name: Install required libraries
+        run: sudo dnf install libaio numactl -y
 
       - name: Install dependencies
         run: npm ci
