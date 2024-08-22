@@ -237,6 +237,7 @@ jobs:
           path: "C:\\Users\\RUNNER~1\\dbs"
 
   fedora:
+    runs-on: ubuntu-latest
     container:
       image: fedora:40
     steps:
