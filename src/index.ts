@@ -27,7 +27,9 @@ export async function createDB(opts?: ServerOptions) {
         deleteDBAfterStopped: true,
         //mysqlmsn = MySQL Memory Server Node.js
         dbPath: normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
-        ignoreUnsupportedSystemVersion: false
+        ignoreUnsupportedSystemVersion: false,
+        port: 0,
+        xPort: 0
     }
     
     const options: InternalServerOptions = {...defaultOptions, ...opts}
