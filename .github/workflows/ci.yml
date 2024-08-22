@@ -235,3 +235,23 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-bun
           path: "C:\\Users\\RUNNER~1\\dbs"
+
+  fedora:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        run: sudo dnf install nodejs -y
+
+      - name: Install required libraries
+        run: sudo dnf install libaio numactl -y
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test

@@ -11,7 +11,7 @@ Download with your package manager of choice. The package name is `mysql-memory-
 #### Requirements
 
 - Node.js 16.6.0 and newer
-- macOS 13+, Windows, or Linux (Only Ubuntu has been tested. Other Linux distributions may or may not work at this time.)
+- macOS 13+, Windows, or Linux (This package is only tested on Ubuntu 20.04, 22.04, 24.04, and Fedora 40. Other Linux distributions may or may not work at this time.)
 
 Windows only requirements:
 - `Microsoft Visual C++ 2019 Redistributable Package` needs to be installed
