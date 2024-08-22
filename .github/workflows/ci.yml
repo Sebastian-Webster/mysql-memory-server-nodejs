@@ -240,6 +240,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: fedora:40
+      options:
+        user: runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
