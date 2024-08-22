@@ -143,6 +143,14 @@ Default: root
 
 Description: The username of the user that is used to login to the database.
 
+- `port: number`
+
+Required: No
+
+Default: 0
+
+Description: The port that the database will listen on. If set to 0, a randomly generated port is used.
+
 - `ignoreUnsupportedSystemVersion: boolean`
 
 Required: No
