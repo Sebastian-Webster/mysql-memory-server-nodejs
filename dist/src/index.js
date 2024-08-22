@@ -53,7 +53,9 @@ async function createDB(opts) {
         deleteDBAfterStopped: true,
         //mysqlmsn = MySQL Memory Server Node.js
         dbPath: (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
-        ignoreUnsupportedSystemVersion: false
+        ignoreUnsupportedSystemVersion: false,
+        port: 0,
+        xPort: 0
     };
     const options = { ...defaultOptions, ...opts };
     const logger = new Logger_1.default(options.logLevel);
@@ -88,7 +90,7 @@ async function createDB(opts) {
             binaryFilepath = await (0, Downloader_1.downloadBinary)(binaryInfo, options, logger);
         }
         catch (error) {
-            logger.error('Failed to download binary');
+            logger.error('Failed to download binary:', error);
             throw `Failed to download binary. The error was: "${error}"`;
         }
         logger.log('Running downloaded binary');

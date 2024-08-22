@@ -170,13 +170,15 @@ function downloadBinary(binaryInfo, options, logger) {
             const extractedPath = `${dirpath}/${version}`;
             await fsPromises.mkdir(extractedPath, { recursive: true });
             const binaryPath = (0, path_1.normalize)(`${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`);
+            const archivePath = `${dirpath}/${version}.${fileExtension}`;
             const binaryExists = fs.existsSync(binaryPath);
             if (binaryExists) {
                 return resolve(binaryPath);
             }
+            let lockedByUs = false;
             try {
                 (0, proper_lockfile_1.lockSync)(extractedPath);
-                const archivePath = `${dirpath}/${version}.${fileExtension}`;
+                lockedByUs = true;
                 await downloadFromCDN(url, archivePath, logger);
                 await extractBinary(url, archivePath, extractedPath);
                 try {
@@ -188,11 +190,27 @@ function downloadBinary(binaryInfo, options, logger) {
                 return resolve(binaryPath);
             }
             catch (e) {
-                if (String(e) === 'Error: Lock file is already being held') {
+                if (String(e).includes('Lock file is already being held')) {
                     logger.log('Waiting for lock for MySQL version', version);
                     await (0, FileLock_1.waitForLock)(extractedPath, options);
                     logger.log('Lock is gone for version', version);
                     return resolve(binaryPath);
+                }
+                if (lockedByUs) {
+                    try {
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, { force: true, recursive: true }),
+                            fsPromises.rm(archivePath, { force: true, recursive: true })
+                        ]);
+                    }
+                    finally {
+                        try {
+                            (0, proper_lockfile_1.unlockSync)(extractedPath, { realpath: false });
+                        }
+                        catch (e) {
+                            logger.error('An error occurred while unlocking path:', e);
+                        }
+                    }
                 }
                 return reject(e);
             }

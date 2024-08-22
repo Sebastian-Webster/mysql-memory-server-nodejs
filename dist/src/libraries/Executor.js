@@ -135,8 +135,8 @@ class Executor {
         do {
             await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binaryFilepath, datadir, true);
             this.logger.log('Setting up directories was successful');
-            const port = (0, Port_1.GenerateRandomPort)();
-            const mySQLXPort = (0, Port_1.GenerateRandomPort)();
+            const port = options.port || (0, Port_1.GenerateRandomPort)();
+            const mySQLXPort = options.xPort || (0, Port_1.GenerateRandomPort)();
             this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries);
             try {
                 this.logger.log('Starting MySQL process');
@@ -194,7 +194,7 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
     const errorLogFile = `${datadir}/errorlog.err`;
     return new Promise(async (resolve, reject) => {
         await fsPromises.rm(logFile, { force: true });
-        const process = (0, child_process_1.spawn)(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`], { signal: AbortSignal_1.default.signal, killSignal: 'SIGKILL' });
+        const process = (0, child_process_1.spawn)(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], { signal: AbortSignal_1.default.signal, killSignal: 'SIGKILL' });
         //resolveFunction is the function that will be called to resolve the promise that stops the database.
         //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
         //Once ran, resolveFunction will be called.

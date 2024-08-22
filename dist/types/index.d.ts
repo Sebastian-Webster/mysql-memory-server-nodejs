@@ -12,6 +12,8 @@ export type ServerOptions = {
     deleteDBAfterStopped?: boolean;
     dbPath?: string;
     ignoreUnsupportedSystemVersion?: boolean;
+    port?: number;
+    xPort?: number;
 };
 export type InternalServerOptions = {
     version?: string;
@@ -25,6 +27,8 @@ export type InternalServerOptions = {
     deleteDBAfterStopped: boolean;
     dbPath: string;
     ignoreUnsupportedSystemVersion: boolean;
+    port: number;
+    xPort: number;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;
