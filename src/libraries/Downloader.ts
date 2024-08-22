@@ -89,7 +89,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
     })
 }
 
-function extractBinary(url: string, archiveLocation: string, extractedLocation: string): Promise<string> {
+function extractBinary(url: string, archiveLocation: string, extractedLocation: string, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
@@ -122,6 +122,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             }
             try {
                 await fsPromises.rm(archiveLocation)
+            } catch (e) {
+                logger.error('A non-fatal error occurred while removing no longer needed archive file:', e)  
             } finally {
                 await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
                 return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
@@ -131,6 +133,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
         handleTarExtraction(archiveLocation, extractedLocation).then(async () => {
             try {
                 await fsPromises.rm(archiveLocation)
+            } catch (e) {
+                logger.error('A non-fatal error occurred while removing no longer needed archive file:', e)  
             } finally {
                 await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
                 resolve(`${extractedLocation}/mysql/bin/mysqld`)
@@ -170,7 +174,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 lockSync(extractedPath)
                 lockedByUs = true;
                 await downloadFromCDN(url, archivePath, logger)
-                await extractBinary(url, archivePath, extractedPath)
+                await extractBinary(url, archivePath, extractedPath, logger)
                 try {
                     unlockSync(extractedPath)
                 } catch (e) {
@@ -216,7 +220,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
         }
 
         try {
-            const binaryPath = await extractBinary(url, zipFilepath, extractedPath)
+            const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
             resolve(binaryPath)
         } catch (e) {
             reject(e)

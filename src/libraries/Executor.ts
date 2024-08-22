@@ -116,6 +116,8 @@ class Executor {
                     if (options.deleteDBAfterStopped) {
                         await this.deleteDatabaseDirectory(dbPath)
                     }
+                } catch (e) {
+                    this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
                 } finally {
                     try {
                         if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -126,6 +128,8 @@ class Executor {
                             //Delete the binary folder
                             await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
                         }
+                    } catch (e) {
+                        this.logger.error('An error occurred while deleting no longer needed MySQL binary:', e)  
                     } finally {
                         if (resolveFunction) {
                             resolveFunction()
