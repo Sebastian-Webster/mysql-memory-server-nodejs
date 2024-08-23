@@ -11,10 +11,6 @@ import { randomUUID } from "crypto";
 import {normalize as normalizePath} from 'path'
 import CONSTANTS from './constants'
 
-process.on('exit', () => {
-    DBDestroySignal.abort('Process is exiting')
-})
-
 export async function createDB(opts?: ServerOptions) {
     const defaultOptions: InternalServerOptions = {
         dbName: 'dbdata',
