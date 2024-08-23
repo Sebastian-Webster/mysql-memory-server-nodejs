@@ -1,7 +1,12 @@
 const DBDestroySignal = new AbortController();
 
-process.on('beforeExit', () => {
-    DBDestroySignal.abort('Process is exiting')
-})
+function abortSignal() {
+    if (!DBDestroySignal.signal.aborted) {
+        DBDestroySignal.abort('Process is exiting')
+    }
+}
+
+process.on('beforeExit', abortSignal)
+process.on('exit', abortSignal)
 
 export default DBDestroySignal;
