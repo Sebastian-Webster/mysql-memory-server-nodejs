@@ -107,7 +107,7 @@ function downloadFromCDN(url, downloadLocation, logger) {
         });
     });
 }
-function extractBinary(url, archiveLocation, extractedLocation) {
+function extractBinary(url, archiveLocation, extractedLocation, logger) {
     return new Promise(async (resolve, reject) => {
         const lastDashIndex = url.lastIndexOf('-');
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.');
@@ -140,8 +140,11 @@ function extractBinary(url, archiveLocation, extractedLocation) {
             try {
                 await fsPromises.rm(archiveLocation);
             }
+            catch (e) {
+                logger.error('A non-fatal error occurred while removing no longer needed archive file:', e);
+            }
             finally {
-                fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
+                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
                 return resolve((0, path_1.normalize)(`${extractedLocation}/mysql/bin/mysqld.exe`));
             }
         }
@@ -149,8 +152,11 @@ function extractBinary(url, archiveLocation, extractedLocation) {
             try {
                 await fsPromises.rm(archiveLocation);
             }
+            catch (e) {
+                logger.error('A non-fatal error occurred while removing no longer needed archive file:', e);
+            }
             finally {
-                fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
+                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
                 resolve(`${extractedLocation}/mysql/bin/mysqld`);
             }
         }).catch(error => {
@@ -180,7 +186,7 @@ function downloadBinary(binaryInfo, options, logger) {
                 (0, proper_lockfile_1.lockSync)(extractedPath);
                 lockedByUs = true;
                 await downloadFromCDN(url, archivePath, logger);
-                await extractBinary(url, archivePath, extractedPath);
+                await extractBinary(url, archivePath, extractedPath, logger);
                 try {
                     (0, proper_lockfile_1.unlockSync)(extractedPath);
                 }
@@ -226,7 +232,7 @@ function downloadBinary(binaryInfo, options, logger) {
             reject(e);
         }
         try {
-            const binaryPath = await extractBinary(url, zipFilepath, extractedPath);
+            const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger);
             resolve(binaryPath);
         }
         catch (e) {

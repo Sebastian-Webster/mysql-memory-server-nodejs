@@ -226,6 +226,9 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                     await this.deleteDatabaseDirectory(dbPath);
                 }
             }
+            catch (e) {
+                this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e);
+            }
             finally {
                 try {
                     if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -236,6 +239,9 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                         //Delete the binary folder
                         await fsPromises.rm(splitPath.join('/'), { force: true, recursive: true });
                     }
+                }
+                catch (e) {
+                    this.logger.error('An error occurred while deleting no longer needed MySQL binary:', e);
                 }
                 finally {
                     if (resolveFunction) {

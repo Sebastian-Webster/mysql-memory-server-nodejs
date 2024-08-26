@@ -31,16 +31,12 @@ const Logger_1 = __importDefault(require("./libraries/Logger"));
 const os = __importStar(require("node:os"));
 const Executor_1 = __importDefault(require("./libraries/Executor"));
 const semver_1 = require("semver");
-const AbortSignal_1 = __importDefault(require("./libraries/AbortSignal"));
 const Version_1 = __importDefault(require("./libraries/Version"));
 const versions_json_1 = __importDefault(require("./versions.json"));
 const Downloader_1 = require("./libraries/Downloader");
 const crypto_1 = require("crypto");
 const path_1 = require("path");
 const constants_1 = __importDefault(require("./constants"));
-process.on('exit', () => {
-    AbortSignal_1.default.abort('Process is exiting');
-});
 async function createDB(opts) {
     const defaultOptions = {
         dbName: 'dbdata',
