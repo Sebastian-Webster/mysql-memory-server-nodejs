@@ -180,25 +180,8 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
-            let lockedByUs = false;
-
             try {
                 lockSync(extractedPath)
-                lockedByUs = true;
-                await downloadFromCDN(url, archivePath, logger)
-                if (options.validateChecksums) {
-                    const wrongChecksum = await checksumIsValid(archivePath, binaryInfo.checksum)
-                    if (wrongChecksum) {
-                        throw new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`)
-                    }
-                }
-                await extractBinary(url, archivePath, extractedPath, logger)
-                try {
-                    unlockSync(extractedPath)
-                } catch (e) {
-                    return reject(e)
-                }
-                return resolve(binaryPath)
             } catch (e) {
                 if (String(e).includes('Lock file is already being held')) {
                     logger.log('Waiting for lock for MySQL version', version)
@@ -207,23 +190,57 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     return resolve(binaryPath)
                 }
 
-                if (lockedByUs) {
-                    try {
-                        await Promise.all([
-                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                            fsPromises.rm(archivePath, {force: true, recursive: true})
-                        ])
-                    } finally {
-                        try {
-                            unlockSync(extractedPath, {realpath: false})
-                        } catch (e) {
-                            logger.error('An error occurred while unlocking path:', e)
-                        }
-                    }
-                }
-                
                 return reject(e)
             }
+
+            //Code from this comment and below runs only if the lock has been successfully acquired
+
+            try {
+                await downloadFromCDN(url, archivePath, logger)
+            } catch (e) {
+                logger.error('An error occurred while downloading binary:', e)
+                try {
+                    unlockSync(extractedPath)
+                    await fsPromises.rm(archivePath, {force: true, recursive: true})
+                } catch (e) {
+                    logger.error(e)
+                } finally {
+                    reject(e)
+                }
+            }
+
+            if (options.validateChecksums) {
+                const wrongChecksum = await checksumIsValid(archivePath, binaryInfo.checksum)
+                if (wrongChecksum) {
+                    throw new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`)
+                }
+            }
+
+            try {
+                await extractBinary(url, archivePath, extractedPath, logger)
+            } catch (e) {
+                logger.error('An error occurred while extracting binary:', e)
+                try {
+                    unlockSync(extractedPath)
+                    await Promise.all([
+                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                        fsPromises.rm(archivePath, {force: true, recursive: true})
+                    ])
+                } catch (e) {
+                    logger.error(e)
+                } finally {
+                    reject(e)
+                }
+            }
+
+            try {
+                unlockSync(extractedPath)
+            } catch (e) {
+                logger.error('An error occurred while unlocking lock:', e)
+                return reject(e)
+            }
+
+            return resolve(binaryPath)
         }
 
         const uuid = randomUUID()
