@@ -40,6 +40,7 @@ const connection = await sql.createConnection({
         user: db.username,
         port: db.port,
         database: db.dbName
+        password: '' // The database is initialized with an empty password so use an empty string for the password
 })
 
 // Run your queries here
