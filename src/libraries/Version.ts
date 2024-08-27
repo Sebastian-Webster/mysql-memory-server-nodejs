@@ -32,6 +32,7 @@ export default function getBinaryURL(versions: MySQLVersion[], versionToGet: str
 
     return {
         url: v.url,
-        version: v.version
+        version: v.version,
+        checksum: v.checksum
     }
 }

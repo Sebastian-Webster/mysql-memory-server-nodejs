@@ -70,5 +70,6 @@ export type InstalledMySQLVersion = {
 
 export type BinaryInfo = {
     url: string,
-    version: string
+    version: string,
+    checksum: string
 }
