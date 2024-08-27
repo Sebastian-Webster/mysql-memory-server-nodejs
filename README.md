@@ -181,6 +181,14 @@ Default: false
 
 Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
 
+- `validateChecksums: boolean`
+
+Required: No
+
+Default: true
+
+Description: If set to `true`, the MD5 checksum is validated for any downloaded MySQL binaries and an error is thrown if the checksums do not match.
+
 - `deleteDBAfterStopped: boolean`
 
 Required: No
