@@ -15,7 +15,8 @@ export type ServerOptions = {
     dbPath?: string,
     ignoreUnsupportedSystemVersion?: boolean,
     port?: number,
-    xPort?: number
+    xPort?: number,
+    validateChecksums?: boolean
 }
 
 export type InternalServerOptions = {
@@ -31,7 +32,8 @@ export type InternalServerOptions = {
     dbPath: string,
     ignoreUnsupportedSystemVersion: boolean,
     port: number,
-    xPort: number
+    xPort: number,
+    validateChecksums: boolean
 }
 
 export type ExecutorOptions = {
@@ -57,7 +59,8 @@ export type MySQLVersion = {
     arch: string,
     os: string,
     osKernelVersionsSupported: string,
-    url: string
+    url: string,
+    checksum: string
 }
 
 export type InstalledMySQLVersion = {
