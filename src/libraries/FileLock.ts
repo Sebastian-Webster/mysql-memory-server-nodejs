@@ -7,7 +7,7 @@ export function waitForLock(path: string, options: InternalServerOptions): Promi
         while (retries <= options.lockRetries) {
             retries++
             try {
-                const locked = checkSync(path);
+                const locked = checkSync(path, {realpath: false});
                 if (!locked) {
                     return resolve()
                 } else {
