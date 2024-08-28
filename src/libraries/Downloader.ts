@@ -258,7 +258,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 }
 
                 try {
-                    unlockSync(extractedPath)
+                    unlockSync(extractedPath, {realpath: false})
                 } catch (e) {
                     logger.error(e)
                 }
