@@ -26,9 +26,9 @@ class Executor {
         })
     }
 
-    #executeFile(command: string, args: string[], cwd: string): Promise<{stdout: string, stderr: string}> {
+    #executeFile(command: string, args: string[]): Promise<{stdout: string, stderr: string}> {
         return new Promise(resolve => {
-            execFile(command, args, {signal: DBDestroySignal.signal, cwd}, (error, stdout, stderr) => {
+            execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
                 resolve({stdout, stderr: error?.message || stderr})
             })
         })
@@ -276,7 +276,7 @@ class Executor {
         } else {
             let result: {stderr: string, stdout: string};
             try {
-                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
+                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`])
             } catch (e) {
                 this.logger.error('Error occurred from executeFile:', e)
                 throw e
