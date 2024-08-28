@@ -206,6 +206,10 @@ jobs:
           docker-images: true
           swap-storage: false
 
+      - name: Free Disk Space (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: sudo rm -rf /Applications
+
       - name: Checkout
         uses: actions/checkout@v4
 
