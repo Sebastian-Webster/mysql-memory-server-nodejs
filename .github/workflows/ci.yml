@@ -154,6 +154,11 @@ jobs:
           docker-images: true
           swap-storage: false
 
+      - name: Free Disk Space (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        working-directory: /Applications
+        run: sudo find . -name Xcode\*.app -delete
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -205,6 +210,11 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: false
+
+      - name: Free Disk Space (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        working-directory: /Applications
+        run: sudo find . -name Xcode\*.app -delete
 
       - name: Checkout
         uses: actions/checkout@v4
