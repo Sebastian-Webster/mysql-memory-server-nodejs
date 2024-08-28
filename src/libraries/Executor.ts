@@ -117,7 +117,7 @@ class Executor {
                         await this.deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
-                    this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
+                    this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
                 } finally {
                     try {
                         if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
