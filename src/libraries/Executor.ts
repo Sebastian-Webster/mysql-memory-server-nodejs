@@ -117,7 +117,7 @@ class Executor {
                         await this.deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
-                    this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
+                    this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
                 } finally {
                     try {
                         if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -283,6 +283,8 @@ class Executor {
             }
             stderr = result?.stderr
         }
+
+        await fsPromises.writeFile(`${options.dbPath}/initDir.log`, stderr)
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {

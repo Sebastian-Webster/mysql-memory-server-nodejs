@@ -106,6 +106,11 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
 
+        if (fs.existsSync(extractedLocation)) {
+            //This will only exist if an error occurs during extraction and the deletion fails from a different run.
+            await fsPromises.rm(extractedLocation, {force: true, recursive: true})
+        }
+
         await fsPromises.mkdir(extractedLocation, {recursive: true})
 
         const mySQLFolderName = url.split('/').at(-1)
@@ -242,17 +247,23 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 await extractBinary(url, archivePath, extractedPath, logger)
             } catch (e) {
                 logger.error('An error occurred while extracting binary:', e)
+                
                 try {
-                    unlockSync(extractedPath)
                     await Promise.all([
                         fsPromises.rm(extractedPath, {force: true, recursive: true}),
                         fsPromises.rm(archivePath, {force: true, recursive: true})
                     ])
                 } catch (e) {
                     logger.error(e)
-                } finally {
-                    reject(e)
                 }
+
+                try {
+                    unlockSync(extractedPath)
+                } catch (e) {
+                    logger.error(e)
+                }
+
+                reject(e)
             }
 
             try {
