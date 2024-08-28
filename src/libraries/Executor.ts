@@ -283,6 +283,8 @@ class Executor {
             }
             stderr = result?.stderr
         }
+
+        await fsPromises.writeFile(`${options.dbPath}/initDir.log`, stderr)
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
