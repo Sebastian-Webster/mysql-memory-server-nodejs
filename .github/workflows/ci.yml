@@ -86,7 +86,7 @@ jobs:
 
   test-node:
     runs-on: ${{ matrix.os }}
-    needs: [ci-node, ci-bun]
+    needs: ci-node
 
     strategy:
       fail-fast: false
@@ -110,7 +110,7 @@ jobs:
 
   test-bun:
     runs-on: ${{ matrix.os }}
-    needs: [ci-node, ci-bun]
+    needs: ci-bun
 
     strategy:
       fail-fast: false
@@ -134,7 +134,7 @@ jobs:
 
   stress-node:
     runs-on: ${{ matrix.os }}
-    needs: [test-node, test-bun]
+    needs: test-node
 
     strategy:
       fail-fast: false
@@ -186,7 +186,7 @@ jobs:
 
   stress-bun:
     runs-on: ${{ matrix.os }}
-    needs: [test-node, test-bun]
+    needs: test-bun
 
     strategy:
       fail-fast: false
