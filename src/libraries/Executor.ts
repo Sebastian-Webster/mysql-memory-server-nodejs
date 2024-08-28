@@ -333,15 +333,20 @@ class Executor {
                                 this.logger.log('Waiting for lock for libaio copy')
                                 await waitForLock(copyPath, options)
                                 this.logger.log('Lock is gone for libaio copy')
-                                retryLockAcquisition = !fs.existsSync(copyPath)
-                                return
+                                const libaioExists = !fs.existsSync(copyPath)
+                                if (!libaioExists) {
+                                    retryLockAcquisition = true;
+                                    continue;
+                                } else {
+                                    retryLockAcquisition = false;
+                                }
                             }
     
                             this.logger.error('An error occurred from locking libaio section:', e)
                             retryLockAcquisition = false;
                             throw e
                         }
-                    } while (retryLockAcquisition)
+                    } while (retryLockAcquisition === true)
 
                     //All code from this comment and below will run only if the copyPath for libaio has been locked
 
