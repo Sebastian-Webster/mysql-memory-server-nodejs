@@ -27,7 +27,11 @@ class Executor {
     }
 
     #executeFile(command: string, args: string[]): Promise<{stdout: string, stderr: string}> {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
+            if (!fs.existsSync(command)) {
+                return reject(`File at path: ${command} does not exist. Cannot execute it.`)
+            }
+
             execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
                 resolve({stdout, stderr: error?.message || stderr})
             })
