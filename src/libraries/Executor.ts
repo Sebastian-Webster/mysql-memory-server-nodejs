@@ -32,9 +32,13 @@ class Executor {
                 return reject(`File at path: ${command} does not exist. Cannot execute it.`)
             }
 
-            execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
-                resolve({stdout, stderr: error?.message || stderr})
-            })
+            try {
+                execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
+                    resolve({stdout, stderr: error?.message || stderr})
+                })
+            } catch (e) {
+                reject(e)
+            }
         })
     }
 
