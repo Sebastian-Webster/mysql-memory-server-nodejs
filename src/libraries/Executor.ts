@@ -219,7 +219,7 @@ class Executor {
                     const versions: {version: string, path: string}[] = []
 
                     for (const dir of servers) {
-                        const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld`
+                        const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld.exe`
                         const {error, stdout, stderr} = await this.#execute(`"${path}" --version`)
 
                         if (error || stderr) {
