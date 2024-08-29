@@ -219,12 +219,17 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 logger.error('An error occurred while downloading binary:', e)
                 try {
                     await fsPromises.rm(archivePath, {force: true, recursive: true})
+                } catch (e) {
+                    logger.error('An error occurred while deleting archive after download error:', e)
+                } 
+
+                try {
                     unlockSync(extractedPath)
                 } catch (e) {
-                    logger.error(e)
-                } finally {
-                    reject(e)
+                    logger.error('An error occurred while unlocking extracted binary:', e)
                 }
+                
+                return reject(e)
             }
 
             if (options.validateChecksums) {
@@ -232,12 +237,17 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 if (wrongChecksum) {
                     try {
                         await fsPromises.rm(archivePath, {force: true, recursive: true})
+                    } catch (e) {
+                        logger.error('An error occurred while deleting archive after checksum failure:', e)
+                    }
+
+                    try {
                         unlockSync(extractedPath)
                     } catch (e) {
-                        logger.error(e)
-                    } finally {
-                        return reject(new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`))
+                        logger.error('An error occurred while unlocking extracted binary lock after checksum failure:', e)
                     }
+                    
+                    return reject(new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`))
                 } else {
                     logger.log('Correct checksum was found for version:', binaryInfo.version)
                 }
@@ -263,7 +273,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     logger.error(e)
                 }
 
-                reject(e)
+                return reject(e)
             }
 
             try {
