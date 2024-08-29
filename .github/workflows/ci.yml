@@ -372,7 +372,13 @@ jobs:
       - name: Free Disk Space (macOS)
         if: ${{ runner.os == 'macOS' }}
         working-directory: /Applications
-        run: sudo find . -name Xcode\*.app -delete
+        run: |
+          echo 'BEFORE CLEANUP:'
+          df -h
+          sudo find . -name Xcode\*.app -delete
+          sudo rm -rf /Users/runner/Library/Android
+          echo 'AFTER CLEANUP:'
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v4
