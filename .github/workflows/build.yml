@@ -26,3 +26,4 @@ jobs:
           name: build
           path: dist
           if-no-files-found: error
+          compression-level: 9

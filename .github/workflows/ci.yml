@@ -38,6 +38,7 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: "C:\\Users\\RUNNER~1\\dbs"
+          compression-level: 9
 
   ci-node-linux-and-mac:
     runs-on: ${{ matrix.os }}
@@ -70,6 +71,7 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: /tmp/dbs
+          compression-level: 9
 
   ci-bun-windows:
     runs-on: ${{ matrix.os }}
@@ -101,6 +103,7 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-bun
           path: "C:\\Users\\RUNNER~1\\dbs"
+          compression-level: 9
 
   ci-bun-linux-and-mac:
     runs-on: ${{ matrix.os }}
@@ -132,6 +135,7 @@ jobs:
         with:
           name: Databases-${{ matrix.os }}-bun
           path: /tmp/dbs
+          compression-level: 9
 
   test-node-windows:
     runs-on: ${{ matrix.os }}
@@ -259,6 +263,7 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-node
           path: "C:\\Users\\RUNNER~1\\dbs"
+          compression-level: 9
 
   stress-node-linux-and-mac:
     runs-on: ${{ matrix.os }}
@@ -315,6 +320,7 @@ jobs:
           path: |
             /tmp/dbs
             !/temp/dbs/*/*.sock
+          compression-level: 9
 
   stress-bun-windows:
     runs-on: ${{ matrix.os }}
@@ -346,6 +352,7 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-bun
           path: "C:\\Users\\RUNNER~1\\dbs"
+          compression-level: 9
 
   stress-bun-linux-and-mac:
     runs-on: ${{ matrix.os }}
@@ -402,6 +409,7 @@ jobs:
           path: |
             /tmp/dbs
             !/temp/dbs/*/*.sock
+          compression-level: 9
 
   fedora:
     runs-on: ubuntu-latest
