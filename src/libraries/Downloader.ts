@@ -233,8 +233,16 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             }
 
             if (options.validateChecksums) {
-                const wrongChecksum = await checksumIsValid(archivePath, binaryInfo.checksum)
-                if (wrongChecksum) {
+                let checksumError: Error;
+                let wrongChecksum: string;
+
+                try {
+                    wrongChecksum = await checksumIsValid(archivePath, binaryInfo.checksum)
+                } catch (e) {
+                    checksumError = e
+                }
+
+                if (wrongChecksum || checksumError) {
                     try {
                         await fsPromises.rm(archivePath, {force: true, recursive: true})
                     } catch (e) {
@@ -246,7 +254,11 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     } catch (e) {
                         logger.error('An error occurred while unlocking extracted binary lock after checksum failure:', e)
                     }
-                    
+
+                    if (checksumError) {
+                        return reject(checksumError)
+                    }
+
                     return reject(new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`))
                 } else {
                     logger.log('Correct checksum was found for version:', binaryInfo.version)
