@@ -31,15 +31,26 @@ Currently supported MySQL versions:
 import { createDB } from 'mysql-memory-server';
 import sql from 'mysql2/promise'
 
-// Create a new database
+// Create a new database with default options
 const db = await createDB()
 
+//OR
+
+//Create a new database with custom options set
+const db = await createDB({
+        // see Options for the options you can use in this object and their default values
+        // for example:
+        version: '8.4.x'
+})
+
 // Connect to the new database with the port provided
+// The database is initialized with an empty password so use an empty string for the password
 const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: db.username,
         port: db.port,
         database: db.dbName
+        password: ''
 })
 
 // Run your queries here
@@ -51,6 +62,9 @@ await connection.end()
 // Then stop the database
 await db.stop()
 ```
+
+MySQL database initialization can take some time. If you run into a "Timeout exceeded" error with your tests, the timeout should be extended.
+If using Jest, information about how to do this can be found here: https://jestjs.io/docs/jest-object#jestsettimeouttimeout
 
 ## Documentation
 
