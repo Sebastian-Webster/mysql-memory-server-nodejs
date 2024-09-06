@@ -7,14 +7,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci-node-windows:
+  ci-node:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
-        # We only support Node.js 16.6.0 and newer
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        # We only support Node.js 16 and newer
         node-version: [16.6.0, 16.x, 17.0.0, 17.x, 18.x, 19.x, 20.x, 21.x, 22.x]
 
     steps:
@@ -32,54 +32,27 @@ jobs:
       - name: Run tests
         run: npm run test:ci
 
-      - name: Upload test databases
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 9
-
-  ci-node-linux-and-mac:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-        # We only support Node.js 16.6.0 and newer
-        node-version: [16.6.0, 16.x, 17.0.0, 17.x, 18.x, 19.x, 20.x, 21.x, 22.x]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install packages
-        run: npm ci
-
-      - name: Run tests
-        run: npm run test:ci
-
-      - name: Upload test databases
-        if: ${{ failure() }}
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
           path: /tmp/dbs
-          compression-level: 9
 
-  ci-bun-windows:
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: "C:\\Users\\RUNNER~1\\dbs"
+
+  ci-bun:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
         bun-version: [1.1.22]
 
     steps:
@@ -97,54 +70,28 @@ jobs:
       - name: Run tests
         run: bun run test:ci
 
-      - name: Upload test databases
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: Databases-${{ matrix.os }}-bun
-          path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 9
-
-  ci-bun-linux-and-mac:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-        bun-version: [1.1.22]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup bun ${{ matrix.bun-version }}
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ matrix.bun-version }}
-
-      - name: Install packages
-        run: bun install
-
-      - name: Run tests
-        run: bun run test:ci
-
-      - name: Upload test databases
-        if: ${{ failure() }}
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-bun
           path: /tmp/dbs
-          compression-level: 9
 
-  test-node-windows:
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: Databases-${{ matrix.os }}-bun
+          path: "C:\\Users\\RUNNER~1\\dbs"
+
+  test-node:
     runs-on: ${{ matrix.os }}
-    needs: ci-node-windows
+    needs: [ci-node, ci-bun]
 
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Checkout
@@ -161,38 +108,14 @@ jobs:
       - name: Run tests
         run: npm test
 
-  test-node-linux-and-mac:
+  test-bun:
     runs-on: ${{ matrix.os }}
-    needs: ci-node-linux-and-mac
+    needs: [ci-node, ci-bun]
 
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-
-      - name: Install packages
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-  test-bun-windows:
-    runs-on: ${{ matrix.os }}
-    needs: ci-bun-windows
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Checkout
@@ -209,70 +132,14 @@ jobs:
       - name: Run tests
         run: bun run test
 
-  test-bun-linux-and-mac:
+  stress-node:
     runs-on: ${{ matrix.os }}
-    needs: ci-bun-linux-and-mac
+    needs: [test-node, test-bun]
 
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup bun 1.1.22
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.1.22
-
-      - name: Install packages
-        run: bun install
-
-      - name: Run tests
-        run: bun run test
-
-  stress-node-windows:
-    runs-on: ${{ matrix.os }}
-    needs: test-node-windows
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-2019, windows-2022]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup node 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-
-      - name: Install packages
-        run: npm ci
-
-      - name: Run tests
-        run: npm run stress
-
-      - name: Upload test databases
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: StressTest-Databases-${{ matrix.os }}-node
-          path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 9
-
-  stress-node-linux-and-mac:
-    runs-on: ${{ matrix.os }}
-    needs: test-node-linux-and-mac
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -286,17 +153,6 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: false
-
-      - name: Free Disk Space (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        working-directory: /Applications
-        run: |
-          echo 'BEFORE CLEANUP:'
-          df -h
-          sudo find . -name Xcode\*.app -delete
-          sudo rm -rf /Users/runner/Library/Android
-          echo 'AFTER CLEANUP:'
-          df -h
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -312,56 +168,30 @@ jobs:
       - name: Run tests
         run: npm run stress
 
-      - name: Upload test databases
-        if: ${{ failure() }}
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: StressTest-Databases-${{ matrix.os }}-node
           path: |
             /tmp/dbs
             !/temp/dbs/*/*.sock
-          compression-level: 9
 
-  stress-bun-windows:
-    runs-on: ${{ matrix.os }}
-    needs: test-bun-windows
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-2019, windows-2022]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup bun 1.1.22
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.1.22
-
-      - name: Install packages
-        run: bun install
-
-      - name: Run tests
-        run: bun run stress
-
-      - name: Upload test databases
-        if: ${{ failure() }}
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTest-Databases-${{ matrix.os }}-bun
+          name: StressTest-Databases-${{ matrix.os }}-node
           path: "C:\\Users\\RUNNER~1\\dbs"
-          compression-level: 9
 
-  stress-bun-linux-and-mac:
+  stress-bun:
     runs-on: ${{ matrix.os }}
-    needs: test-bun-linux-and-mac
+    needs: [test-node, test-bun]
 
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [windows-2019, windows-2022, macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -376,17 +206,6 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: Free Disk Space (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        working-directory: /Applications
-        run: |
-          echo 'BEFORE CLEANUP:'
-          df -h
-          sudo find . -name Xcode\*.app -delete
-          sudo rm -rf /Users/runner/Library/Android
-          echo 'AFTER CLEANUP:'
-          df -h
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -401,15 +220,21 @@ jobs:
       - name: Run tests
         run: bun run stress
 
-      - name: Upload test databases
-        if: ${{ failure() }}
+      - name: Upload test dbs (Linux/macOS)
+        if: ${{ runner.os != 'Windows' && failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: StressTest-Databases-${{ matrix.os }}-bun
           path: |
             /tmp/dbs
             !/temp/dbs/*/*.sock
-          compression-level: 9
+
+      - name: Upload test dbs (Windows)
+        if: ${{ runner.os == 'Windows' && failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: StressTest-Databases-${{ matrix.os }}-bun
+          path: "C:\\Users\\RUNNER~1\\dbs"
 
   fedora:
     runs-on: ubuntu-latest

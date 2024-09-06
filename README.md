@@ -31,26 +31,15 @@ Currently supported MySQL versions:
 import { createDB } from 'mysql-memory-server';
 import sql from 'mysql2/promise'
 
-// Create a new database with default options
+// Create a new database
 const db = await createDB()
 
-//OR
-
-//Create a new database with custom options set
-const db = await createDB({
-        // see Options for the options you can use in this object and their default values
-        // for example:
-        version: '8.4.x'
-})
-
 // Connect to the new database with the port provided
-// The database is initialized with an empty password so use an empty string for the password
 const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: db.username,
         port: db.port,
         database: db.dbName
-        password: ''
 })
 
 // Run your queries here
@@ -62,9 +51,6 @@ await connection.end()
 // Then stop the database
 await db.stop()
 ```
-
-MySQL database initialization can take some time. If you run into a "Timeout exceeded" error with your tests, the timeout should be extended.
-If using Jest, information about how to do this can be found here: https://jestjs.io/docs/jest-object#jestsettimeouttimeout
 
 ## Documentation
 
@@ -180,14 +166,6 @@ Required: No
 Default: false
 
 Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
-
-- `validateChecksums: boolean`
-
-Required: No
-
-Default: true
-
-Description: If set to `true`, the MD5 checksum is validated for any downloaded MySQL binaries and an error is thrown if the checksums do not match.
 
 - `deleteDBAfterStopped: boolean`
 

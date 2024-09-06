@@ -25,8 +25,7 @@ export async function createDB(opts?: ServerOptions) {
         dbPath: normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
         ignoreUnsupportedSystemVersion: false,
         port: 0,
-        xPort: 0,
-        validateChecksums: true
+        xPort: 0
     }
     
     const options: InternalServerOptions = {...defaultOptions, ...opts}

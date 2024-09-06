@@ -4,239 +4,209 @@
         "arch": "arm64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-macos14-arm64.tar.gz",
-        "checksum": "1d447e95e748b2d8d7f07986aa2318e9"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-macos14-arm64.tar.gz"
     },
     {
         "version": "9.0.1",
         "arch": "x64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-macos14-x86_64.tar.gz",
-        "checksum": "8b578fc73c854a2bef1dd8ee1cc50ffd"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-macos14-x86_64.tar.gz"
     },
     {
         "version": "9.0.1",
         "arch": "x64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-linux-glibc2.17-x86_64-minimal.tar.xz",
-        "checksum": "6d1b40d3f39f0cc098fcfe846c52008c"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-linux-glibc2.17-x86_64-minimal.tar.xz"
     },
     {
         "version": "9.0.1",
         "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-linux-glibc2.17-aarch64-minimal.tar.xz",
-        "checksum": "af79a3f055617669a4d2fe50a1a79ce8"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
         "version": "9.0.1",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-winx64.zip",
-        "checksum": "bfba039694efb85916830cf9dc65ccc8"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.0/mysql-9.0.1-winx64.zip"
     },
     {
         "version": "8.4.2",
         "arch": "arm64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-macos14-arm64.tar.gz",
-        "checksum": "503babfaceedf024c99f722824ab054c"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-macos14-arm64.tar.gz"
     },
     {
         "version": "8.4.2",
         "arch": "x64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-macos14-x86_64.tar.gz",
-        "checksum": "f8226460536f4b4f21ceff20cd419944"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-macos14-x86_64.tar.gz"
     },
     {
         "version": "8.4.2",
         "arch": "x64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-linux-glibc2.17-x86_64-minimal.tar.xz",
-        "checksum": "ad70726bfb4089620d03772e36238e0c"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-linux-glibc2.17-x86_64-minimal.tar.xz"
     },
     {
         "version": "8.4.2",
         "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-linux-glibc2.17-aarch64-minimal.tar.xz",
-        "checksum": "0009cef755fd334eaa3b011d04706d13"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
         "version": "8.4.2",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-winx64.zip",
-        "checksum": "9aad84967d8a94c390e76366ca85ec3c"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.4/mysql-8.4.2-winx64.zip"
     },
     {
         "version": "8.0.39",
         "arch": "arm64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-macos14-arm64.tar.gz",
-        "checksum": "4535354d24b7dac72da93d60181d6d64"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-macos14-arm64.tar.gz"
     },
     {
         "version": "8.0.39",
         "arch": "x64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-macos14-x86_64.tar.gz",
-        "checksum": "6a050fb7b5649bfa4109ade2a76e1b39"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-macos14-x86_64.tar.gz"
     },
     {
         "version": "8.0.39",
         "arch": "x64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-linux-glibc2.17-x86_64-minimal.tar.xz",
-        "checksum": "8b268e53998e662d46dfc57292e08993"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-linux-glibc2.17-x86_64-minimal.tar.xz"
     },
     {
         "version": "8.0.39",
         "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-linux-glibc2.17-aarch64-minimal.tar.xz",
-        "checksum": "b0f86747e6cd9ebe1b0b62087f0e276e"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
         "version": "8.0.39",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-winx64.zip",
-        "checksum": "acee83dd1f2fbd0317cf0cee9ddc4f10"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.0/mysql-8.0.39-winx64.zip"
     },
     {
         "version": "8.1.0",
         "arch": "arm64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-macos13-arm64.tar.gz",
-        "checksum": "420fe4563ff32ce50b841c8aab013e07"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-macos13-arm64.tar.gz"
     },
     {
         "version": "8.1.0",
         "arch": "x64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-macos13-x86_64.tar.gz",
-        "checksum": "71e17307da6cf992ae75931efe3e7069"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-macos13-x86_64.tar.gz"
     },
     {
         "version": "8.1.0",
         "arch": "x64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-linux-glibc2.17-x86_64-minimal.tar.xz",
-        "checksum": "bc9573e67f1000832fd79a29e9dbf366"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-linux-glibc2.17-x86_64-minimal.tar.xz"
     },
     {
         "version": "8.1.0",
         "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-linux-glibc2.17-aarch64-minimal.tar.xz",
-        "checksum": "2c4183ff12982f2da1884dd36377e90e"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
         "version": "8.1.0",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-winx64.zip",
-        "checksum": "40a977d01e565b1d751ca068c823ba16"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.1/mysql-8.1.0-winx64.zip"
     },
     {
         "version": "8.2.0",
         "arch": "arm64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-macos13-arm64.tar.gz",
-        "checksum": "c6d8b46d8921d030b28dd0d418862775"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-macos13-arm64.tar.gz"
     },
     {
         "version": "8.2.0",
         "arch": "x64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-macos13-x86_64.tar.gz",
-        "checksum": "ccb6c86bc5c4b84522b6c196e48ac174"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-macos13-x86_64.tar.gz"
     },
     {
         "version": "8.2.0",
         "arch": "x64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-linux-glibc2.17-x86_64-minimal.tar.xz",
-        "checksum": "c1ec30f30d1c94a3d55274c0ec46c0b2"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-linux-glibc2.17-x86_64-minimal.tar.xz"
     },
     {
         "version": "8.2.0",
         "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-linux-glibc2.17-aarch64-minimal.tar.xz",
-        "checksum": "d2c90518925685907beb810f99f00e4f"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
         "version": "8.2.0",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-winx64.zip",
-        "checksum": "e0b9ac00cf136a40020e579a33d080db"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-winx64.zip"
     },
     {
         "version": "8.3.0",
         "arch": "arm64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-macos14-arm64.tar.gz",
-        "checksum": "91e27c74be8aa53eeb20d31017752654"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-macos14-arm64.tar.gz"
     },
     {
         "version": "8.3.0",
         "arch": "x64",
         "os": "darwin",
         "osKernelVersionsSupported": ">=22",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-macos14-x86_64.tar.gz",
-        "checksum": "5b0f552ac632865cf1fbb71c47eafaee"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-macos14-x86_64.tar.gz"
     },
     {
         "version": "8.3.0",
         "arch": "x64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-linux-glibc2.17-x86_64-minimal.tar.xz",
-        "checksum": "456d6c3cb80814adfce29995ce3f2718"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-linux-glibc2.17-x86_64-minimal.tar.xz"
     },
     {
         "version": "8.3.0",
         "arch": "arm64",
         "os": "linux",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-linux-glibc2.17-aarch64-minimal.tar.xz",
-        "checksum": "151b0ad5f35e438b50dd67fb5c027cf6"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-linux-glibc2.17-aarch64-minimal.tar.xz"
     },
     {
         "version": "8.3.0",
         "arch": "x64",
         "os": "win32",
         "osKernelVersionsSupported": "*",
-        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-winx64.zip",
-        "checksum": "186efc230e44ded93b5aa89193a6fcbf"
+        "url": "https://cdn.mysql.com//Downloads/MySQL-8.3/mysql-8.3.0-winx64.zip"
     }
 ]

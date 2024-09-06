@@ -14,7 +14,7 @@ jest.setTimeout(500_000);
 
 for (const version of versions) {
     for (const username of usernames) {
-        test.concurrent(`running on version ${version} with username ${username}`, async () => {
+        test(`running on version ${version} with username ${username}`, async () => {
             Error.stackTraceLimit = Infinity
             const options: ServerOptions = {version, dbName: 'testingdata', username: username, logLevel: 'LOG', deleteDBAfterStopped: !process.env.useCIDBPath, ignoreUnsupportedSystemVersion: true}
     

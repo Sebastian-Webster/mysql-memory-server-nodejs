@@ -26,19 +26,11 @@ class Executor {
         })
     }
 
-    #executeFile(command: string, args: string[]): Promise<{stdout: string, stderr: string}> {
-        return new Promise((resolve, reject) => {
-            if (!fs.existsSync(command)) {
-                return reject(`File at path: ${command} does not exist. Cannot execute it.`)
-            }
-
-            try {
-                execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
-                    resolve({stdout, stderr: error?.message || stderr})
-                })
-            } catch (e) {
-                reject(e)
-            }
+    #executeFile(command: string, args: string[], cwd: string): Promise<{stdout: string, stderr: string}> {
+        return new Promise(resolve => {
+            execFile(command, args, {signal: DBDestroySignal.signal, cwd}, (error, stdout, stderr) => {
+                resolve({stdout, stderr: error?.message || stderr})
+            })
         })
     }
 
@@ -125,7 +117,7 @@ class Executor {
                         await this.deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
-                    this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
+                    this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
                 } finally {
                     try {
                         if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -223,7 +215,7 @@ class Executor {
                     const versions: {version: string, path: string}[] = []
 
                     for (const dir of servers) {
-                        const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld.exe`
+                        const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld`
                         const {error, stdout, stderr} = await this.#execute(`"${path}" --version`)
 
                         if (error || stderr) {
@@ -284,15 +276,13 @@ class Executor {
         } else {
             let result: {stderr: string, stdout: string};
             try {
-                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`])
+                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
             } catch (e) {
                 this.logger.error('Error occurred from executeFile:', e)
                 throw e
             }
             stderr = result?.stderr
         }
-
-        await fsPromises.writeFile(`${options.dbPath}/initDir.log`, stderr)
             
         if (stderr && !stderr.includes('InnoDB initialization has ended')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
@@ -330,66 +320,49 @@ class Executor {
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
-                    let retryLockAcquisition: boolean;
-
-                    do {
-                        try {
-                            lockSync(copyPath, {realpath: false})
-                            retryLockAcquisition = false;
-                        } catch (e) {
-                            if (String(e).includes('Lock file is already being held')) {
-                                this.logger.log('Waiting for lock for libaio copy')
-                                await waitForLock(copyPath, options)
-                                this.logger.log('Lock is gone for libaio copy')
-                                const libaioExists = !fs.existsSync(copyPath)
-                                if (!libaioExists) {
-                                    retryLockAcquisition = true;
-                                    continue;
-                                } else {
-                                    retryLockAcquisition = false;
-                                }
-                            }
-    
-                            this.logger.error('An error occurred from locking libaio section:', e)
-                            retryLockAcquisition = false;
-                            throw e
-                        }
-                    } while (retryLockAcquisition === true)
-
-                    //All code from this comment and below will run only if the copyPath for libaio has been locked
-
-                    this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath)
-                    let copyError: Error;
-
                     try {
-                        await fsPromises.copyFile(libaioPath, copyPath)
-                    } catch (e) {
-                        copyError = e
-                        this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
+                        lockSync(copyPath, {realpath: false})
+
+                        this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath)
+                        let copyError: Error;
 
                         try {
-                            await fsPromises.rm(copyPath, {force: true})
+                            await fsPromises.copyFile(libaioPath, copyPath)
                         } catch (e) {
-                            this.logger.error('An error occurred while deleting libaio file:', e)
-                        }
-                    } finally {
+                            copyError = e
+                            this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
 
-                        try {
-                            unlockSync(copyPath, {realpath: false})
-                        } catch (e) {
-                            this.logger.error('Error unlocking libaio file:', e)
-                            throw e
-                        }
+                            try {
+                                await fsPromises.rm(copyPath, {force: true})
+                            } catch (e) {
+                                this.logger.error('An error occurred while deleting libaio file:', e)
+                            }
+                        } finally {
 
-                        if (copyError) {
-                            throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.'
-                        }
+                            try {
+                                unlockSync(copyPath, {realpath: false})
+                            } catch (e) {
+                                this.logger.error('Error unlocking libaio file:', e)
+                            }
 
-                        //Retry setting up directory now that libaio has been copied
-                        this.logger.log('Retrying directory setup')
-                        await this.deleteDatabaseDirectory(datadir)
-                        await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
-                        return
+                            if (copyError) {
+                                throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.'
+                            }
+
+                            //Retry setting up directory now that libaio has been copied
+                            this.logger.log('Retrying directory setup')
+                            await this.deleteDatabaseDirectory(datadir)
+                            await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
+                            return
+                        }
+                    } catch (error) {
+                        if (String(error) === 'Error: Lock file is already being held') {
+                            this.logger.log('Waiting for lock for libaio copy')
+                            await waitForLock(copyPath, options)
+                            this.logger.log('Lock is gone for libaio copy')
+                        }
+                        this.logger.error('An error occurred from locking libaio section:', error)
+                        throw error
                     }
                 } else {
                     throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'

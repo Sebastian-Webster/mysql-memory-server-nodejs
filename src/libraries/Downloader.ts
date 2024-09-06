@@ -5,7 +5,7 @@ import * as os from 'os';
 import Logger from './Logger';
 import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
-import { randomUUID, createHash } from 'crypto';
+import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
 import { lockSync, unlockSync } from 'proper-lockfile';
 import { BinaryInfo, InternalServerOptions } from '../../types';
@@ -32,18 +32,6 @@ function handleTarExtraction(filepath: string, extractedPath: string): Promise<v
             resolve()
         })
     })
-}
-
-async function checksumIsValid(filepath: string, expectedChecksum: string): Promise<null | string> {
-    const fileData = await fsPromises.readFile(filepath);
-
-    const stringData = fileData.toString('binary')
-
-    const fileChecksum = createHash('md5').update(stringData, 'binary').digest('hex')
-
-    if (fileChecksum === expectedChecksum) return null
-
-    return fileChecksum
 }
 
 export function downloadVersions(): Promise<string> {
@@ -105,11 +93,6 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
     return new Promise(async (resolve, reject) => {
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
-
-        if (fs.existsSync(extractedLocation)) {
-            //This will only exist if an error occurs during extraction and the deletion fails from a different run.
-            await fsPromises.rm(extractedLocation, {force: true, recursive: true})
-        }
 
         await fsPromises.mkdir(extractedLocation, {recursive: true})
 
@@ -185,117 +168,44 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
-            let retry: boolean;
-            do {
-                try {
-                    lockSync(extractedPath)
-                    retry = false
-                } catch (e) {
-                    if (String(e).includes('Lock file is already being held')) {
-                        logger.log('Waiting for lock for MySQL version', version)
-                        await waitForLock(extractedPath, options)
-                        const binaryExists = fs.existsSync(binaryPath)
-                        if (!binaryExists) {
-                            //This will only happen if an error occurs during extraction or if the checksum is wrong.
-                            //If the binary doesn't exist after the lock is unlocked, the lock acquisition process should be retried
-                            retry = true;
-                            continue;
-                        } else {
-                            retry = false;
-                        }
-                        logger.log('Lock is gone for version', version)
-                        return resolve(binaryPath)
-                    }
-    
-                    return reject(e)
-                }
-            } while (retry === true)
-
-            //Code from this comment and below runs only if the lock has been successfully acquired
+            let lockedByUs = false;
 
             try {
+                lockSync(extractedPath)
+                lockedByUs = true;
                 await downloadFromCDN(url, archivePath, logger)
-            } catch (e) {
-                logger.error('An error occurred while downloading binary:', e)
-                try {
-                    await fsPromises.rm(archivePath, {force: true, recursive: true})
-                } catch (e) {
-                    logger.error('An error occurred while deleting archive after download error:', e)
-                } 
-
+                await extractBinary(url, archivePath, extractedPath, logger)
                 try {
                     unlockSync(extractedPath)
                 } catch (e) {
-                    logger.error('An error occurred while unlocking extracted binary:', e)
+                    return reject(e)
+                }
+                return resolve(binaryPath)
+            } catch (e) {
+                if (String(e).includes('Lock file is already being held')) {
+                    logger.log('Waiting for lock for MySQL version', version)
+                    await waitForLock(extractedPath, options)
+                    logger.log('Lock is gone for version', version)
+                    return resolve(binaryPath)
+                }
+
+                if (lockedByUs) {
+                    try {
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                            fsPromises.rm(archivePath, {force: true, recursive: true})
+                        ])
+                    } finally {
+                        try {
+                            unlockSync(extractedPath, {realpath: false})
+                        } catch (e) {
+                            logger.error('An error occurred while unlocking path:', e)
+                        }
+                    }
                 }
                 
                 return reject(e)
             }
-
-            if (options.validateChecksums) {
-                let checksumError: Error;
-                let wrongChecksum: string;
-
-                try {
-                    wrongChecksum = await checksumIsValid(archivePath, binaryInfo.checksum)
-                } catch (e) {
-                    checksumError = e
-                }
-
-                if (wrongChecksum || checksumError) {
-                    try {
-                        await fsPromises.rm(archivePath, {force: true, recursive: true})
-                    } catch (e) {
-                        logger.error('An error occurred while deleting archive after checksum failure:', e)
-                    }
-
-                    try {
-                        unlockSync(extractedPath)
-                    } catch (e) {
-                        logger.error('An error occurred while unlocking extracted binary lock after checksum failure:', e)
-                    }
-
-                    if (checksumError) {
-                        return reject(checksumError)
-                    }
-
-                    return reject(new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`))
-                } else {
-                    logger.log('Correct checksum was found for version:', binaryInfo.version)
-                }
-            }
-
-            try {
-                await extractBinary(url, archivePath, extractedPath, logger)
-            } catch (e) {
-                logger.error('An error occurred while extracting binary:', e)
-                
-                try {
-                    await Promise.all([
-                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                        fsPromises.rm(archivePath, {force: true, recursive: true})
-                    ])
-                } catch (e) {
-                    logger.error(e)
-                }
-
-                try {
-                    unlockSync(extractedPath, {realpath: false})
-                } catch (e) {
-                    logger.error(e)
-                }
-
-                return reject(e)
-            }
-
-            try {
-                unlockSync(extractedPath)
-            } catch (e) {
-                logger.error('An error occurred while unlocking lock:', e)
-                return reject(e)
-            }
-
-            return resolve(binaryPath)
         }
 
         const uuid = randomUUID()
@@ -307,13 +217,6 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             await downloadFromCDN(url, zipFilepath, logger)
         } catch (e) {
             reject(e)
-        }
-
-        if (options.validateChecksums) {
-            const wrongChecksum = await checksumIsValid(zipFilepath, binaryInfo.checksum)
-            if (wrongChecksum) {
-                reject(new Error(`The checksum for the MySQL binary doesn't match the checksum in versions.json! Expected: ${binaryInfo.checksum} but got: ${wrongChecksum}`))
-            }
         }
 
         try {
