@@ -356,7 +356,7 @@ class Executor {
                             return
                         }
                     } catch (error) {
-                        if (String(error) === 'Error: Lock file is already being held') {
+                        if (String(error).includes('Lock file is already being held')) {
                             this.logger.log('Waiting for lock for libaio copy')
                             await waitForLock(copyPath, options)
                             this.logger.log('Lock is gone for libaio copy')
