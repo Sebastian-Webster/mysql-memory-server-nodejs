@@ -13,15 +13,20 @@ Download with your package manager of choice. The package name is `mysql-memory-
 - Node.js 16.6.0 and newer
 - macOS 13+, Windows, or Linux (This package is only tested on Ubuntu 20.04, 22.04, 24.04, and Fedora 40. Other Linux distributions may or may not work at this time.)
 
-Windows only requirements:
+#### Requirements for downloaded MySQL versions
+
+The following requirements only apply if you intend to have `mysql-memory-server` download a version of MySQL to use instead of using an already installed version of MySQL on the system:
+
+Requirements for Windows:
 - `Microsoft Visual C++ 2019 Redistributable Package` needs to be installed
 
-Linux only requirements:
+Requirements for Linux:
 - The `libaio1` or `libaio1t64` package needs to be installed
 - If `libaio1` is not available but `libaio1t64` is, the `ldconfig` command needs to be available to run
-- The `tar` package needs to be installed if you want to use MySQL versions that aren't system installed
+- The `tar` package needs to be installed
 
-Currently supported MySQL versions:
+#### Currently supported MySQL versions
+
 - If using the system installed MySQL server: 8.0.20 and newer
 - If not using the system installed MySQL server: 8.0.39, 8.1.0, 8.2.0, 8.3.0, 8.4.2, 9.0.1
 
