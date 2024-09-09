@@ -54,7 +54,7 @@ const connection = await sql.createConnection({
         host: '127.0.0.1',
         user: db.username,
         port: db.port,
-        database: db.dbName
+        database: db.dbName,
         password: ''
 })
 
