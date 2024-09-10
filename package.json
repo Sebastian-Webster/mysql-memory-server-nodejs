@@ -20,6 +20,9 @@
     "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js --verbose",
     "stress": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js --verbose"
   },
+  "engines": {
+    "node": ">=16.6.0"
+  },
   "author": "Sebastian-Webster",
   "license": "MIT",
   "devDependencies": {
