@@ -37,7 +37,14 @@ jobs:
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "C:\\Users\\RUNNER~1\\dbs"
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: Binaries-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
           compression-level: 9
 
   ci-node-linux-and-mac:
@@ -70,7 +77,14 @@ jobs:
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: /tmp/dbs
+          path: /tmp/mysqlmsn/dbs
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: Binaries-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: /tmp/mysqlmsn/binaries
           compression-level: 9
 
   ci-bun-windows:
@@ -101,8 +115,15 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: Databases-${{ matrix.os }}-bun
-          path: "C:\\Users\\RUNNER~1\\dbs"
+          name: Databases-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: Binaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
           compression-level: 9
 
   ci-bun-linux-and-mac:
@@ -133,8 +154,15 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: Databases-${{ matrix.os }}-bun
-          path: /tmp/dbs
+          name: Databases-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: /tmp/mysqlmsn/dbs
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: Binaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: /tmp/mysqlmsn/binaries
           compression-level: 9
 
   test-node-windows:
@@ -261,8 +289,15 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTest-Databases-${{ matrix.os }}-node
-          path: "C:\\Users\\RUNNER~1\\dbs"
+          name: StressTestDatabases-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: StressTestBinaries-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
           compression-level: 9
 
   stress-node-linux-and-mac:
@@ -318,8 +353,15 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-node
           path: |
-            /tmp/dbs
-            !/temp/dbs/*/*.sock
+            /tmp/mysqlmsn/dbs
+            !/temp/mysqlmsn/dbs/*/*.sock
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: StressTestBinaries-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: /tmp/mysqlmsn/binaries
           compression-level: 9
 
   stress-bun-windows:
@@ -330,15 +372,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019, windows-2022]
+        bun-version: 1.1.22
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup bun 1.1.22
+      - name: Setup bun ${{ matrix.bun-version }}
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.1.22
+          bun-version: ${{ matrix.bun-version }}
 
       - name: Install packages
         run: bun install
@@ -350,8 +393,15 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTest-Databases-${{ matrix.os }}-bun
-          path: "C:\\Users\\RUNNER~1\\dbs"
+          name: StressTestDatabases-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: StressTestBinaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
           compression-level: 9
 
   stress-bun-linux-and-mac:
@@ -362,6 +412,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        bun-version: 1.1.22
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -390,10 +441,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup bun 1.1.22
+      - name: Setup bun ${{ matrix.bun-version }}
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.1.22
+          bun-version: ${{ matrix.bun-version }}
 
       - name: Install packages
         run: bun install
@@ -407,8 +458,15 @@ jobs:
         with:
           name: StressTest-Databases-${{ matrix.os }}-bun
           path: |
-            /tmp/dbs
-            !/temp/dbs/*/*.sock
+            /tmp/mysqlmsn/dbs
+            !/temp/mysqlmsn/dbs/*/*.sock
+          compression-level: 9
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: StressTestBinaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
+          path: /tmp/mysqlmsn/binaries
           compression-level: 9
 
   fedora:
