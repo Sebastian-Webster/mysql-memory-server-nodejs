@@ -41,6 +41,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Binaries-${{ matrix.os }}-node${{ matrix.node-version }}
@@ -81,6 +82,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Binaries-${{ matrix.os }}-node${{ matrix.node-version }}
@@ -120,6 +122,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Binaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
@@ -159,6 +162,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: Binaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
@@ -294,6 +298,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: StressTestBinaries-${{ matrix.os }}-node${{ matrix.node-version }}
@@ -358,6 +363,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: StressTestBinaries-${{ matrix.os }}-node${{ matrix.node-version }}
@@ -398,6 +404,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: StressTestBinaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
@@ -463,6 +470,7 @@ jobs:
           compression-level: 9
 
       - name: Upload test binaries
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: StressTestBinaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
