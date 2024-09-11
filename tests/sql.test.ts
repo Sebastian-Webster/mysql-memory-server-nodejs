@@ -3,12 +3,15 @@ import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { MySQLDB, ServerOptions } from '../types';
 import { randomUUID } from 'crypto';
+import { normalize } from 'path';
 
 jest.setTimeout(500_000);
 
 let db: MySQLDB;
 
-const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
+const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
+const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
+const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 beforeEach(async () => {
     Error.stackTraceLimit = Infinity
@@ -20,7 +23,8 @@ beforeEach(async () => {
     }
 
     if (process.env.useCIDBPath) {
-        options.dbPath = `${dbPathPrefix}/${randomUUID()}`
+        options.dbPath = `${dbPath}/${randomUUID()}`
+        options.binaryDirectoryPath = binaryPath
     }
     
     db = await createDB(options)
