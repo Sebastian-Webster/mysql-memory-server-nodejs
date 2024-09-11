@@ -186,7 +186,8 @@ Default: false
 
 Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
 
-#### :warning: Internal Options :warning:
+***
+### :warning: Internal Options :warning:
 
 The following options are only meant for internal debugging use. Their behaviour may change between versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
 
