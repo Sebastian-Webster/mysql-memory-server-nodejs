@@ -148,7 +148,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const {url, version} = binaryInfo;
-        const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
+        const dirpath = options.binaryDirectoryPath
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
 
