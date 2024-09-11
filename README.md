@@ -186,13 +186,15 @@ Default: false
 
 Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.20) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
 
+#### :warning: Internal Options :warning:
+
+The following options are only meant for internal debugging use. Their behaviour may change between versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not modify their default values.
+
 - `deleteDBAfterStopped: boolean`
 
 Required: No
 
 Default: true
-
-Gotchas: This option is intended to be for internal debugging purposes only and not meant for people to use. As such, this option will not follow Semantic Versioning.
 
 Description: Changes whether or not the database will be deleted after it has been stopped. If set to `true`, the database WILL be deleted after it has been stopped.
 
@@ -200,8 +202,14 @@ Description: Changes whether or not the database will be deleted after it has be
 
 Required: No
 
-Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes)
-
-Gotchas: This option is intended to be for internal debugging purposes only and not meant for people to use. As such, this option will not follow Semantic Versioning.
+Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes).
 
 Description: The folder to store database-related data in
+
+- `binaryDirectoryPath: string`
+
+Required: No
+
+Default: `TMPDIR/mysqlmsn/binaries` (replacing TMPDIR with the OS temp directory)
+
+Description: The folder to store the MySQL binaries when they are downloaded from the CDN.
