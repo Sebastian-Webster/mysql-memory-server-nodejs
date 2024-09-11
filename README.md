@@ -188,7 +188,7 @@ Description: This option only applies if the system-installed MySQL version is l
 
 #### :warning: Internal Options :warning:
 
-The following options are only meant for internal debugging use. Their behaviour may change between versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not modify their default values.
+The following options are only meant for internal debugging use. Their behaviour may change between versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
 
 - `deleteDBAfterStopped: boolean`
 
