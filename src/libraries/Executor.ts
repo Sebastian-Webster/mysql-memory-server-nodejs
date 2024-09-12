@@ -320,9 +320,27 @@ class Executor {
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
+                    let waitedForLock = false;
+
                     try {
                         lockSync(copyPath, {realpath: false})
+                    } catch (e) {
+                        if (e.code === 'ELOCKED') {
+                            this.logger.log('Waiting for lock for libaio copy')
+                            await waitForLock(copyPath, options)
+                            this.logger.log('Lock is gone for libaio copy')
+                            waitedForLock = true;
+                        } else {
+                            this.logger.error('An error occurred from locking libaio section:', e)
+                            throw e
+                        }
+                    }
 
+                    if (!waitedForLock) {
+                        //This code will only run if the lock has been acquired successfully.
+                        //If the lock was already acquired by some other process, this process would have already waited for the lock, so no copying needs to be done since it's already happened.
+                        //If the lock failed to acquire for some other reason, the error would've already been thrown.
+                        
                         this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath)
                         let copyError: Error;
 
@@ -355,14 +373,6 @@ class Executor {
                             await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
                             return
                         }
-                    } catch (error) {
-                        if (String(error).includes('Lock file is already being held')) {
-                            this.logger.log('Waiting for lock for libaio copy')
-                            await waitForLock(copyPath, options)
-                            this.logger.log('Lock is gone for libaio copy')
-                        }
-                        this.logger.error('An error occurred from locking libaio section:', error)
-                        throw error
                     }
                 } else {
                     throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html'
