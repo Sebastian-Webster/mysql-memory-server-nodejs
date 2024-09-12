@@ -168,44 +168,50 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
-            let lockedByUs = false;
-
             try {
                 lockSync(extractedPath)
-                lockedByUs = true;
-                await downloadFromCDN(url, archivePath, logger)
-                await extractBinary(url, archivePath, extractedPath, logger)
-                try {
-                    unlockSync(extractedPath)
-                } catch (e) {
-                    return reject(e)
-                }
-                return resolve(binaryPath)
             } catch (e) {
-                if (String(e).includes('Lock file is already being held')) {
+                if (e.code === 'ELOCKED') {
                     logger.log('Waiting for lock for MySQL version', version)
                     await waitForLock(extractedPath, options)
                     logger.log('Lock is gone for version', version)
                     return resolve(binaryPath)
                 }
 
-                if (lockedByUs) {
-                    try {
-                        await Promise.all([
-                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                            fsPromises.rm(archivePath, {force: true, recursive: true})
-                        ])
-                    } finally {
-                        try {
-                            unlockSync(extractedPath, {realpath: false})
-                        } catch (e) {
-                            logger.error('An error occurred while unlocking path:', e)
-                        }
-                    }
-                }
-                
                 return reject(e)
             }
+
+            //The code below only runs if the lock has been acquired by us
+
+            try {
+                await downloadFromCDN(url, archivePath, logger)
+                await extractBinary(url, archivePath, extractedPath, logger)
+            } catch (e) {
+                try {
+                    await Promise.all([
+                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                        fsPromises.rm(archivePath, {force: true, recursive: true})
+                    ])
+                } catch (e) {
+                    logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
+                } finally {
+                    try {
+                        unlockSync(extractedPath, {realpath: false})
+                    } catch (e) {
+                        logger.error('An error occurred while unlocking path:', e)
+                    }
+
+                    return reject(e)
+                }
+            }
+
+            try {
+                unlockSync(extractedPath)
+            } catch (e) {
+                return reject(e)
+            }
+            
+            return resolve(binaryPath)
         }
 
         const uuid = randomUUID()
