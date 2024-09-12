@@ -15,7 +15,8 @@ export type ServerOptions = {
     dbPath?: string,
     ignoreUnsupportedSystemVersion?: boolean,
     port?: number,
-    xPort?: number
+    xPort?: number,
+    binaryDirectoryPath?: string
 }
 
 export type InternalServerOptions = {
@@ -31,7 +32,8 @@ export type InternalServerOptions = {
     dbPath: string,
     ignoreUnsupportedSystemVersion: boolean,
     port: number,
-    xPort: number
+    xPort: number,
+    binaryDirectoryPath: string
 }
 
 export type ExecutorOptions = {

@@ -4,11 +4,14 @@ import sql from 'mysql2/promise'
 import { coerce } from 'semver';
 import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
+import { normalize } from 'path';
 
 const versions = ['9.0.1', '8.4.2', '8.0.39', '8.1.0', '8.2.0', '8.3.0']
 const usernames = ['root', 'dbuser', 'admin']
 
-const dbPathPrefix = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\dbs' : '/tmp/dbs'
+const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
+const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
+const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 jest.setTimeout(500_000);
 
@@ -19,7 +22,8 @@ for (const version of versions) {
             const options: ServerOptions = {version, dbName: 'testingdata', username: username, logLevel: 'LOG', deleteDBAfterStopped: !process.env.useCIDBPath, ignoreUnsupportedSystemVersion: true}
     
             if (process.env.useCIDBPath) {
-                options.dbPath = `${dbPathPrefix}/${randomUUID()}`
+                options.dbPath = `${dbPath}/${randomUUID()}`
+                options.binaryDirectoryPath = binaryPath
             }
     
             const db = await createDB(options)
