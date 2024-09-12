@@ -199,18 +199,10 @@ Default: true
 
 Description: Changes whether or not the database will be deleted after it has been stopped. If set to `true`, the database WILL be deleted after it has been stopped.
 
-- `dataPath: string`
+- `mysqlmsnPath: string`
 
 Required: No
 
-Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes).
+Default: Default: TMPDIR/mysqlmsn (replacing TMPDIR with the OS temp directory)
 
-Description: The folder to store database-related data in
-
-- `binaryDirectoryPath: string`
-
-Required: No
-
-Default: `TMPDIR/mysqlmsn/binaries` (replacing TMPDIR with the OS temp directory)
-
-Description: The folder to store the MySQL binaries when they are downloaded from the CDN.
+Description: The folder where `mysql-memory-server` stores it's data. In this folder is where the databases and MySQL binaries are stored.
