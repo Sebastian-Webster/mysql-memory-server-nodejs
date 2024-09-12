@@ -32,20 +32,12 @@ jobs:
       - name: Run tests
         run: npm run test:ci
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: Binaries-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
+          name: CI-${{ matrix.os }}-node-${{ matrix.node-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
   ci-node-linux-and-mac:
@@ -73,20 +65,12 @@ jobs:
       - name: Run tests
         run: npm run test:ci
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: Databases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: /tmp/mysqlmsn/dbs
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: Binaries-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: /tmp/mysqlmsn/binaries
+          name: CI-${{ matrix.os }}-node-${{ matrix.node-version }}
+          path: /tmp/mysqlmsn
           compression-level: 9
 
   ci-bun-windows:
@@ -113,20 +97,12 @@ jobs:
       - name: Run tests
         run: bun run test:ci
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: Databases-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: Binaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
+          name: CI-${{ matrix.os }}-bun-${{ matrix.bun-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
   ci-bun-linux-and-mac:
@@ -153,20 +129,12 @@ jobs:
       - name: Run tests
         run: bun run test:ci
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: Databases-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: /tmp/mysqlmsn/dbs
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: Binaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: /tmp/mysqlmsn/binaries
+          name: CI-${{ matrix.os }}-bun-${{ matrix.bun-version }}
+          path: /tmp/mysqlmsn
           compression-level: 9
 
   test-node-windows:
@@ -289,20 +257,12 @@ jobs:
       - name: Run tests
         run: npm run stress
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTestDatabases-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: StressTestBinaries-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
+          name: StressTests-${{ matrix.os }}-node
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
   stress-node-linux-and-mac:
@@ -352,22 +312,14 @@ jobs:
       - name: Run tests
         run: npm run stress
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTest-Databases-${{ matrix.os }}-node
+          name: StressTests${{ matrix.os }}-node
           path: |
-            /tmp/mysqlmsn/dbs
+            /tmp/mysqlmsn
             !/temp/mysqlmsn/dbs/*/*.sock
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: StressTestBinaries-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: /tmp/mysqlmsn/binaries
           compression-level: 9
 
   stress-bun-windows:
@@ -395,20 +347,12 @@ jobs:
       - name: Run tests
         run: bun run stress
 
-      - name: Upload test databases
+      - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTestDatabases-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\dbs"
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: StressTestBinaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn\\binaries"
+          name: StressTests-${{ matrix.os }}-bun-${{ matrix.bun-version }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
   stress-bun-linux-and-mac:
@@ -463,18 +407,10 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: StressTest-Databases-${{ matrix.os }}-bun
+          name: StressTests-${{ matrix.os }}-bun
           path: |
-            /tmp/mysqlmsn/dbs
+            /tmp/mysqlmsn
             !/temp/mysqlmsn/dbs/*/*.sock
-          compression-level: 9
-
-      - name: Upload test binaries
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: StressTestBinaries-${{ matrix.os }}-bun${{ matrix.bun-version }}
-          path: /tmp/mysqlmsn/binaries
           compression-level: 9
 
   fedora:
