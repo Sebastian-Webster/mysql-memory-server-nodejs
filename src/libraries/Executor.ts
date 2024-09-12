@@ -8,7 +8,7 @@ import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
-import { lockSync, unlockSync } from 'proper-lockfile';
+import { lockSync } from 'proper-lockfile';
 import { waitForLock } from "./FileLock";
 
 class Executor {
@@ -320,23 +320,22 @@ class Executor {
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
-                    let waitedForLock = false;
+                    let lockRelease: () => void;
 
                     try {
-                        lockSync(copyPath, {realpath: false})
+                        lockRelease = lockSync(copyPath, {realpath: false})
                     } catch (e) {
                         if (e.code === 'ELOCKED') {
                             this.logger.log('Waiting for lock for libaio copy')
                             await waitForLock(copyPath, options)
                             this.logger.log('Lock is gone for libaio copy')
-                            waitedForLock = true;
                         } else {
                             this.logger.error('An error occurred from locking libaio section:', e)
                             throw e
                         }
                     }
 
-                    if (!waitedForLock) {
+                    if (lockRelease) {
                         //This code will only run if the lock has been acquired successfully.
                         //If the lock was already acquired by some other process, this process would have already waited for the lock, so no copying needs to be done since it's already happened.
                         //If the lock failed to acquire for some other reason, the error would've already been thrown.
@@ -358,7 +357,7 @@ class Executor {
                         } finally {
 
                             try {
-                                unlockSync(copyPath, {realpath: false})
+                                lockRelease()
                             } catch (e) {
                                 this.logger.error('Error unlocking libaio file:', e)
                             }
