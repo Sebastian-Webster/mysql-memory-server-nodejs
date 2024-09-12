@@ -65,9 +65,11 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
             request.on('error', (err) => {
                 error = err;
                 logger.error(err)
-                fileStream.close()
-                fs.unlink(downloadLocation, () => {
-                    reject(err.message);
+                fileStream.end(() => {
+                    fs.unlink(downloadLocation, (err) => {
+                        logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', err)
+                        reject(err.message);
+                    })
                 })
             })
         })
@@ -81,9 +83,11 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
         fileStream.on('error', (err) => {
             error = err;
             logger.error(err)
-            fileStream.end()
-            fs.unlink(downloadLocation, () => {
-                reject(err.message)
+            fileStream.end(() => {
+                fs.unlink(downloadLocation, (err) => {
+                    logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', err)
+                    reject(err.message)
+                })
             })
         })
     })
