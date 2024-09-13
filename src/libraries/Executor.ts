@@ -322,16 +322,26 @@ class Executor {
 
                     let lockRelease: () => void;
 
-                    try {
-                        lockRelease = lockSync(copyPath, {realpath: false})
-                    } catch (e) {
-                        if (e.code === 'ELOCKED') {
-                            this.logger.log('Waiting for lock for libaio copy')
-                            await waitForLock(copyPath, options)
-                            this.logger.log('Lock is gone for libaio copy')
-                        } else {
-                            this.logger.error('An error occurred from locking libaio section:', e)
-                            throw e
+                    while(true) {
+                        try {
+                            lockRelease = lockSync(copyPath, {realpath: false})
+                            break
+                        } catch (e) {
+                            if (e.code === 'ELOCKED') {
+                                this.logger.log('Waiting for lock for libaio copy')
+                                await waitForLock(copyPath, options)
+                                this.logger.log('Lock is gone for libaio copy')
+
+                                //If libaio does not exist after the lock has been released (like if the copy fails)
+                                //then the lock acquisition process should start again
+                                const binaryExists = fs.existsSync(copyPath)
+                                if (!binaryExists) continue
+
+                                break
+                            } else {
+                                this.logger.error('An error occurred from locking libaio section:', e)
+                                throw e
+                            }
                         }
                     }
 
