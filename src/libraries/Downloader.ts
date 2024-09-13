@@ -7,7 +7,7 @@ import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
-import { lockSync, unlockSync } from 'proper-lockfile';
+import { lockSync } from 'proper-lockfile';
 import { BinaryInfo, InternalServerOptions } from '../../types';
 import { waitForLock } from './FileLock';
 
@@ -176,17 +176,28 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
-            try {
-                lockSync(extractedPath)
-            } catch (e) {
-                if (e.code === 'ELOCKED') {
-                    logger.log('Waiting for lock for MySQL version', version)
-                    await waitForLock(extractedPath, options)
-                    logger.log('Lock is gone for version', version)
-                    return resolve(binaryPath)
-                }
+            let releaseFunction: () => void;
 
-                return reject(e)
+            while (true) {
+                try {
+                    releaseFunction = lockSync(extractedPath)
+                    break
+                } catch (e) {
+                    if (e.code === 'ELOCKED') {
+                        logger.log('Waiting for lock for MySQL version', version)
+                        await waitForLock(extractedPath, options)
+                        logger.log('Lock is gone for version', version)
+
+                        //If the binary does not exist after lock has been released (like if the download fails and the binary got deleted as a result)
+                        //then the lock acquisition process should start again
+                        const binaryExists = fs.existsSync(binaryPath)
+                        if (!binaryExists) continue
+
+                        return resolve(binaryPath)
+                    }
+    
+                    return reject(e)
+                }
             }
 
             //The code below only runs if the lock has been acquired by us
@@ -204,7 +215,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
                 } finally {
                     try {
-                        unlockSync(extractedPath, {realpath: false})
+                        releaseFunction()
                     } catch (e) {
                         logger.error('An error occurred while unlocking path:', e)
                     }
@@ -214,7 +225,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             }
 
             try {
-                unlockSync(extractedPath)
+                releaseFunction()
             } catch (e) {
                 return reject(e)
             }
