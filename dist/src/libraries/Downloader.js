@@ -31,7 +31,6 @@ exports.downloadBinary = downloadBinary;
 const https = __importStar(require("https"));
 const fs = __importStar(require("fs"));
 const fsPromises = __importStar(require("fs/promises"));
-const os = __importStar(require("os"));
 const adm_zip_1 = __importDefault(require("adm-zip"));
 const path_1 = require("path");
 const crypto_1 = require("crypto");
@@ -86,9 +85,13 @@ function downloadFromCDN(url, downloadLocation, logger) {
             request.on('error', (err) => {
                 error = err;
                 logger.error(err);
-                fileStream.close();
-                fs.unlink(downloadLocation, () => {
-                    reject(err.message);
+                fileStream.end(() => {
+                    fs.unlink(downloadLocation, (unlinkError) => {
+                        if (unlinkError) {
+                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', unlinkError);
+                        }
+                        reject(err.message);
+                    });
                 });
             });
         });
@@ -100,9 +103,13 @@ function downloadFromCDN(url, downloadLocation, logger) {
         fileStream.on('error', (err) => {
             error = err;
             logger.error(err);
-            fileStream.end();
-            fs.unlink(downloadLocation, () => {
-                reject(err.message);
+            fileStream.end(() => {
+                fs.unlink(downloadLocation, (unlinkError) => {
+                    if (unlinkError) {
+                        logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', unlinkError);
+                    }
+                    reject(err.message);
+                });
             });
         });
     });
@@ -167,7 +174,7 @@ function extractBinary(url, archiveLocation, extractedLocation, logger) {
 function downloadBinary(binaryInfo, options, logger) {
     return new Promise(async (resolve, reject) => {
         const { url, version } = binaryInfo;
-        const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`;
+        const dirpath = options.binaryDirectoryPath;
         logger.log('Binary path:', dirpath);
         await fsPromises.mkdir(dirpath, { recursive: true });
         const lastDashIndex = url.lastIndexOf('-');
@@ -181,45 +188,59 @@ function downloadBinary(binaryInfo, options, logger) {
             if (binaryExists) {
                 return resolve(binaryPath);
             }
-            let lockedByUs = false;
-            try {
-                (0, proper_lockfile_1.lockSync)(extractedPath);
-                lockedByUs = true;
-                await downloadFromCDN(url, archivePath, logger);
-                await extractBinary(url, archivePath, extractedPath, logger);
+            let releaseFunction;
+            while (true) {
                 try {
-                    (0, proper_lockfile_1.unlockSync)(extractedPath);
+                    releaseFunction = (0, proper_lockfile_1.lockSync)(extractedPath);
+                    break;
                 }
                 catch (e) {
+                    if (e.code === 'ELOCKED') {
+                        logger.log('Waiting for lock for MySQL version', version);
+                        await (0, FileLock_1.waitForLock)(extractedPath, options);
+                        logger.log('Lock is gone for version', version);
+                        //If the binary does not exist after lock has been released (like if the download fails and the binary got deleted as a result)
+                        //then the lock acquisition process should start again
+                        const binaryExists = fs.existsSync(binaryPath);
+                        if (!binaryExists)
+                            continue;
+                        return resolve(binaryPath);
+                    }
                     return reject(e);
                 }
-                return resolve(binaryPath);
+            }
+            //The code below only runs if the lock has been acquired by us
+            try {
+                await downloadFromCDN(url, archivePath, logger);
+                await extractBinary(url, archivePath, extractedPath, logger);
             }
             catch (e) {
-                if (String(e).includes('Lock file is already being held')) {
-                    logger.log('Waiting for lock for MySQL version', version);
-                    await (0, FileLock_1.waitForLock)(extractedPath, options);
-                    logger.log('Lock is gone for version', version);
-                    return resolve(binaryPath);
+                try {
+                    await Promise.all([
+                        fsPromises.rm(extractedPath, { force: true, recursive: true }),
+                        fsPromises.rm(archivePath, { force: true, recursive: true })
+                    ]);
                 }
-                if (lockedByUs) {
+                catch (e) {
+                    logger.error('An error occurred while deleting extractedPath and/or archivePath:', e);
+                }
+                finally {
                     try {
-                        await Promise.all([
-                            fsPromises.rm(extractedPath, { force: true, recursive: true }),
-                            fsPromises.rm(archivePath, { force: true, recursive: true })
-                        ]);
+                        releaseFunction();
                     }
-                    finally {
-                        try {
-                            (0, proper_lockfile_1.unlockSync)(extractedPath, { realpath: false });
-                        }
-                        catch (e) {
-                            logger.error('An error occurred while unlocking path:', e);
-                        }
+                    catch (e) {
+                        logger.error('An error occurred while unlocking path:', e);
                     }
+                    return reject(e);
                 }
+            }
+            try {
+                releaseFunction();
+            }
+            catch (e) {
                 return reject(e);
             }
+            return resolve(binaryPath);
         }
         const uuid = (0, crypto_1.randomUUID)();
         const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`;

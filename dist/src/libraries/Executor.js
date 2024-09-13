@@ -358,8 +358,34 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                 const libaioSymlinkPath = libaioEntry.slice(libaioPathIndex + 3);
                 const libaioPath = await fsPromises.realpath(libaioSymlinkPath);
                 const copyPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/private/libaio.so.1`);
-                try {
-                    (0, proper_lockfile_1.lockSync)(copyPath, { realpath: false });
+                let lockRelease;
+                while (true) {
+                    try {
+                        lockRelease = (0, proper_lockfile_1.lockSync)(copyPath, { realpath: false });
+                        break;
+                    }
+                    catch (e) {
+                        if (e.code === 'ELOCKED') {
+                            this.logger.log('Waiting for lock for libaio copy');
+                            await (0, FileLock_1.waitForLock)(copyPath, options);
+                            this.logger.log('Lock is gone for libaio copy');
+                            //If libaio does not exist after the lock has been released (like if the copy fails)
+                            //then the lock acquisition process should start again
+                            const binaryExists = fs.existsSync(copyPath);
+                            if (!binaryExists)
+                                continue;
+                            break;
+                        }
+                        else {
+                            this.logger.error('An error occurred from locking libaio section:', e);
+                            throw e;
+                        }
+                    }
+                }
+                if (lockRelease) {
+                    //This code will only run if the lock has been acquired successfully.
+                    //If the lock was already acquired by some other process, this process would have already waited for the lock, so no copying needs to be done since it's already happened.
+                    //If the lock failed to acquire for some other reason, the error would've already been thrown.
                     this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath);
                     let copyError;
                     try {
@@ -377,7 +403,7 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                     }
                     finally {
                         try {
-                            (0, proper_lockfile_1.unlockSync)(copyPath, { realpath: false });
+                            lockRelease();
                         }
                         catch (e) {
                             this.logger.error('Error unlocking libaio file:', e);
@@ -391,15 +417,6 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                         await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binaryFilepath, datadir, false);
                         return;
                     }
-                }
-                catch (error) {
-                    if (String(error).includes('Lock file is already being held')) {
-                        this.logger.log('Waiting for lock for libaio copy');
-                        await (0, FileLock_1.waitForLock)(copyPath, options);
-                        this.logger.log('Lock is gone for libaio copy');
-                    }
-                    this.logger.error('An error occurred from locking libaio section:', error);
-                    throw error;
                 }
             }
             else {

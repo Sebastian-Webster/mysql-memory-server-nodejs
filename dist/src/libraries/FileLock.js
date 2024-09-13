@@ -8,7 +8,7 @@ function waitForLock(path, options) {
         while (retries <= options.lockRetries) {
             retries++;
             try {
-                const locked = (0, proper_lockfile_1.checkSync)(path);
+                const locked = (0, proper_lockfile_1.checkSync)(path, { realpath: false });
                 if (!locked) {
                     return resolve();
                 }

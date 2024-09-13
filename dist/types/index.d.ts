@@ -14,6 +14,7 @@ export type ServerOptions = {
     ignoreUnsupportedSystemVersion?: boolean;
     port?: number;
     xPort?: number;
+    binaryDirectoryPath?: string;
 };
 export type InternalServerOptions = {
     version?: string;
@@ -29,6 +30,7 @@ export type InternalServerOptions = {
     ignoreUnsupportedSystemVersion: boolean;
     port: number;
     xPort: number;
+    binaryDirectoryPath: string;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;

@@ -11,17 +11,17 @@ class Logger {
     }
     log(...args) {
         if (this.LOG_LEVEL === 0) {
-            console.log(...args);
+            console.log('[mysql-memory-server - LOG]:', ...args);
         }
     }
     warn(...args) {
         if (this.LOG_LEVEL <= 1) {
-            console.warn(...args);
+            console.warn('[mysql-memory-server - WARN]:', ...args);
         }
     }
     error(...args) {
         if (this.LOG_LEVEL <= 2) {
-            console.error(...args);
+            console.error('[mysql-memory-server - ERROR]:', ...args);
         }
     }
 }

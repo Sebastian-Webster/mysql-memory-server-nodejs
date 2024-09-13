@@ -51,7 +51,8 @@ async function createDB(opts) {
         dbPath: (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
         ignoreUnsupportedSystemVersion: false,
         port: 0,
-        xPort: 0
+        xPort: 0,
+        binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`
     };
     const options = { ...defaultOptions, ...opts };
     const logger = new Logger_1.default(options.logLevel);
@@ -73,7 +74,7 @@ async function createDB(opts) {
         let binaryFilepath;
         try {
             binaryInfo = (0, Version_1.default)(versions_json_1.default, options.version);
-            logger.log('Downloading binary:', binaryInfo.version, 'from URL:', binaryInfo.url);
+            logger.log('Using MySQL binary version:', binaryInfo.version, 'from URL:', binaryInfo.url);
         }
         catch (e) {
             logger.error(e);
