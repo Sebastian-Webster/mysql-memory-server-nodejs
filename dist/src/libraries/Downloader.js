@@ -51,7 +51,7 @@ function getZipData(entry) {
 }
 function handleTarExtraction(filepath, extractedPath) {
     return new Promise((resolve, reject) => {
-        (0, child_process_1.exec)(`tar -xf ${filepath} -C ${extractedPath}`, (error, stdout, stderr) => {
+        (0, child_process_1.execFile)(`tar`, ['-xf', filepath, '-C', extractedPath], (error, stdout, stderr) => {
             if (error || stderr) {
                 return reject(error || stderr);
             }
@@ -181,7 +181,6 @@ function downloadBinary(binaryInfo, options, logger) {
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.');
         if (options.downloadBinaryOnce) {
             const extractedPath = `${dirpath}/${version}`;
-            await fsPromises.mkdir(extractedPath, { recursive: true });
             const binaryPath = (0, path_1.normalize)(`${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`);
             const archivePath = `${dirpath}/${version}.${fileExtension}`;
             const binaryExists = fs.existsSync(binaryPath);
@@ -191,6 +190,7 @@ function downloadBinary(binaryInfo, options, logger) {
             let releaseFunction;
             while (true) {
                 try {
+                    await fsPromises.mkdir(extractedPath, { recursive: true });
                     releaseFunction = (0, proper_lockfile_1.lockSync)(extractedPath);
                     break;
                 }

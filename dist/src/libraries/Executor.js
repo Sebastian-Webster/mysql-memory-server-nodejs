@@ -30,7 +30,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _Executor_instances, _Executor_execute, _Executor_executeFile, _Executor_killProcess, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
+var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const semver_1 = require("semver");
@@ -83,7 +83,7 @@ class Executor {
                     const versions = [];
                     for (const dir of servers) {
                         const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld`;
-                        const { error, stdout, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_execute).call(this, `"${path}" --version`);
+                        const { error, stdout, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, path, ['--version']);
                         if (error || stderr) {
                             return reject(error || stderr);
                         }
@@ -110,8 +110,8 @@ class Executor {
                 }
             }
             else {
-                const { error, stdout, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_execute).call(this, 'mysqld --version');
-                if (stderr && stderr.includes('not found')) {
+                const { error, stdout, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'mysqld', ['--version']);
+                if (error && error.code === 'ENOENT') {
                     resolve(null);
                 }
                 else if (error || stderr) {
@@ -161,22 +161,16 @@ class Executor {
         } while (retries <= options.portRetries);
     }
 }
-_Executor_instances = new WeakSet(), _Executor_execute = function _Executor_execute(command) {
+_Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_executeFile(command, args) {
     return new Promise(resolve => {
-        (0, child_process_1.exec)(command, { signal: AbortSignal_1.default.signal }, (error, stdout, stderr) => {
+        (0, child_process_1.execFile)(command, args, { signal: AbortSignal_1.default.signal }, (error, stdout, stderr) => {
             resolve({ error, stdout, stderr });
-        });
-    });
-}, _Executor_executeFile = function _Executor_executeFile(command, args, cwd) {
-    return new Promise(resolve => {
-        (0, child_process_1.execFile)(command, args, { signal: AbortSignal_1.default.signal, cwd }, (error, stdout, stderr) => {
-            resolve({ stdout, stderr: (error === null || error === void 0 ? void 0 : error.message) || stderr });
         });
     });
 }, _Executor_killProcess = async function _Executor_killProcess(process) {
     let killed = false;
     if (os.platform() === 'win32') {
-        const { error, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_execute).call(this, `taskkill /pid ${process.pid} /t /f`);
+        const { error, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'taskkill', ['/pid', String(process.pid), '/t', '/f']);
         if (!error && !stderr) {
             killed = true;
         }
@@ -310,7 +304,7 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
     await fsPromises.mkdir(datadir, { recursive: true });
     let stderr;
     if (binaryFilepath === 'mysqld') {
-        const { error, stderr: output } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_execute).call(this, `mysqld --no-defaults --datadir=${datadir} --initialize-insecure`);
+        const { error, stderr: output } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'mysqld', ['--no-defaults', `--datadir=${datadir}`, '--initialize-insecure']);
         stderr = output;
         if (error) {
             this.logger.error('An error occurred while initializing database with system-installed MySQL:', error);
@@ -320,7 +314,7 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
     else {
         let result;
         try {
-            result = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, `${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], (0, path_1.resolve)(`${binaryFilepath}/..`));
+            result = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, `${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`]);
         }
         catch (e) {
             this.logger.error('Error occurred from executeFile:', e);
@@ -342,7 +336,7 @@ _Executor_instances = new WeakSet(), _Executor_execute = function _Executor_exec
                 throw 'Tried to copy libaio into lib folder and MySQL is still failing to initialize. Please check the console for more information.';
             }
             if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
-                const { error: lderror, stdout, stderr: ldstderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_execute).call(this, 'ldconfig -p');
+                const { error: lderror, stdout, stderr: ldstderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'ldconfig', ['-p']);
                 if (lderror || ldstderr) {
                     this.logger.error('The following libaio error occurred:', stderr);
                     this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr);
