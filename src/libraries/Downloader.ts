@@ -1,12 +1,11 @@
 import * as https from 'https';
 import * as fs from 'fs';
 import * as fsPromises from 'fs/promises'
-import * as os from 'os';
 import Logger from './Logger';
 import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { lockSync } from 'proper-lockfile';
 import { BinaryInfo, InternalServerOptions } from '../../types';
 import { waitForLock } from './FileLock';
@@ -25,7 +24,7 @@ function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
 
 function handleTarExtraction(filepath: string, extractedPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
-        exec(`tar -xf ${filepath} -C ${extractedPath}`, (error, stdout, stderr) => {
+        execFile(`tar`, ['-xf', filepath, '-C', extractedPath], (error, stdout, stderr) => {
             if (error || stderr) {
                 return reject(error || stderr)
             }

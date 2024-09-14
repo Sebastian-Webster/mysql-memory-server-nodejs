@@ -1,4 +1,4 @@
-import { ExecException } from "child_process"
+import { ExecFileException } from "child_process"
 
 export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR'
 
@@ -40,8 +40,8 @@ export type ExecutorOptions = {
     logLevel: LOG_LEVEL
 }
 
-export type ExecuteReturn = {
-    error: ExecException | null,
+export type ExecuteFileReturn = {
+    error: ExecFileException | null,
     stdout: string,
     stderr: string
 }
