@@ -236,7 +236,7 @@ class Executor {
                 }
             } else {
                 const {error, stdout, stderr} = await this.#executeFile('mysqld', ['--version'])
-                if (stderr && stderr.includes('not found')) {
+                if (error.code === 'ENOENT') {
                     resolve(null)
                 } else if (error || stderr) {
                     reject(error || stderr)
