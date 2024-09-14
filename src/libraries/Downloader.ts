@@ -165,7 +165,6 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
         if (options.downloadBinaryOnce) {
             const extractedPath = `${dirpath}/${version}`
-            await fsPromises.mkdir(extractedPath, {recursive: true})
 
             const binaryPath = normalizePath(`${extractedPath}/mysql/bin/mysqld${process.platform === 'win32' ? '.exe' : ''}`)
             const archivePath = `${dirpath}/${version}.${fileExtension}`
@@ -180,6 +179,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             while (true) {
                 try {
+                    await fsPromises.mkdir(extractedPath, {recursive: true})
                     releaseFunction = lockSync(extractedPath)
                     break
                 } catch (e) {
