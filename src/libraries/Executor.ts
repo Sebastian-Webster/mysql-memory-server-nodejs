@@ -239,7 +239,7 @@ class Executor {
                 if (error || stderr) {
                     this.logger.error('error received:', error)
                     this.logger.error('stderr received:', stderr)
-                    this.logger.error('error code received:', error.code)
+                    this.logger.error('error is enoent:', error.code === 'ENOENT')
                     reject(error || stderr)
                 } else {
                     const version = coerce(stdout)
