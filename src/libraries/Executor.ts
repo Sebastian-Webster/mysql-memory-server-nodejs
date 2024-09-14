@@ -259,7 +259,7 @@ class Executor {
         let stderr: string;
 
         if (binaryFilepath === 'mysqld') {
-            const {error, stderr: output} = await this.#executeFile('mysqld', ['--no-defaults', '--datadir=${datadir}', '--initialize-insecure'])
+            const {error, stderr: output} = await this.#executeFile('mysqld', ['--no-defaults', `--datadir=${datadir}`, '--initialize-insecure'])
             stderr = output
             if (error) {
                 this.logger.error('An error occurred while initializing database with system-installed MySQL:', error)
