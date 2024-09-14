@@ -1,4 +1,4 @@
-import { ChildProcess, exec, execFile, spawn } from "child_process"
+import { ChildProcess, execFile, spawn } from "child_process"
 import {coerce, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
-import { ExecuteReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
+import { ExecuteFileReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockSync } from 'proper-lockfile';
 import { waitForLock } from "./FileLock";
@@ -18,18 +18,10 @@ class Executor {
         this.logger = logger;
     }
 
-    #execute(command: string): Promise<ExecuteReturn> {
+    #executeFile(command: string, args: string[]): Promise<ExecuteFileReturn> {
         return new Promise(resolve => {
-            exec(command, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
+            execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
                 resolve({error, stdout, stderr})
-            })
-        })
-    }
-
-    #executeFile(command: string, args: string[], cwd: string): Promise<{stdout: string, stderr: string}> {
-        return new Promise(resolve => {
-            execFile(command, args, {signal: DBDestroySignal.signal, cwd}, (error, stdout, stderr) => {
-                resolve({stdout, stderr: error?.message || stderr})
             })
         })
     }
@@ -37,7 +29,7 @@ class Executor {
     async #killProcess(process: ChildProcess): Promise<boolean> {
         let killed = false;
         if (os.platform() === 'win32') {
-            const {error, stderr} = await this.#execute(`taskkill /pid ${process.pid} /t /f`)
+            const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
             if (!error && !stderr) {
                 killed = true;
             } else {
@@ -216,7 +208,7 @@ class Executor {
 
                     for (const dir of servers) {
                         const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld`
-                        const {error, stdout, stderr} = await this.#execute(`"${path}" --version`)
+                        const {error, stdout, stderr} = await this.#executeFile(path, ['--version'])
 
                         if (error || stderr) {
                             return reject(error || stderr)
@@ -243,8 +235,8 @@ class Executor {
                     resolve(null)
                 }
             } else {
-                const {error, stdout, stderr} = await this.#execute('mysqld --version')
-                if (stderr && stderr.includes('not found')) {
+                const {error, stdout, stderr} = await this.#executeFile('mysqld', ['--version'])
+                if (error && error.code === 'ENOENT') {
                     resolve(null)
                 } else if (error || stderr) {
                     reject(error || stderr)
@@ -267,7 +259,7 @@ class Executor {
         let stderr: string;
 
         if (binaryFilepath === 'mysqld') {
-            const {error, stderr: output} = await this.#execute(`mysqld --no-defaults --datadir=${datadir} --initialize-insecure`)
+            const {error, stderr: output} = await this.#executeFile('mysqld', ['--no-defaults', `--datadir=${datadir}`, '--initialize-insecure'])
             stderr = output
             if (error) {
                 this.logger.error('An error occurred while initializing database with system-installed MySQL:', error)
@@ -276,7 +268,7 @@ class Executor {
         } else {
             let result: {stderr: string, stdout: string};
             try {
-                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`], resolvePath(`${binaryFilepath}/..`))
+                result = await this.#executeFile(`${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`])
             } catch (e) {
                 this.logger.error('Error occurred from executeFile:', e)
                 throw e
@@ -301,7 +293,7 @@ class Executor {
                 }
 
                 if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
-                    const {error: lderror, stdout, stderr: ldstderr} = await this.#execute('ldconfig -p')
+                    const {error: lderror, stdout, stderr: ldstderr} = await this.#executeFile('ldconfig', ['-p'])
                     if (lderror || ldstderr) {
                         this.logger.error('The following libaio error occurred:', stderr)
                         this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr)
