@@ -41,7 +41,7 @@ class Executor {
         return killed;
     }
 
-    async deleteDatabaseDirectory(path: string): Promise<void> {
+    async #deleteDatabaseDirectory(path: string): Promise<void> {
         let retries = 0;
         //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
         const waitTime = 500;
@@ -96,7 +96,7 @@ class Executor {
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
-                        await this.deleteDatabaseDirectory(options.dbPath)
+                        await this.#deleteDatabaseDirectory(options.dbPath)
                     } catch (e) {
                         this.logger.error(e)
                         return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
@@ -106,7 +106,7 @@ class Executor {
 
                 try {
                     if (options.deleteDBAfterStopped) {
-                        await this.deleteDatabaseDirectory(dbPath)
+                        await this.#deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
                     this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
@@ -370,7 +370,7 @@ class Executor {
 
                             //Retry setting up directory now that libaio has been copied
                             this.logger.log('Retrying directory setup')
-                            await this.deleteDatabaseDirectory(datadir)
+                            await this.#deleteDatabaseDirectory(datadir)
                             await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
                             return
                         }
