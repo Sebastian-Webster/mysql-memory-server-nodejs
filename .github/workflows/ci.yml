@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019, windows-2022]
-        bun-version: [1.1.22]
+        bun-version: [1.1.0]
 
     steps:
       - name: Checkout
@@ -112,7 +112,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-        bun-version: [1.1.22]
+        bun-version: [1.0.0]
 
     steps:
       - name: Checkout
@@ -198,10 +198,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup bun 1.1.22
+      - name: Setup bun 1.1.0
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.1.22
+          bun-version: 1.1.0
 
       - name: Install packages
         run: bun install
@@ -222,10 +222,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup bun 1.1.22
+      - name: Setup bun 1.0.0
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.1.22
+          bun-version: 1.0.0
 
       - name: Install packages
         run: bun install
@@ -330,7 +330,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019, windows-2022]
-        bun-version: [1.1.22]
+        bun-version: [1.1.0]
 
     steps:
       - name: Checkout
@@ -363,7 +363,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-        bun-version: [1.1.22]
+        bun-version: [1.0.0]
 
     steps:
       - name: Free Disk Space (Ubuntu)
