@@ -22,7 +22,7 @@
   },
   "engines": {
     "node": ">=16.6.0",
-    "bum": ">=1.0.0"
+    "bun": ">=1.0.0"
   },
   "author": "Sebastian-Webster",
   "license": "MIT",
