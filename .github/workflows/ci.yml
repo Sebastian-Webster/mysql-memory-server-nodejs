@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
         # We only support Node.js 16.6.0 and newer
         node-version: [16.6.0, 16.x, 17.0.0, 17.x, 18.x, 19.x, 20.x, 21.x, 22.x]
 
@@ -111,7 +111,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
         bun-version: [1.0.0]
 
     steps:
@@ -168,7 +168,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Checkout
@@ -216,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Checkout
@@ -272,7 +272,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -362,7 +362,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
         bun-version: [1.0.0]
 
     steps:
