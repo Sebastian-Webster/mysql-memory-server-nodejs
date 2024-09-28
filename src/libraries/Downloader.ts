@@ -201,8 +201,23 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             //The code below only runs if the lock has been acquired by us
 
+            let downloadTries = 0;
+
+            do {
+                try {
+                    downloadTries++;
+                    await downloadFromCDN(url, archivePath, logger)
+                } catch (e) {
+                    if (downloadTries >= options.downloadRetries) {
+                        //Only reject if we have met the downloadRetries limit
+                        reject(e)
+                    } else {
+                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                    }
+                }
+            } while (downloadTries < options.downloadRetries)
+
             try {
-                await downloadFromCDN(url, archivePath, logger)
                 await extractBinary(url, archivePath, extractedPath, logger)
             } catch (e) {
                 try {
@@ -237,11 +252,21 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
         logger.log('Binary filepath:', zipFilepath)
         const extractedPath = `${dirpath}/${uuid}`
 
-        try {
-            await downloadFromCDN(url, zipFilepath, logger)
-        } catch (e) {
-            reject(e)
-        }
+        let downloadTries = 0;
+
+        do {
+            try {
+                downloadTries++
+                await downloadFromCDN(url, zipFilepath, logger)
+            } catch (e) {
+                if (downloadTries >= options.downloadRetries) {
+                    //Only reject if we have met the downloadRetries limit
+                    reject(e)
+                } else {
+                    console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                }
+            }
+        } while (downloadTries < options.downloadRetries)
 
         try {
             const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
