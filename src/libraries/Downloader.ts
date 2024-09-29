@@ -51,7 +51,11 @@ export function downloadVersions(): Promise<string> {
 }
 
 function downloadFromCDN(url: string, downloadLocation: string, logger: Logger): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+        if (fs.existsSync(downloadLocation)) {
+            await fsPromises.rm(downloadLocation, {force: true})
+        }
+        
         const fileStream = fs.createWriteStream(downloadLocation);
 
         let error: Error;
