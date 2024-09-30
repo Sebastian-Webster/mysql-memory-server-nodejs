@@ -55,7 +55,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
         if (fs.existsSync(downloadLocation)) {
             await fsPromises.rm(downloadLocation, {force: true})
         }
-        
+
         const fileStream = fs.createWriteStream(downloadLocation);
 
         let error: Error;
@@ -211,10 +211,11 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 try {
                     downloadTries++;
                     await downloadFromCDN(url, archivePath, logger)
+                    break
                 } catch (e) {
                     if (downloadTries >= options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
-                        reject(e)
+                        return reject(e)
                     } else {
                         console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                     }
@@ -262,10 +263,11 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             try {
                 downloadTries++
                 await downloadFromCDN(url, zipFilepath, logger)
+                break
             } catch (e) {
                 if (downloadTries >= options.downloadRetries) {
                     //Only reject if we have met the downloadRetries limit
-                    reject(e)
+                    return reject(e)
                 } else {
                     console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                 }
