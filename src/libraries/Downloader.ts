@@ -188,8 +188,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             while (true) {
                 try {
-                    await fsPromises.mkdir(extractedPath, {recursive: true})
-                    releaseFunction = lockSync(extractedPath)
+                    releaseFunction = lockSync(extractedPath, {realpath: false})
                     break
                 } catch (e) {
                     if (e.code === 'ELOCKED') {
