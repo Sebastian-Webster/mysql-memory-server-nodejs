@@ -27,7 +27,7 @@ export async function createDB(opts?: ServerOptions) {
         port: 0,
         xPort: 0,
         binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`,
-        downloadRetries: 3
+        downloadRetries: 10
     }
     
     const options: InternalServerOptions = {...defaultOptions, ...opts}
