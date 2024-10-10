@@ -54,7 +54,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(downloadLocation)) {
             logger.warn('Removing item at downloadLocation:', downloadLocation, 'so the MySQL binary archive can be stored there. This is probably because a previous download/extraction failed.')
-            await fsPromises.rm(downloadLocation, {force: true})
+            await fsPromises.rm(downloadLocation, {recursive: true, force: true})
         }
 
         const fileStream = fs.createWriteStream(downloadLocation);
@@ -105,7 +105,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(extractedLocation)) {
             logger.warn('Removing item at extractedLocation:', extractedLocation, 'so the MySQL binary can be stored there. This is probably because a previous download/extraction failed.')
-            await fsPromises.rm(extractedLocation)
+            await fsPromises.rm(extractedLocation, {recursive: true, force: true})
         }
 
         const lastDashIndex = url.lastIndexOf('-')
