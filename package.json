@@ -27,7 +27,7 @@
   "author": "Sebastian-Webster",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.25.7",
+    "@babel/core": "^7.25.8",
     "@babel/preset-env": "^7.25.8",
     "@babel/preset-typescript": "^7.25.7",
     "@types/adm-zip": "^0.5.5",
