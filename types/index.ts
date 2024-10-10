@@ -16,7 +16,8 @@ export type ServerOptions = {
     ignoreUnsupportedSystemVersion?: boolean,
     port?: number,
     xPort?: number,
-    binaryDirectoryPath?: string
+    binaryDirectoryPath?: string,
+    downloadRetries?: number
 }
 
 export type InternalServerOptions = {
@@ -33,7 +34,8 @@ export type InternalServerOptions = {
     ignoreUnsupportedSystemVersion: boolean,
     port: number,
     xPort: number,
-    binaryDirectoryPath: string
+    binaryDirectoryPath: string,
+    downloadRetries: number
 }
 
 export type ExecutorOptions = {
