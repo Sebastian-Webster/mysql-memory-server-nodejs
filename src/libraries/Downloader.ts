@@ -53,6 +53,7 @@ export function downloadVersions(): Promise<string> {
 function downloadFromCDN(url: string, downloadLocation: string, logger: Logger): Promise<void> {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(downloadLocation)) {
+            logger.warn('Removing item at downloadLocation:', downloadLocation, 'so the MySQL binary archive can be stored there. This is probably because a previous download/extraction failed.')
             await fsPromises.rm(downloadLocation, {force: true})
         }
 
@@ -102,6 +103,11 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
 
 function extractBinary(url: string, archiveLocation: string, extractedLocation: string, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
+        if (fs.existsSync(extractedLocation)) {
+            logger.warn('Removing item at extractedLocation:', extractedLocation, 'so the MySQL binary can be stored there. This is probably because a previous download/extraction failed.')
+            await fsPromises.rm(extractedLocation)
+        }
+
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
 
@@ -211,37 +217,32 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 try {
                     downloadTries++;
                     await downloadFromCDN(url, archivePath, logger)
+                    await extractBinary(url, archivePath, extractedPath, logger)
                     break
                 } catch (e) {
+                    //Delete generated files since either download or extraction failed
+                    try {
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                            fsPromises.rm(archivePath, {force: true, recursive: true})
+                        ])
+                    } catch (e) {
+                        logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
+                    }
+
                     if (downloadTries >= options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
+                        try {
+                            releaseFunction()
+                        } catch (e) {
+                            logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e)
+                        }
                         return reject(e)
                     } else {
                         console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                     }
                 }
             } while (downloadTries < options.downloadRetries)
-
-            try {
-                await extractBinary(url, archivePath, extractedPath, logger)
-            } catch (e) {
-                try {
-                    await Promise.all([
-                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                        fsPromises.rm(archivePath, {force: true, recursive: true})
-                    ])
-                } catch (e) {
-                    logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
-                } finally {
-                    try {
-                        releaseFunction()
-                    } catch (e) {
-                        logger.error('An error occurred while unlocking path:', e)
-                    }
-
-                    return reject(e)
-                }
-            }
 
             try {
                 releaseFunction()
@@ -252,19 +253,30 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             return resolve(binaryPath)
         }
 
-        const uuid = randomUUID()
-        const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
-        logger.log('Binary filepath:', zipFilepath)
-        const extractedPath = `${dirpath}/${uuid}`
-
         let downloadTries = 0;
 
         do {
+            const uuid = randomUUID()
+            const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
+            logger.log('Binary filepath:', zipFilepath)
+            const extractedPath = `${dirpath}/${uuid}`
+
             try {
                 downloadTries++
                 await downloadFromCDN(url, zipFilepath, logger)
-                break
+                const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
+                return resolve(binaryPath)
             } catch (e) {
+                //Delete generated files since either download or extraction failed
+                try {
+                    await Promise.all([
+                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                        fsPromises.rm(zipFilepath, {force: true, recursive: true})
+                    ])
+                } catch (e) {
+                    logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
+                }
+
                 if (downloadTries >= options.downloadRetries) {
                     //Only reject if we have met the downloadRetries limit
                     return reject(e)
@@ -273,12 +285,5 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 }
             }
         } while (downloadTries < options.downloadRetries)
-
-        try {
-            const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
-            resolve(binaryPath)
-        } catch (e) {
-            reject(e)
-        }
     })
 }
