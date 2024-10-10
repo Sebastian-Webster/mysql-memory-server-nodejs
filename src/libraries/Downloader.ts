@@ -157,7 +157,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
                 resolve(`${extractedLocation}/mysql/bin/mysqld`)
             }
         }).catch(error => {
-            reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
+            logger.error(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
+            reject(error)
         })
     })
 }
