@@ -78,15 +78,14 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                             reject(`Received status code ${response.statusCode} while downloading MySQL binary.`)
                         })
                     })
-                    return
+                } else {
+                    response.pipe(fileStream)
+                    fileStream.on('finish', () => {
+                        if (!error) {
+                            resolve()
+                        }
+                    })
                 }
-                
-                response.pipe(fileStream)
-                fileStream.on('finish', () => {
-                    if (!error) {
-                        resolve()
-                    }
-                })
             })
 
             request.on('error', (err) => {
