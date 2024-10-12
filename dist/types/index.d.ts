@@ -15,6 +15,7 @@ export type ServerOptions = {
     port?: number;
     xPort?: number;
     binaryDirectoryPath?: string;
+    downloadRetries?: number;
 };
 export type InternalServerOptions = {
     version?: string;
@@ -31,6 +32,7 @@ export type InternalServerOptions = {
     port: number;
     xPort: number;
     binaryDirectoryPath: string;
+    downloadRetries: number;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;

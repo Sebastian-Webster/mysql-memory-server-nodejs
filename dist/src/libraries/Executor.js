@@ -30,7 +30,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
+var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_deleteDatabaseDirectory, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const semver_1 = require("semver");
@@ -46,29 +46,6 @@ class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
         this.logger = logger;
-    }
-    async deleteDatabaseDirectory(path) {
-        let retries = 0;
-        //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
-        const waitTime = 500;
-        const maxRetries = 20;
-        //Since the database processes are killed instantly (SIGKILL) sometimes the database file handles may still be open
-        //This would cause an EBUSY error. Retrying the deletions for 10 seconds should give the OS enough time to close
-        //the file handles.
-        while (retries <= maxRetries) {
-            try {
-                await fsPromises.rm(path, { recursive: true, force: true });
-                return;
-            }
-            catch (e) {
-                if (retries === maxRetries) {
-                    throw e;
-                }
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-                retries++;
-                this.logger.log('DB data directory deletion failed. Now on retry', retries);
-            }
-        }
     }
     getMySQLVersion(preferredVersion) {
         return new Promise(async (resolve, reject) => {
@@ -182,6 +159,28 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         killed = process.kill();
     }
     return killed;
+}, _Executor_deleteDatabaseDirectory = async function _Executor_deleteDatabaseDirectory(path) {
+    let retries = 0;
+    //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
+    const waitTime = 500;
+    const maxRetries = 20;
+    //Since the database processes are killed instantly (SIGKILL) sometimes the database file handles may still be open
+    //This would cause an EBUSY error. Retrying the deletions for 10 seconds should give the OS enough time to close
+    //the file handles.
+    while (retries <= maxRetries) {
+        try {
+            await fsPromises.rm(path, { recursive: true, force: true });
+            return;
+        }
+        catch (e) {
+            if (retries === maxRetries) {
+                throw e;
+            }
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            retries++;
+            this.logger.log('DB data directory deletion failed. Now on retry', retries);
+        }
+    }
 }, _Executor_startMySQLProcess = function _Executor_startMySQLProcess(options, port, mySQLXPort, datadir, dbPath, binaryFilepath) {
     const errors = [];
     const logFile = `${dbPath}/log.log`;
@@ -207,7 +206,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             if (portIssue || xPortIssue) {
                 this.logger.log('Error log when exiting for port in use error:', errorLog);
                 try {
-                    await this.deleteDatabaseDirectory(options.dbPath);
+                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, options.dbPath);
                 }
                 catch (e) {
                     this.logger.error(e);
@@ -217,7 +216,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             }
             try {
                 if (options.deleteDBAfterStopped) {
-                    await this.deleteDatabaseDirectory(dbPath);
+                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, dbPath);
                 }
             }
             catch (e) {
@@ -407,7 +406,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                         }
                         //Retry setting up directory now that libaio has been copied
                         this.logger.log('Retrying directory setup');
-                        await this.deleteDatabaseDirectory(datadir);
+                        await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, datadir);
                         await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binaryFilepath, datadir, false);
                         return;
                     }

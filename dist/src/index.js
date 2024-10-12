@@ -52,7 +52,8 @@ async function createDB(opts) {
         ignoreUnsupportedSystemVersion: false,
         port: 0,
         xPort: 0,
-        binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`
+        binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`,
+        downloadRetries: 10
     };
     const options = { ...defaultOptions, ...opts };
     const logger = new Logger_1.default(options.logLevel);
