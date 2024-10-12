@@ -27,17 +27,17 @@
   "author": "Sebastian-Webster",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.24.9",
-    "@babel/preset-env": "^7.25.4",
-    "@babel/preset-typescript": "^7.24.7",
+    "@babel/core": "^7.25.8",
+    "@babel/preset-env": "^7.25.8",
+    "@babel/preset-typescript": "^7.25.7",
     "@types/adm-zip": "^0.5.5",
-    "@types/node": "^22.5.5",
+    "@types/node": "^22.7.5",
     "@types/proper-lockfile": "^4.1.4",
     "@types/semver": "^7.5.8",
     "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
     "mysql2": "^3.11.3",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",

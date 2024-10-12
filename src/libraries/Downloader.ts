@@ -51,14 +51,41 @@ export function downloadVersions(): Promise<string> {
 }
 
 function downloadFromCDN(url: string, downloadLocation: string, logger: Logger): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+        if (fs.existsSync(downloadLocation)) {
+            logger.warn('Removing item at downloadLocation:', downloadLocation, 'so the MySQL binary archive can be stored there. This is probably because a previous download/extraction failed.')
+            await fsPromises.rm(downloadLocation, {recursive: true, force: true})
+        }
+
         const fileStream = fs.createWriteStream(downloadLocation);
 
         let error: Error;
 
         fileStream.on('open', () => {
             const request = https.get(url, (response) => {
-                response.pipe(fileStream)
+                if (response.statusCode !== 200) {
+                    fileStream.close((err) => {
+                        if (err) {
+                            logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err)
+                        }
+
+                        fs.unlink(downloadLocation, (unlinkErr) => {
+                            if (unlinkErr) {
+                                logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', err)
+                            }
+
+                            logger.error('Received status code:', response.statusCode, 'while downloading MySQL binary.')
+                            reject(`Received status code ${response.statusCode} while downloading MySQL binary.`)
+                        })
+                    })
+                } else {
+                    response.pipe(fileStream)
+                    fileStream.on('finish', () => {
+                        if (!error) {
+                            resolve()
+                        }
+                    })
+                }
             })
 
             request.on('error', (err) => {
@@ -73,12 +100,6 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                     })
                 })
             })
-        })
-
-        fileStream.on('finish', () => {
-            if (!error) {
-                resolve()
-            }
         })
 
         fileStream.on('error', (err) => {
@@ -98,6 +119,11 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
 
 function extractBinary(url: string, archiveLocation: string, extractedLocation: string, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
+        if (fs.existsSync(extractedLocation)) {
+            logger.warn('Removing item at extractedLocation:', extractedLocation, 'so the MySQL binary can be stored there. This is probably because a previous download/extraction failed.')
+            await fsPromises.rm(extractedLocation, {recursive: true, force: true})
+        }
+
         const lastDashIndex = url.lastIndexOf('-')
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.')
 
@@ -147,7 +173,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
                 resolve(`${extractedLocation}/mysql/bin/mysqld`)
             }
         }).catch(error => {
-            reject(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
+            logger.error(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
+            reject(error)
         })
     })
 }
@@ -178,8 +205,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             while (true) {
                 try {
-                    await fsPromises.mkdir(extractedPath, {recursive: true})
-                    releaseFunction = lockSync(extractedPath)
+                    releaseFunction = lockSync(extractedPath, {realpath: false})
                     break
                 } catch (e) {
                     if (e.code === 'ELOCKED') {
@@ -201,53 +227,80 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             //The code below only runs if the lock has been acquired by us
 
-            try {
-                await downloadFromCDN(url, archivePath, logger)
-                await extractBinary(url, archivePath, extractedPath, logger)
-            } catch (e) {
+            let downloadTries = 0;
+
+            do {
                 try {
-                    await Promise.all([
-                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                        fsPromises.rm(archivePath, {force: true, recursive: true})
-                    ])
+                    downloadTries++;
+                    await downloadFromCDN(url, archivePath, logger)
+                    await extractBinary(url, archivePath, extractedPath, logger)
+                    break
                 } catch (e) {
-                    logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
-                } finally {
+                    //Delete generated files since either download or extraction failed
                     try {
-                        releaseFunction()
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                            fsPromises.rm(archivePath, {force: true, recursive: true})
+                        ])
                     } catch (e) {
-                        logger.error('An error occurred while unlocking path:', e)
+                        logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
                     }
 
-                    return reject(e)
+                    if (downloadTries >= options.downloadRetries) {
+                        //Only reject if we have met the downloadRetries limit
+                        try {
+                            releaseFunction()
+                        } catch (e) {
+                            logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e)
+                        }
+                        logger.error('downloadRetries have been exceeded. Aborting download.')
+                        return reject(e)
+                    } else {
+                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                    }
                 }
-            }
+            } while (downloadTries < options.downloadRetries)
 
             try {
                 releaseFunction()
             } catch (e) {
-                return reject(e)
+                logger.error('An error occurred while releasing lock after successful binary download. The error was:', e)
             }
             
             return resolve(binaryPath)
-        }
+        } else {
+            let downloadTries = 0;
 
-        const uuid = randomUUID()
-        const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
-        logger.log('Binary filepath:', zipFilepath)
-        const extractedPath = `${dirpath}/${uuid}`
+            do {
+                const uuid = randomUUID()
+                const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
+                logger.log('Binary filepath:', zipFilepath)
+                const extractedPath = `${dirpath}/${uuid}`
 
-        try {
-            await downloadFromCDN(url, zipFilepath, logger)
-        } catch (e) {
-            reject(e)
-        }
+                try {
+                    downloadTries++
+                    await downloadFromCDN(url, zipFilepath, logger)
+                    const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
+                    return resolve(binaryPath)
+                } catch (e) {
+                    //Delete generated files since either download or extraction failed
+                    try {
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                            fsPromises.rm(zipFilepath, {force: true, recursive: true})
+                        ])
+                    } catch (e) {
+                        logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
+                    }
 
-        try {
-            const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
-            resolve(binaryPath)
-        } catch (e) {
-            reject(e)
+                    if (downloadTries >= options.downloadRetries) {
+                        //Only reject if we have met the downloadRetries limit
+                        return reject(e)
+                    } else {
+                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                    }
+                }
+            } while (downloadTries < options.downloadRetries)
         }
     })
 }
