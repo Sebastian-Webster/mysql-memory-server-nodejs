@@ -254,6 +254,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         } catch (e) {
                             logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e)
                         }
+                        logger.error('downloadRetries have been exceeded. Aborting download.')
                         return reject(e)
                     } else {
                         console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
