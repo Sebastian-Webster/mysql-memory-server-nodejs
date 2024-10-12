@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test:ci
+        run: npm run test:ci --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -63,7 +63,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test:ci
+        run: npm run test:ci --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -95,7 +95,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: bun run test:ci
+        run: bun run test:ci --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -127,7 +127,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: bun run test:ci
+        run: bun run test:ci --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -159,7 +159,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm test --colors
 
   test-node-linux-and-mac:
     runs-on: ${{ matrix.os }}
@@ -183,7 +183,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm test --colors
 
   test-bun-windows:
     runs-on: ${{ matrix.os }}
@@ -207,7 +207,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: bun run test
+        run: bun run test --colors
 
   test-bun-linux-and-mac:
     runs-on: ${{ matrix.os }}
@@ -231,7 +231,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: bun run test
+        run: bun run test --colors
 
   stress-node-windows:
     runs-on: ${{ matrix.os }}
@@ -255,7 +255,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run stress
+        run: npm run stress --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -310,7 +310,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run stress
+        run: npm run stress --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -345,7 +345,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: bun run stress
+        run: bun run stress --colors
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -401,7 +401,7 @@ jobs:
         run: bun install
 
       - name: Run tests
-        run: bun run stress
+        run: bun run stress --colors
 
       - name: Upload test databases
         if: ${{ failure() }}
@@ -431,4 +431,4 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm test --colors
