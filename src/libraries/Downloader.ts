@@ -265,7 +265,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             try {
                 releaseFunction()
             } catch (e) {
-                return reject(e)
+                logger.error('An error occurred while releasing lock after successful binary download. The error was:', e)
             }
             
             return resolve(binaryPath)
