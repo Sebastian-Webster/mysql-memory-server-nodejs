@@ -268,39 +268,39 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             }
             
             return resolve(binaryPath)
-        }
+        } else {
+            let downloadTries = 0;
 
-        let downloadTries = 0;
+            do {
+                const uuid = randomUUID()
+                const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
+                logger.log('Binary filepath:', zipFilepath)
+                const extractedPath = `${dirpath}/${uuid}`
 
-        do {
-            const uuid = randomUUID()
-            const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
-            logger.log('Binary filepath:', zipFilepath)
-            const extractedPath = `${dirpath}/${uuid}`
-
-            try {
-                downloadTries++
-                await downloadFromCDN(url, zipFilepath, logger)
-                const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
-                return resolve(binaryPath)
-            } catch (e) {
-                //Delete generated files since either download or extraction failed
                 try {
-                    await Promise.all([
-                        fsPromises.rm(extractedPath, {force: true, recursive: true}),
-                        fsPromises.rm(zipFilepath, {force: true, recursive: true})
-                    ])
+                    downloadTries++
+                    await downloadFromCDN(url, zipFilepath, logger)
+                    const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
+                    return resolve(binaryPath)
                 } catch (e) {
-                    logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
-                }
+                    //Delete generated files since either download or extraction failed
+                    try {
+                        await Promise.all([
+                            fsPromises.rm(extractedPath, {force: true, recursive: true}),
+                            fsPromises.rm(zipFilepath, {force: true, recursive: true})
+                        ])
+                    } catch (e) {
+                        logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
+                    }
 
-                if (downloadTries >= options.downloadRetries) {
-                    //Only reject if we have met the downloadRetries limit
-                    return reject(e)
-                } else {
-                    console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                    if (downloadTries >= options.downloadRetries) {
+                        //Only reject if we have met the downloadRetries limit
+                        return reject(e)
+                    } else {
+                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                    }
                 }
-            }
-        } while (downloadTries < options.downloadRetries)
+            } while (downloadTries < options.downloadRetries)
+        }
     })
 }
