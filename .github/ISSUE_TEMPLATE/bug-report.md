@@ -7,37 +7,47 @@ assignees: ''
 
 ---
 
-**This issue is in the latest version of mysql-memory-server**
-Please make sure you have installed the latest version of `mysql-memory-server` and that this is still an issue in the latest version.
-- [ ]  This issue occurs in the latest version
-
-**This issue has not been reported yet**
-Please make sure this is not a duplicate of any other issue. You can [search here](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/issues) for existing issues
-- [ ] This issue has not been reported yet
+**Please make sure the following are true before submitting this issue:**
+--
+- [ ] The issue occurs in the latest version
+- [ ] The issue has not been reported yet (You can [search here](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/issues?q=is%3Aissue) for existing issues)
 
 **Describe the bug**
-Put a clear and concise description of what the bug is here.
+--
+Write a clear and concise description of what the bug is here.
 
 **To Reproduce**
-Steps to reproduce the behavior:
+--
+Write the steps to reproduce the behavior here:
 1. ...
 2. ...
 3. ...
 4. ...
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+--
+Write a clear and concise description of what you expected to happen here.
 
 **Actual behavior**
-A clear and concise description of what actually happened.
+--
+Write a clear and concise description of what actually happened here.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+--
+<!-- If you have screenshots that would help explain the issue you are facing, please replace "None" with your screenshots. -->
+None
 
 **Environment:**
- - OS and OS version: 
- - Node.js version:
- - mysql-memory-server version:
+--
+- OS and OS version (e.g macOS 15.0.1): 
+- JS runtime and runtime version (E.g Node.js 22.9.0):
+- mysql-memory-server version:
 
 **Additional context**
-Add any other context about the problem here.
+--
+<!-- If you have any relevant additional context about the issue, please replace "None" with your additional context. -->
+None
+
+**Pull Request**
+--
+- [ ] Tick this if you would be willing to create a pull request to fix this issue.
