@@ -40,7 +40,7 @@ jobs:
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
-  ci-node-linux-and-mac:
+  ci-node-unix:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -105,7 +105,7 @@ jobs:
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
-  ci-bun-linux-and-mac:
+  ci-bun-unix:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -161,9 +161,9 @@ jobs:
       - name: Run tests
         run: npm test --colors
 
-  test-node-linux-and-mac:
+  test-node-unix:
     runs-on: ${{ matrix.os }}
-    needs: ci-node-linux-and-mac
+    needs: ci-node-unix
 
     strategy:
       fail-fast: false
@@ -209,9 +209,9 @@ jobs:
       - name: Run tests
         run: bun run test --colors
 
-  test-bun-linux-and-mac:
+  test-bun-unix:
     runs-on: ${{ matrix.os }}
-    needs: ci-bun-linux-and-mac
+    needs: ci-bun-unix
 
     strategy:
       fail-fast: false
@@ -265,9 +265,9 @@ jobs:
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
-  stress-node-linux-and-mac:
+  stress-node-unix:
     runs-on: ${{ matrix.os }}
-    needs: test-node-linux-and-mac
+    needs: test-node-unix
 
     strategy:
       fail-fast: false
@@ -355,9 +355,9 @@ jobs:
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 9
 
-  stress-bun-linux-and-mac:
+  stress-bun-unix:
     runs-on: ${{ matrix.os }}
-    needs: test-bun-linux-and-mac
+    needs: test-bun-unix
 
     strategy:
       fail-fast: false
