@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci-node-windows:
+  ci-node-win:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -73,7 +73,7 @@ jobs:
           path: /tmp/mysqlmsn
           compression-level: 9
 
-  ci-bun-windows:
+  ci-bun-win:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -137,9 +137,9 @@ jobs:
           path: /tmp/mysqlmsn
           compression-level: 9
 
-  test-node-windows:
+  test-node-win:
     runs-on: ${{ matrix.os }}
-    needs: ci-node-windows
+    needs: ci-node-win
 
     strategy:
       fail-fast: false
@@ -185,9 +185,9 @@ jobs:
       - name: Run tests
         run: npm test --colors
 
-  test-bun-windows:
+  test-bun-win:
     runs-on: ${{ matrix.os }}
-    needs: ci-bun-windows
+    needs: ci-bun-win
 
     strategy:
       fail-fast: false
@@ -233,9 +233,9 @@ jobs:
       - name: Run tests
         run: bun run test --colors
 
-  stress-node-windows:
+  stress-node-win:
     runs-on: ${{ matrix.os }}
-    needs: test-node-windows
+    needs: test-node-win
 
     strategy:
       fail-fast: false
@@ -322,9 +322,9 @@ jobs:
             !/temp/mysqlmsn/dbs/*/*.sock
           compression-level: 9
 
-  stress-bun-windows:
+  stress-bun-win:
     runs-on: ${{ matrix.os }}
-    needs: test-bun-windows
+    needs: test-bun-win
 
     strategy:
       fail-fast: false
