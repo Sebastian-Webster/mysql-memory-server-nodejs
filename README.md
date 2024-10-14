@@ -1,8 +1,8 @@
 # MySQL Memory Server
 
-This package allows you to create ephemeral MySQL databases inside of Node.js, great for testing. When creating a new database, if the version selected is not installed on the system, the binary is downloaded from MySQL's CDN (cdn.mysql.com)
+This package allows you to create ephemeral MySQL databases from JavaScript and/or TypeScript code, great for testing. When creating a new database, if the version selected is not installed on the system, the binary is downloaded from MySQL's CDN (cdn.mysql.com)
 
-You can run multiple MySQL databases with this package at the same time. Each database will use a random free port. The databases will automatically shutdown when the Node.js process exits. A `stop()` method is also provided to stop each database instance.
+You can run multiple MySQL databases with this package at the same time. Each database will use a random free port. The databases will automatically shutdown when the JS runtime process exits. A `stop()` method is also provided to stop each database instance.
 
 ## Installation
 
