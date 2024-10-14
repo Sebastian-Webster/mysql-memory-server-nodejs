@@ -32,6 +32,8 @@ Requirements for Linux:
 
 ## Usage
 
+This package supports both ESM and CJS so you can use import or require.
+
 ```javascript
 import { createDB } from 'mysql-memory-server';
 import sql from 'mysql2/promise'
