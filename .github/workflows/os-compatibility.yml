@@ -1,0 +1,85 @@
+name: OS Compatibility
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  os:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          check-latest: true
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Upload mysqlmsn directory (Windows)
+        if: ${{ failure() && runner.os == 'Windows' }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: ${{ matrix.os }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
+          compression-level: 9
+
+      - name: Upload mysqlmsn directory (Not Windows)
+        if: ${{ failure() && runner.os != 'Windows' }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: ${{ matrix.os }}
+          path: /tmp/mysqlmsn
+          compression-level: 9
+
+  fedora-docker:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [40]
+
+    container: fedora:${{ matrix.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          check-latest: true
+
+      - name: Install required libraries
+        run: sudo dnf install libaio numactl -y
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Upload mysqlmsn directory
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: docker-fedora-${{ matrix.version }}
+          path: /tmp/mysqlmsn
+          compression-level: 9

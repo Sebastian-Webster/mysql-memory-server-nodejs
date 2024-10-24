@@ -1,0 +1,71 @@
+name: Stress Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  stress:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        if: ${{ runner.os == 'Linux' }}
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
+      - name: Free Disk Space (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        working-directory: /Applications
+        run: |
+          echo 'BEFORE CLEANUP:'
+          df -h
+          sudo find . -name Xcode\*.app -delete
+          sudo rm -rf /Users/runner/Library/Android
+          echo 'AFTER CLEANUP:'
+          df -h
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          check-latest: true
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run tests
+        run: npm run stress
+
+      - name: Upload mysqlmsn directory (Windows)
+        if: ${{ failure() && runner.os == 'Windows' }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: ${{ matrix.os }}
+          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
+          compression-level: 9
+
+      - name: Upload mysqlmsn directory (Not Windows)
+        if: ${{ failure() && runner.os != 'Windows' }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: ${{ matrix.os }}
+          path: /tmp/mysqlmsn
+          compression-level: 9
