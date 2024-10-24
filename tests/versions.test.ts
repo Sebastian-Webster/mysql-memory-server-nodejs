@@ -19,7 +19,15 @@ for (const version of versions) {
     for (const username of usernames) {
         test(`running on version ${version} with username ${username}`, async () => {
             Error.stackTraceLimit = Infinity
-            const options: ServerOptions = {version, dbName: 'testingdata', username: username, logLevel: 'LOG', deleteDBAfterStopped: !process.env.useCIDBPath, ignoreUnsupportedSystemVersion: true}
+            const options: ServerOptions = {
+                version,
+                dbName: 'testingdata',
+                username: username,
+                logLevel: 'LOG',
+                deleteDBAfterStopped: !process.env.useCIDBPath,
+                ignoreUnsupportedSystemVersion: true,
+                initSQLString: 'CREATE DATABASE mytestdb;'
+            }
     
             if (process.env.useCIDBPath) {
                 options.dbPath = `${dbPath}/${randomUUID()}`
@@ -34,6 +42,9 @@ for (const version of versions) {
             })
     
             const mySQLVersion = (await connection.query('SELECT VERSION()'))[0][0]["VERSION()"]
+
+            //If this does not fail, it means initSQLString works as expected and the database was successfully created.
+            await connection.query('USE mytestdb;')
     
             await connection.end();
             await db.stop();

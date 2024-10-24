@@ -390,6 +390,10 @@ class Executor {
             initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
         }
 
+        if (options.initSQLString.length > 0) {
+            initText += `\n${options.initSQLString}`
+        }
+
         this.logger.log('Writing init file')
 
         await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
