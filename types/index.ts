@@ -17,7 +17,8 @@ export type ServerOptions = {
     port?: number,
     xPort?: number,
     binaryDirectoryPath?: string,
-    downloadRetries?: number
+    downloadRetries?: number,
+    initSQLString?: string | undefined
 }
 
 export type InternalServerOptions = {
@@ -35,7 +36,8 @@ export type InternalServerOptions = {
     port: number,
     xPort: number,
     binaryDirectoryPath: string,
-    downloadRetries: number
+    downloadRetries: number,
+    initSQLString: string
 }
 
 export type ExecutorOptions = {
