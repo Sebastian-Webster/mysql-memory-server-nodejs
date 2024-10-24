@@ -53,9 +53,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [fedora:40]
+        version: [40]
 
-    container: ${{ matrix.image }}
+    container: fedora:${{ matrix.version }}
 
     steps:
       - name: Checkout
@@ -77,6 +77,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: docker-${{ matrix.image }}
+          name: docker-fedora-${{ matrix.version }}
           path: /tmp/mysqlmsn
           compression-level: 9
