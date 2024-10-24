@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  os:
+  stress:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -38,7 +38,7 @@ jobs:
           sudo rm -rf /Users/runner/Library/Android
           echo 'AFTER CLEANUP:'
           df -h
-          
+
       - name: Checkout
         uses: actions/checkout@v4
 
