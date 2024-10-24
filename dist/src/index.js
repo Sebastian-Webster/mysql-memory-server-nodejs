@@ -53,7 +53,8 @@ async function createDB(opts) {
         port: 0,
         xPort: 0,
         binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`,
-        downloadRetries: 10
+        downloadRetries: 10,
+        initSQLString: ''
     };
     const options = { ...defaultOptions, ...opts };
     const logger = new Logger_1.default(options.logLevel);

@@ -1,24 +1,25 @@
 import { ExecFileException } from "child_process";
 export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR';
 export type ServerOptions = {
-    version?: string;
-    dbName?: string;
-    logLevel?: LOG_LEVEL;
-    portRetries?: number;
-    downloadBinaryOnce?: boolean;
-    lockRetries?: number;
-    lockRetryWait?: number;
-    username?: string;
-    deleteDBAfterStopped?: boolean;
-    dbPath?: string;
-    ignoreUnsupportedSystemVersion?: boolean;
-    port?: number;
-    xPort?: number;
-    binaryDirectoryPath?: string;
-    downloadRetries?: number;
+    version?: string | undefined;
+    dbName?: string | undefined;
+    logLevel?: LOG_LEVEL | undefined;
+    portRetries?: number | undefined;
+    downloadBinaryOnce?: boolean | undefined;
+    lockRetries?: number | undefined;
+    lockRetryWait?: number | undefined;
+    username?: string | undefined;
+    deleteDBAfterStopped?: boolean | undefined;
+    dbPath?: string | undefined;
+    ignoreUnsupportedSystemVersion?: boolean | undefined;
+    port?: number | undefined;
+    xPort?: number | undefined;
+    binaryDirectoryPath?: string | undefined;
+    downloadRetries?: number | undefined;
+    initSQLString?: string | undefined;
 };
 export type InternalServerOptions = {
-    version?: string;
+    version?: string | undefined;
     dbName: string;
     logLevel: LOG_LEVEL;
     portRetries: number;
@@ -33,6 +34,7 @@ export type InternalServerOptions = {
     xPort: number;
     binaryDirectoryPath: string;
     downloadRetries: number;
+    initSQLString: string;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;
