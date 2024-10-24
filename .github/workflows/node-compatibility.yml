@@ -1,0 +1,40 @@
+name: Node.js Compatibility
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16.6.0, 16.x, 17.0.0, 17.x, 18.x, 19.x, 20.x, 21.x, 22.x, 23.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          check-latest: true
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Upload mysqlmsn directory
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: node-${{ matrix.node-version }}
+          path: /tmp/mysqlmsn
+          compression-level: 9
