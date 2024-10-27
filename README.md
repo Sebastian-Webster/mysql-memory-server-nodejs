@@ -104,7 +104,7 @@ If left undefined:
 
 If defined:
 - If the version is 8.0.19 or older, an error will be thrown as this package does not currently support those versions of MySQL.
-- If MySQL is installed on the system, the installed version will be used. Otherwise the selected version will be downloaded from the MySQL CDN as long as it can be found in the `versions.json` file. If it cannot be found in that file, an error will be thrown.
+- If the desired version of MySQL is installed on the system, the installed version will be used. Otherwise the selected version will be downloaded from the MySQL CDN as long as it can be found in the `versions.json` file. If it cannot be found in that file, an error will be thrown.
 
 - `dbName: string`
 
