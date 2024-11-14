@@ -1,15 +1,18 @@
 import fsPromises from 'fs/promises';
 import { InternalServerOptions } from "../../types";
 
+const mtimeUpdateIntervalTime = 2_000
+const mtimeLimit = 10_000
+
 export async function waitForLock(path: string, options: InternalServerOptions): Promise<void> {
     const lockPath = `${path}.lock`
     let retries = 0;
-    
+
     do {
         retries++;
         try {
             const stat = await fsPromises.stat(lockPath)
-            if (performance.now() - stat.mtime.getTime() > 10_000) {
+            if (performance.now() - stat.mtime.getTime() > mtimeLimit) {
                 return
             } else {
                 await new Promise(resolve => setTimeout(resolve, options.lockRetryWait))
@@ -32,7 +35,7 @@ function setupMTimeEditor(lockPath: string): () => Promise<void> {
             const time = performance.now();
             await fsPromises.utimes(lockPath, time, time)
         } catch {}
-    }, 2_000)
+    }, mtimeUpdateIntervalTime)
 
     return async () => {
         clearInterval(interval)
@@ -48,7 +51,7 @@ export async function lockFile(path: string): Promise<() => Promise<void>> {
     } catch (e) {
         if (e.code === 'EEXIST') {
             const stat = await fsPromises.stat(lockPath)
-            if (performance.now() - stat.mtime.getTime() > 10_000) {
+            if (performance.now() - stat.mtime.getTime() > mtimeLimit) {
                 return setupMTimeEditor(lockPath)
             } else {
                 throw 'LOCKED'
