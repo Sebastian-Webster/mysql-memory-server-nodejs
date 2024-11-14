@@ -8,8 +8,7 @@ import { GenerateRandomPort } from "./Port";
 import DBDestroySignal from "./AbortSignal";
 import { ExecuteFileReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
-import { lockSync } from 'proper-lockfile';
-import { waitForLock } from "./FileLock";
+import { lockFile, waitForLock } from "./FileLock";
 
 class Executor {
     logger: Logger;
@@ -316,10 +315,10 @@ class Executor {
 
                     while(true) {
                         try {
-                            lockRelease = lockSync(copyPath, {realpath: false})
+                            lockRelease = await lockFile(copyPath)
                             break
                         } catch (e) {
-                            if (e.code === 'ELOCKED') {
+                            if (e === 'LOCKED') {
                                 this.logger.log('Waiting for lock for libaio copy')
                                 await waitForLock(copyPath, options)
                                 this.logger.log('Lock is gone for libaio copy')
