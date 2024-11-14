@@ -4,6 +4,7 @@ import { InternalServerOptions } from "../../types";
 export async function waitForLock(path: string, options: InternalServerOptions): Promise<void> {
     const lockPath = `${path}.lock`
     let retries = 0;
+    
     do {
         retries++;
         try {
@@ -21,6 +22,8 @@ export async function waitForLock(path: string, options: InternalServerOptions):
             }
         }
     } while(retries <= options.lockRetries)
+
+    throw `lockRetries has been exceeded. Lock had not been released after ${options.lockRetryWait} * ${options.lockRetries} (${options.lockRetryWait * options.lockRetries}) milliseconds.`
 }
 
 function setupMTimeEditor(lockPath: string): () => Promise<void> {
