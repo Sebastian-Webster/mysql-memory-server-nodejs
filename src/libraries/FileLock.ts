@@ -32,7 +32,7 @@ export async function waitForLock(path: string, options: InternalServerOptions):
 function setupMTimeEditor(lockPath: string): () => Promise<void> {
     const interval = setInterval(async () => {
         try {
-            const time = performance.now();
+            const time = new Date();
             await fsPromises.utimes(lockPath, time, time)
         } catch {}
     }, mtimeUpdateIntervalTime)
