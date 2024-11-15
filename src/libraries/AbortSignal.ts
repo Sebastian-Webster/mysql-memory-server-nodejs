@@ -1,3 +1,5 @@
+import { onExit } from 'signal-exit'
+
 const DBDestroySignal = new AbortController();
 
 function abortSignal() {
@@ -6,7 +8,6 @@ function abortSignal() {
     }
 }
 
-process.on('beforeExit', abortSignal)
-process.on('exit', abortSignal)
+onExit(abortSignal)
 
 export default DBDestroySignal;
