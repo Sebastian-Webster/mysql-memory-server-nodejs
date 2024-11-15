@@ -12,7 +12,7 @@ export async function waitForLock(path: string, options: InternalServerOptions):
         retries++;
         try {
             const stat = await fsPromises.stat(lockPath)
-            if (performance.now() - stat.mtime.getTime() > mtimeLimit) {
+            if (Date.now() - stat.mtime.getTime() > mtimeLimit) {
                 return
             } else {
                 await new Promise(resolve => setTimeout(resolve, options.lockRetryWait))
@@ -52,7 +52,7 @@ export async function lockFile(path: string): Promise<() => Promise<void>> {
         if (e.code === 'EEXIST') {
             try {
                 const stat = await fsPromises.stat(lockPath)
-                if (performance.now() - stat.mtime.getTime() > mtimeLimit) {
+                if (Date.now() - stat.mtime.getTime() > mtimeLimit) {
                     return setupMTimeEditor(lockPath)
                 } else {
                     throw 'LOCKED'
