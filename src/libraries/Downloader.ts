@@ -6,9 +6,8 @@ import AdmZip from 'adm-zip'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { execFile } from 'child_process';
-import { lockSync } from 'proper-lockfile';
 import { BinaryInfo, InternalServerOptions } from '../../types';
-import { waitForLock } from './FileLock';
+import { lockFile, waitForLock } from './FileLock';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -201,14 +200,14 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
-            let releaseFunction: () => void;
+            let releaseFunction: () => Promise<void>;
 
             while (true) {
                 try {
-                    releaseFunction = lockSync(extractedPath, {realpath: false})
+                    releaseFunction = await lockFile(extractedPath)
                     break
                 } catch (e) {
-                    if (e.code === 'ELOCKED') {
+                    if (e === 'LOCKED') {
                         logger.log('Waiting for lock for MySQL version', version)
                         await waitForLock(extractedPath, options)
                         logger.log('Lock is gone for version', version)
@@ -249,7 +248,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     if (downloadTries >= options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
                         try {
-                            releaseFunction()
+                            await releaseFunction()
                         } catch (e) {
                             logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e)
                         }
