@@ -311,7 +311,7 @@ class Executor {
 
                     const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
 
-                    let lockRelease: () => void;
+                    let lockRelease: () => Promise<void>;
 
                     while(true) {
                         try {
@@ -358,7 +358,7 @@ class Executor {
                         } finally {
 
                             try {
-                                lockRelease()
+                                await lockRelease()
                             } catch (e) {
                                 this.logger.error('Error unlocking libaio file:', e)
                             }

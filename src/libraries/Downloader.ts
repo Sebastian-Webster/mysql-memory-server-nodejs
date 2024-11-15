@@ -200,7 +200,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 return resolve(binaryPath)
             }
 
-            let releaseFunction: () => void;
+            let releaseFunction: () => Promise<void>;
 
             while (true) {
                 try {
@@ -248,7 +248,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     if (downloadTries >= options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
                         try {
-                            releaseFunction()
+                            await releaseFunction()
                         } catch (e) {
                             logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e)
                         }
