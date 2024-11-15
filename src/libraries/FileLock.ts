@@ -50,11 +50,21 @@ export async function lockFile(path: string): Promise<() => Promise<void>> {
         return setupMTimeEditor(lockPath)
     } catch (e) {
         if (e.code === 'EEXIST') {
-            const stat = await fsPromises.stat(lockPath)
-            if (performance.now() - stat.mtime.getTime() > mtimeLimit) {
-                return setupMTimeEditor(lockPath)
-            } else {
-                throw 'LOCKED'
+            try {
+                const stat = await fsPromises.stat(lockPath)
+                if (performance.now() - stat.mtime.getTime() > mtimeLimit) {
+                    return setupMTimeEditor(lockPath)
+                } else {
+                    throw 'LOCKED'
+                }
+            } catch (e) {
+                if (e.code === 'ENOENT') {
+                    //This will run if the lock gets released after the EEXIST error is thrown but before the stat is checked.
+                    //If this is the case, the lock acquisition should be retried.
+                    return await lockFile(path)
+                } else {
+                    throw e
+                }
             }
         } else {
             throw e
