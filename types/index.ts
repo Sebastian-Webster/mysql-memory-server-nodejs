@@ -11,14 +11,14 @@ export type ServerOptions = {
     lockRetries?: number | undefined,
     lockRetryWait?: number | undefined,
     username?: string | undefined,
-    deleteDBAfterStopped?: boolean | undefined,
-    dbPath?: string | undefined,
     ignoreUnsupportedSystemVersion?: boolean | undefined,
     port?: number | undefined,
     xPort?: number | undefined,
-    binaryDirectoryPath?: string | undefined,
     downloadRetries?: number | undefined,
     initSQLString?: string | undefined
+    _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined,
+    _DO_NOT_USE_dbPath?: string | undefined,
+    _DO_NOT_USE_binaryDirectoryPath?: string | undefined
 }
 
 export type InternalServerOptions = {

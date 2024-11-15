@@ -24,14 +24,14 @@ for (const version of versions) {
                 dbName: 'testingdata',
                 username: username,
                 logLevel: 'LOG',
-                deleteDBAfterStopped: !process.env.useCIDBPath,
+                _DO_NOT_USE_deleteDBAfterStopped: !process.env.useCIDBPath,
                 ignoreUnsupportedSystemVersion: true,
                 initSQLString: 'CREATE DATABASE mytestdb;'
             }
     
             if (process.env.useCIDBPath) {
-                options.dbPath = `${dbPath}/${randomUUID()}`
-                options.binaryDirectoryPath = binaryPath
+                options._DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
+                options._DO_NOT_USE_binaryDirectoryPath = binaryPath
             }
     
             const db = await createDB(options)

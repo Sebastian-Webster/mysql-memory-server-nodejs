@@ -211,7 +211,7 @@ The internal queries that are ran before the queries in ```initSQLString``` are 
 
 The following options are only meant for internal debugging use. Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
 
-- `deleteDBAfterStopped: boolean`
+- `_DO_NOT_USE_deleteDBAfterStopped: boolean`
 
 Required: No
 
@@ -219,7 +219,7 @@ Default: true
 
 Description: Changes whether or not the database will be deleted after it has been stopped. If set to `true`, the database WILL be deleted after it has been stopped.
 
-- `dataPath: string`
+- `_DO_NOT_USE_dbPath: string`
 
 Required: No
 
@@ -227,7 +227,7 @@ Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory
 
 Description: The folder to store database-related data in
 
-- `binaryDirectoryPath: string`
+- `_DO_NOT_USE_binaryDirectoryPath: string`
 
 Required: No
 
