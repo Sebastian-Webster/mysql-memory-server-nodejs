@@ -72,7 +72,10 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const socket = os.platform() === 'win32' ? `MySQL-${crypto.randomUUID()}` : `${dbPath}/m.sock`
+            const xSocket = os.platform() === 'win32' ? `MySQLX-${crypto.randomUUID()}` : `${dbPath}/x.sock`
+
+            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
