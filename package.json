@@ -50,5 +50,6 @@
   "bugs": {
     "url": "https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/issues"
   },
-  "homepage": "https://github.com/Sebastian-Webster/mysql-memory-server-nodejs"
+  "homepage": "https://github.com/Sebastian-Webster/mysql-memory-server-nodejs",
+  "bin": "dist/src/cli.js"
 }
