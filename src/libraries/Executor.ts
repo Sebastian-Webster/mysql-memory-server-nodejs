@@ -173,6 +173,8 @@ class Executor {
                         resolve({
                             port,
                             xPort: mySQLXPort,
+                            socket,
+                            xSocket,
                             dbName: options.dbName,
                             username: options.username,
                             stop: () => {

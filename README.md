@@ -86,6 +86,10 @@ The port that MySQLX is listening on
 The database that was created on database initialization
 - `username: string`
 The name of the user to use to login to the database
+- `socket: string`
+If on Windows, this is the name of the named pipe that MySQL is listening on. If not on Windows, this is the path to the socket that MySQL is listening on.
+- `xSocket: string`
+If on Windows, this is the name of the named pipe that the MySQL X Plugin is listening on. If not on Windows, this is the path that the MySQL X Plugin is listening on.
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
