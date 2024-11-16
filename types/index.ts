@@ -53,6 +53,8 @@ export type ExecuteFileReturn = {
 export type MySQLDB = {
     port: number,
     xPort: number,
+    socket: string,
+    xSocket: string,
     dbName: string,
     username: string,
     stop: () => Promise<void>
