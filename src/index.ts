@@ -30,6 +30,16 @@ export async function createDB(opts?: ServerOptions) {
         downloadRetries: 10,
         initSQLString: ''
     }
+
+    const suppliedOpts = opts || {};
+    const suppliedOptsKeys = Object.keys(suppliedOpts);
+    const internalOpts = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath'];
+
+    for (const opt of internalOpts) {
+        if (suppliedOptsKeys.includes(opt)) {
+            console.warn(`[ mysql-memory-server - WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`)
+        }
+    }
     
     const options: InternalServerOptions = {...defaultOptions, ...opts}
 
