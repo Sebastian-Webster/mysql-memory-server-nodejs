@@ -37,7 +37,7 @@ export async function createDB(opts?: ServerOptions) {
 
     for (const opt of internalOpts) {
         if (suppliedOptsKeys.includes(opt)) {
-            console.warn(`[ mysql-memory-server - WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`)
+            console.warn(`[ mysql-memory-server - Options WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`)
         }
     }
     
