@@ -36,67 +36,67 @@ export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_US
 
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
-        check: (opt: any) => typeof opt === 'string' && validSemver(opt) !== null,
-        errorMessage: 'Option version must be a valid semver string.'
+        check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(opt) !== null,
+        errorMessage: 'Option version must be either undefined or a valid semver string.'
     },
     dbName: {
-        check: (opt: any) => typeof opt === 'string' && opt.length <= 64,
-        errorMessage: 'Option dbName must be a string and must not be longer than 64 characters.'
+        check: (opt: any) => opt === undefined || typeof opt === 'string' && opt.length <= 64,
+        errorMessage: 'Option dbName must be either undefined or a string that is not longer than 64 characters.'
     },
     logLevel: {
-        check: (opt: any) => Object.keys(LOG_LEVELS).includes(opt),
-        errorMessage: 'Option logLevel must be either "LOG", "WARN", or "ERROR".'
+        check: (opt: any) => opt === undefined || Object.keys(LOG_LEVELS).includes(opt),
+        errorMessage: 'Option logLevel must be either undefined or "LOG", "WARN", or "ERROR".'
     },
     portRetries: {
-        check: (opt: any) => typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option portRetries must be a positive number or 0.'
+        check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
+        errorMessage: 'Option portRetries must be either undefined, a positive number, or 0.'
     },
     downloadBinaryOnce: {
-        check: (opt: any) => typeof opt === 'boolean',
-        errorMessage: 'Option downloadBinaryOnce must be a boolean.'
+        check: (opt: any) => opt === undefined || typeof opt === 'boolean',
+        errorMessage: 'Option downloadBinaryOnce must be either undefined or a boolean.'
     },
     lockRetries: {
-        check: (opt: any) => typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option lockRetries must be a positive number or 0.'
+        check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
+        errorMessage: 'Option lockRetries must be either undefined, a positive number, or 0.'
     },
     lockRetryWait: {
-        check: (opt: any) => typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option lockRetryWait must be a positive number or 0.'
+        check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
+        errorMessage: 'Option lockRetryWait must be either undefined, a positive number, or 0.'
     },
     username: {
-        check: (opt: any) => typeof opt === 'string' && opt.length <= 32,
-        errorMessage: 'Option username must be a string and must not be longer than 32 characters.'
-    },
-    _DO_NOT_USE_deleteDBAfterStopped: {
-        check: (opt: any) => typeof opt === 'boolean',
-        errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be a boolean.'
-    },
-    _DO_NOT_USE_dbPath: {
-        check: (opt: any) => typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_dbPath must be a string.'
+        check: (opt: any) => opt === undefined || typeof opt === 'string' && opt.length <= 32,
+        errorMessage: 'Option username must be either undefined or a string that is not longer than 32 characters.'
     },
     ignoreUnsupportedSystemVersion: {
-        check: (opt: any) => typeof opt === 'boolean',
-        errorMessage: 'Option ignoreUnsupportedSystemVersion must be a boolean.'
+        check: (opt: any) => opt === undefined || typeof opt === 'boolean',
+        errorMessage: 'Option ignoreUnsupportedSystemVersion must be either undefined or a boolean.'
     },
     port: {
-        check: (opt: any) => typeof opt === 'number' && opt >= 0 && opt <= 65535,
-        errorMessage: 'Option port must be a number and between 0 and 65535 inclusive.'
+        check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0 && opt <= 65535,
+        errorMessage: 'Option port must be either undefined or a number that is between 0 and 65535 inclusive.'
     },
     xPort: {
-        check: (opt: any) => typeof opt === 'number' && opt >= 0 && opt <= 65535,
-        errorMessage: 'Option xPort must be a number and between 0 and 65535 inclusive.'
-    },
-    _DO_NOT_USE_binaryDirectoryPath: {
-        check: (opt: any) => typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be a string.'
+        check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0 && opt <= 65535,
+        errorMessage: 'Option xPort must be either undefined or a number that is between 0 and 65535 inclusive.'
     },
     downloadRetries: {
-        check: (opt: any) => typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option downloadRetries must be a positive number or 0.'
+        check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
+        errorMessage: 'Option downloadRetries must be either undefined, a positive number, or 0.'
     },
     initSQLString: {
-        check: (opt: any) => typeof opt === 'string',
-        errorMessage: 'Option initSQLString must be a string.'
+        check: (opt: any) => opt === undefined || typeof opt === 'string',
+        errorMessage: 'Option initSQLString must be either undefined or a string.'
+    },
+    _DO_NOT_USE_deleteDBAfterStopped: {
+        check: (opt: any) => opt === undefined || typeof opt === 'boolean',
+        errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be either undefined or a boolean.'
+    },
+    _DO_NOT_USE_dbPath: {
+        check: (opt: any) => opt === undefined || typeof opt === 'string',
+        errorMessage: 'Option _DO_NOT_USE_dbPath must be either undefined or a string.'
+    },
+    _DO_NOT_USE_binaryDirectoryPath: {
+        check: (opt: any) => opt === undefined || typeof opt === 'string',
+        errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.'
     }
 } as const;

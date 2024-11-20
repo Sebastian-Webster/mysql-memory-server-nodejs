@@ -23,7 +23,7 @@ export async function createDB(opts?: ServerOptions) {
         if (!defaultOptionsKeys.includes(opt)) {
             throw `Option ${opt} is not a valid option.`
         }
-        if (suppliedOpts[opt] !== undefined && !OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
+        if (!OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
             //Supplied option failed the check
             throw OPTION_TYPE_CHECKS[opt].errorMessage
         }
