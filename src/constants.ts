@@ -30,6 +30,8 @@ export const LOG_LEVELS = {
     'ERROR': 2
 } as const;
 
+export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath'] as const;
+
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     dbName: {
         check: (opt: any) => typeof opt === 'string' && opt.length <= 64,

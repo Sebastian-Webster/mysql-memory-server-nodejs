@@ -6,20 +6,23 @@ import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
-import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS, OPTION_TYPE_CHECKS } from './constants'
+import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS, OPTION_TYPE_CHECKS, INTERNAL_OPTIONS } from './constants'
 
 export async function createDB(opts?: ServerOptions) {
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
-    const internalOpts = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath'];
+    const defaultOptionsKeys = Object.keys(DEFAULT_OPTIONS);
 
-    for (const opt of internalOpts) {
+    for (const opt of INTERNAL_OPTIONS) {
         if (suppliedOptsKeys.includes(opt)) {
             console.warn(`[ mysql-memory-server - Options WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`)
         }
     }
 
     for (const opt of suppliedOptsKeys) {
+        if (!defaultOptionsKeys.includes(opt)) {
+            throw `Option ${opt} is not a valid option.`
+        }
         if (suppliedOpts[opt] !== undefined && !OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
             //Supplied option failed the check
             throw OPTION_TYPE_CHECKS[opt].errorMessage
