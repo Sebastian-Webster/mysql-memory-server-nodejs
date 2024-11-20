@@ -15,15 +15,15 @@ export const DEFAULT_OPTIONS: InternalServerOptions = {
     lockRetries: 1_000,
     lockRetryWait: 1_000,
     username: 'root',
-    deleteDBAfterStopped: true,
-    //mysqlmsn = MySQL Memory Server Node.js
-    dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
     ignoreUnsupportedSystemVersion: false,
     port: 0,
     xPort: 0,
-    binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
     downloadRetries: 10,
-    initSQLString: ''
+    initSQLString: '',
+    _DO_NOT_USE_deleteDBAfterStopped: true,
+    //mysqlmsn = MySQL Memory Server Node.js
+    _DO_NOT_USE_dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
+    _DO_NOT_USE_binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`
 } as const;
 
 export const LOG_LEVELS = {

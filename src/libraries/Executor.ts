@@ -98,7 +98,7 @@ class Executor {
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
-                        await this.#deleteDatabaseDirectory(options.dbPath)
+                        await this.#deleteDatabaseDirectory(options._DO_NOT_USE_dbPath)
                     } catch (e) {
                         this.logger.error(e)
                         return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
@@ -107,7 +107,7 @@ class Executor {
                 }
 
                 try {
-                    if (options.deleteDBAfterStopped) {
+                    if (options._DO_NOT_USE_deleteDBAfterStopped) {
                         await this.#deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
@@ -400,7 +400,7 @@ class Executor {
 
         this.logger.log('Writing init file')
 
-        await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, {encoding: 'utf8'})
+        await fsPromises.writeFile(`${options._DO_NOT_USE_dbPath}/init.sql`, initText, {encoding: 'utf8'})
 
         this.logger.log('Finished writing init file')
     }
@@ -408,7 +408,7 @@ class Executor {
     async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         let retries = 0;
 
-        const datadir = normalizePath(`${options.dbPath}/data`)
+        const datadir = normalizePath(`${options._DO_NOT_USE_dbPath}/data`)
 
         do {
             await this.#setupDataDirectories(options, binaryFilepath, datadir, true);
@@ -420,7 +420,7 @@ class Executor {
 
             try {
                 this.logger.log('Starting MySQL process')
-                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath)
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, binaryFilepath)
                 this.logger.log('Starting process was successful')
                 return resolved
             } catch (e) {

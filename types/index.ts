@@ -30,14 +30,14 @@ export type InternalServerOptions = {
     lockRetries: number,
     lockRetryWait: number,
     username: string,
-    deleteDBAfterStopped: boolean,
-    dbPath: string,
     ignoreUnsupportedSystemVersion: boolean,
     port: number,
     xPort: number,
-    binaryDirectoryPath: string,
     downloadRetries: number,
     initSQLString: string
+    _DO_NOT_USE_deleteDBAfterStopped: boolean,
+    _DO_NOT_USE_dbPath: string,
+    _DO_NOT_USE_binaryDirectoryPath: string,
 }
 
 export type ExecutorOptions = {

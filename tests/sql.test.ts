@@ -18,13 +18,13 @@ beforeEach(async () => {
     const options: ServerOptions = {
         username: 'root',
         logLevel: 'LOG',
-        deleteDBAfterStopped: !process.env.useCIDBPath,
+        _DO_NOT_USE_deleteDBAfterStopped: !process.env.useCIDBPath,
         ignoreUnsupportedSystemVersion: true
     }
 
     if (process.env.useCIDBPath) {
-        options.dbPath = `${dbPath}/${randomUUID()}`
-        options.binaryDirectoryPath = binaryPath
+        options._DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
+        options._DO_NOT_USE_binaryDirectoryPath = binaryPath
     }
     
     db = await createDB(options)
