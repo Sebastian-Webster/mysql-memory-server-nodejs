@@ -6,7 +6,7 @@ import { valid as validSemver } from "semver";
 
 export const MIN_SUPPORTED_MYSQL = '8.0.20';
 
-export const DEFAULT_OPTIONS: InternalServerOptions = {
+export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     version: undefined,
     dbName: 'dbdata',
     logLevel: 'ERROR',
@@ -24,7 +24,9 @@ export const DEFAULT_OPTIONS: InternalServerOptions = {
     //mysqlmsn = MySQL Memory Server Node.js
     _DO_NOT_USE_dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
     _DO_NOT_USE_binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`
-} as const;
+});
+
+export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS_GENERATOR()))
 
 export const LOG_LEVELS = {
     'LOG': 0,

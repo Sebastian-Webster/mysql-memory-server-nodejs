@@ -6,12 +6,11 @@ import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
-import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS, OPTION_TYPE_CHECKS, INTERNAL_OPTIONS } from './constants'
+import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, INTERNAL_OPTIONS, DEFAULT_OPTIONS_GENERATOR } from './constants'
 
 export async function createDB(opts?: ServerOptions) {
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
-    const defaultOptionsKeys = Object.keys(DEFAULT_OPTIONS);
 
     for (const opt of INTERNAL_OPTIONS) {
         if (suppliedOptsKeys.includes(opt)) {
@@ -19,17 +18,22 @@ export async function createDB(opts?: ServerOptions) {
         }
     }
 
+    const options = DEFAULT_OPTIONS_GENERATOR();
+    
     for (const opt of suppliedOptsKeys) {
-        if (!defaultOptionsKeys.includes(opt)) {
+        if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
             throw `Option ${opt} is not a valid option.`
         }
+
         if (!OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
             //Supplied option failed the check
             throw OPTION_TYPE_CHECKS[opt].errorMessage
         }
+
+        if (suppliedOpts[opt] !== undefined) {
+            options[opt] = suppliedOpts[opt]
+        }
     }
-    
-    const options: InternalServerOptions = {...DEFAULT_OPTIONS, ...opts}
 
     const logger = new Logger(options.logLevel)
 
