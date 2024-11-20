@@ -77,3 +77,10 @@ export type BinaryInfo = {
     url: string,
     version: string
 }
+
+export type OptionTypeChecks = {
+    [key in keyof ServerOptions]: {
+        check: (opt: any) => boolean,
+        errorMessage: string
+    }
+}
