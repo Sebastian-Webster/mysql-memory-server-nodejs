@@ -2,6 +2,7 @@ import { InternalServerOptions, OptionTypeChecks } from "../types";
 import { randomUUID } from "crypto";
 import {normalize as normalizePath} from 'path'
 import { tmpdir } from "os";
+import { valid as validSemver } from "semver";
 
 export const MIN_SUPPORTED_MYSQL = '8.0.20';
 
@@ -34,6 +35,10 @@ export const LOG_LEVELS = {
 export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath'] as const;
 
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
+    version: {
+        check: (opt: any) => typeof opt === 'string' && validSemver(opt) !== null,
+        errorMessage: 'Option version must be a valid semver string.'
+    },
     dbName: {
         check: (opt: any) => typeof opt === 'string' && opt.length <= 64,
         errorMessage: 'Option dbName must be a string and must not be longer than 64 characters.'

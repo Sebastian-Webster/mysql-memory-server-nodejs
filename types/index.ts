@@ -79,7 +79,7 @@ export type BinaryInfo = {
 }
 
 export type OptionTypeChecks = {
-    [key in keyof ServerOptions]: {
+    [key in keyof Required<ServerOptions>]: {
         check: (opt: any) => boolean,
         errorMessage: string
     }
