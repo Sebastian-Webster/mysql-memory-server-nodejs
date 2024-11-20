@@ -6,6 +6,7 @@ import { tmpdir } from "os";
 export const MIN_SUPPORTED_MYSQL = '8.0.20';
 
 export const DEFAULT_OPTIONS: InternalServerOptions = {
+    version: undefined,
     dbName: 'dbdata',
     logLevel: 'ERROR',
     portRetries: 10,
