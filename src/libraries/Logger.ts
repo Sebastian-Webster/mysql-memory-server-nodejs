@@ -1,10 +1,5 @@
 import { LOG_LEVEL } from "../../types";
-
-const LOG_LEVELS = {
-    'LOG': 0,
-    'WARN': 1,
-    'ERROR': 2
-}
+import { LOG_LEVELS } from "../constants";
 
 class Logger {
     LOG_LEVEL: number;

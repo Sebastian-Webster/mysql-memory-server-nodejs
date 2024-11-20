@@ -181,7 +181,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const {url, version} = binaryInfo;
-        const dirpath = options.binaryDirectoryPath
+        const dirpath = options._DO_NOT_USE_binaryDirectoryPath
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
 
@@ -245,7 +245,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
                     }
 
-                    if (downloadTries >= options.downloadRetries) {
+                    if (downloadTries > options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
                         try {
                             await releaseFunction()
@@ -258,7 +258,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                     }
                 }
-            } while (downloadTries < options.downloadRetries)
+            } while (downloadTries <= options.downloadRetries)
 
             try {
                 releaseFunction()
@@ -292,14 +292,14 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         logger.error('An error occurred while deleting extractedPath and/or archivePath:', e)
                     }
 
-                    if (downloadTries >= options.downloadRetries) {
+                    if (downloadTries > options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
                         return reject(e)
                     } else {
                         console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                     }
                 }
-            } while (downloadTries < options.downloadRetries)
+            } while (downloadTries <= options.downloadRetries)
         }
     })
 }

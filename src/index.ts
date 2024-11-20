@@ -2,46 +2,38 @@ import Logger from './libraries/Logger'
 import * as os from 'node:os'
 import Executor from "./libraries/Executor"
 import { satisfies, lt } from "semver"
-import DBDestroySignal from "./libraries/AbortSignal"
 import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
-import { randomUUID } from "crypto";
-import {normalize as normalizePath} from 'path'
-import CONSTANTS from './constants'
+import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, INTERNAL_OPTIONS, DEFAULT_OPTIONS_GENERATOR } from './constants'
 
 export async function createDB(opts?: ServerOptions) {
-    const defaultOptions: InternalServerOptions = {
-        dbName: 'dbdata',
-        logLevel: 'ERROR',
-        portRetries: 10,
-        downloadBinaryOnce: true,
-        lockRetries: 1_000,
-        lockRetryWait: 1_000,
-        username: 'root',
-        deleteDBAfterStopped: true,
-        //mysqlmsn = MySQL Memory Server Node.js
-        dbPath: normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
-        ignoreUnsupportedSystemVersion: false,
-        port: 0,
-        xPort: 0,
-        binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`,
-        downloadRetries: 10,
-        initSQLString: ''
-    }
-
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
-    const internalOpts = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath'];
 
-    for (const opt of internalOpts) {
+    for (const opt of INTERNAL_OPTIONS) {
         if (suppliedOptsKeys.includes(opt)) {
             console.warn(`[ mysql-memory-server - Options WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`)
         }
     }
+
+    const options = DEFAULT_OPTIONS_GENERATOR();
     
-    const options: InternalServerOptions = {...defaultOptions, ...opts}
+    for (const opt of suppliedOptsKeys) {
+        if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
+            throw `Option ${opt} is not a valid option.`
+        }
+
+        if (!OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
+            //Supplied option failed the check
+            throw OPTION_TYPE_CHECKS[opt].errorMessage
+        }
+
+        if (suppliedOpts[opt] !== undefined) {
+            options[opt] = suppliedOpts[opt]
+        }
+    }
 
     const logger = new Logger(options.logLevel)
 
@@ -49,7 +41,7 @@ export async function createDB(opts?: ServerOptions) {
 
     const version = await executor.getMySQLVersion(options.version)
 
-    const unsupportedMySQLIsInstalled = version && lt(version.version, CONSTANTS.MIN_SUPPORTED_MYSQL)
+    const unsupportedMySQLIsInstalled = version && lt(version.version, MIN_SUPPORTED_MYSQL)
 
     const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreUnsupportedSystemVersion && !options.version
 
@@ -57,7 +49,7 @@ export async function createDB(opts?: ServerOptions) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`
     }
 
-    if (options.version && lt(options.version, CONSTANTS.MIN_SUPPORTED_MYSQL)) {
+    if (options.version && lt(options.version, MIN_SUPPORTED_MYSQL)) {
         //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
         //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
         throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`

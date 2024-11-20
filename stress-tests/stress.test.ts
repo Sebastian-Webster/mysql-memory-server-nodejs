@@ -18,13 +18,13 @@ for (let i = 0; i < 100; i++) {
         const options: ServerOptions = {
             username: 'dbuser',
             logLevel: 'LOG',
-            deleteDBAfterStopped: !process.env.useCIDBPath,
+            _DO_NOT_USE_deleteDBAfterStopped: !process.env.useCIDBPath,
             ignoreUnsupportedSystemVersion: true
         }
     
         if (process.env.useCIDBPath) {
-            options.dbPath = `${dbPath}/${i}`
-            options.binaryDirectoryPath = binaryPath
+            options._DO_NOT_USE_dbPath = `${dbPath}/${i}`
+            options._DO_NOT_USE_binaryDirectoryPath = binaryPath
         }
         
         const db = await createDB(options)
