@@ -39,66 +39,82 @@ export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_US
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(opt) !== null,
-        errorMessage: 'Option version must be either undefined or a valid semver string.'
+        errorMessage: 'Option version must be either undefined or a valid semver string.',
+        definedType: 'string'
     },
     dbName: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && opt.length <= 64,
-        errorMessage: 'Option dbName must be either undefined or a string that is not longer than 64 characters.'
+        errorMessage: 'Option dbName must be either undefined or a string that is not longer than 64 characters.',
+        definedType: 'string'
     },
     logLevel: {
         check: (opt: any) => opt === undefined || Object.keys(LOG_LEVELS).includes(opt),
-        errorMessage: 'Option logLevel must be either undefined or "LOG", "WARN", or "ERROR".'
+        errorMessage: 'Option logLevel must be either undefined or "LOG", "WARN", or "ERROR".',
+        definedType: 'string'
     },
     portRetries: {
         check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option portRetries must be either undefined, a positive number, or 0.'
+        errorMessage: 'Option portRetries must be either undefined, a positive number, or 0.',
+        definedType: 'number'
     },
     downloadBinaryOnce: {
         check: (opt: any) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option downloadBinaryOnce must be either undefined or a boolean.'
+        errorMessage: 'Option downloadBinaryOnce must be either undefined or a boolean.',
+        definedType: 'boolean'
     },
     lockRetries: {
         check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option lockRetries must be either undefined, a positive number, or 0.'
+        errorMessage: 'Option lockRetries must be either undefined, a positive number, or 0.',
+        definedType: 'number'
     },
     lockRetryWait: {
         check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option lockRetryWait must be either undefined, a positive number, or 0.'
+        errorMessage: 'Option lockRetryWait must be either undefined, a positive number, or 0.',
+        definedType: 'number'
     },
     username: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && opt.length <= 32,
-        errorMessage: 'Option username must be either undefined or a string that is not longer than 32 characters.'
+        errorMessage: 'Option username must be either undefined or a string that is not longer than 32 characters.',
+        definedType: 'string'
     },
     ignoreUnsupportedSystemVersion: {
         check: (opt: any) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option ignoreUnsupportedSystemVersion must be either undefined or a boolean.'
+        errorMessage: 'Option ignoreUnsupportedSystemVersion must be either undefined or a boolean.',
+        definedType: 'boolean'
     },
     port: {
         check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0 && opt <= 65535,
-        errorMessage: 'Option port must be either undefined or a number that is between 0 and 65535 inclusive.'
+        errorMessage: 'Option port must be either undefined or a number that is between 0 and 65535 inclusive.',
+        definedType: 'number'
     },
     xPort: {
         check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0 && opt <= 65535,
-        errorMessage: 'Option xPort must be either undefined or a number that is between 0 and 65535 inclusive.'
+        errorMessage: 'Option xPort must be either undefined or a number that is between 0 and 65535 inclusive.',
+        definedType: 'number'
     },
     downloadRetries: {
         check: (opt: any) => opt === undefined || typeof opt === 'number' && opt >= 0,
-        errorMessage: 'Option downloadRetries must be either undefined, a positive number, or 0.'
+        errorMessage: 'Option downloadRetries must be either undefined, a positive number, or 0.',
+        definedType: 'number'
     },
     initSQLString: {
         check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option initSQLString must be either undefined or a string.'
+        errorMessage: 'Option initSQLString must be either undefined or a string.',
+        definedType: 'string'
     },
     _DO_NOT_USE_deleteDBAfterStopped: {
         check: (opt: any) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be either undefined or a boolean.'
+        errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be either undefined or a boolean.',
+        definedType: 'boolean'
     },
     _DO_NOT_USE_dbPath: {
         check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_dbPath must be either undefined or a string.'
+        errorMessage: 'Option _DO_NOT_USE_dbPath must be either undefined or a string.',
+        definedType: 'string'
     },
     _DO_NOT_USE_binaryDirectoryPath: {
         check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.'
+        errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.',
+        definedType: 'string'
     }
 } as const;
