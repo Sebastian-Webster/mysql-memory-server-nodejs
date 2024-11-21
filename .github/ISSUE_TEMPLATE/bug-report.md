@@ -16,13 +16,13 @@ assignees: ''
 --
 Write a clear and concise description of what the bug is here.
 
-**To Reproduce**
---
-Write the steps to reproduce the behavior here:
-1. ...
-2. ...
-3. ...
-4. ...
+**Command Line Invocation**
+<!-- If you are able to replicate this bug by running mysql-memory-server from the CLI, please replace "Not Applicable" with the command you used to invoke the package -->
+Not Applicable
+
+**Reproducible Code Example**
+<!-- If you are able to replicate this bug with application code that uses this package, please replace "Not Applicable" with the code that reproduces the bug -->
+Not Applicable
 
 **Expected behavior**
 --
@@ -42,6 +42,7 @@ None
 - OS and OS version (e.g macOS 15.0.1): 
 - JS runtime and runtime version (E.g Node.js 22.9.0):
 - mysql-memory-server version:
+- In which environment does this bug occur? (Application Code, CLI, or both):
 
 **Additional context**
 --
