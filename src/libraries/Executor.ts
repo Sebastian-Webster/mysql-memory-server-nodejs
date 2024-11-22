@@ -178,7 +178,6 @@ class Executor {
                         }
                     } else if (file.includes('ready for connections. Version:')) {
                         fs.unwatchFile(errorLogFile)
-                        removeExitHandler()
                         resolve({
                             port,
                             xPort: mySQLXPort,
@@ -189,6 +188,8 @@ class Executor {
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
+
+                                    removeExitHandler()
                                    
                                     const killed = await this.#killProcess(process)
                                     
