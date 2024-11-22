@@ -5,13 +5,14 @@ import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
 import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
-import DBDestroySignal from "./AbortSignal";
 import { ExecuteFileReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
+import { onExit } from "signal-exit";
 
 class Executor {
     logger: Logger;
+    DBDestroySignal = new AbortController();
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -19,7 +20,7 @@ class Executor {
 
     #executeFile(command: string, args: string[]): Promise<ExecuteFileReturn> {
         return new Promise(resolve => {
-            execFile(command, args, {signal: DBDestroySignal.signal}, (error, stdout, stderr) => {
+            execFile(command, args, {signal: this.DBDestroySignal.signal}, (error, stdout, stderr) => {
                 resolve({error, stdout, stderr})
             })
         })
@@ -75,7 +76,14 @@ class Executor {
             const socket = os.platform() === 'win32' ? `MySQL-${crypto.randomUUID()}` : `${dbPath}/m.sock`
             const xSocket = os.platform() === 'win32' ? `MySQLX-${crypto.randomUUID()}` : `${dbPath}/x.sock`
 
-            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            const removeExitHandler = onExit(() => {
+                this.DBDestroySignal.abort()
+                if (options._DO_NOT_USE_deleteDBAfterStopped) {
+                    fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
+                }
+            })
+
+            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
@@ -111,7 +119,7 @@ class Executor {
                         await this.#deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
-                    this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
+                    this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
                 } finally {
                     try {
                         if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
@@ -170,6 +178,7 @@ class Executor {
                         }
                     } else if (file.includes('ready for connections. Version:')) {
                         fs.unwatchFile(errorLogFile)
+                        removeExitHandler()
                         resolve({
                             port,
                             xPort: mySQLXPort,
