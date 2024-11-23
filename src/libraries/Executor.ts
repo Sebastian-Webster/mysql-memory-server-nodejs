@@ -65,6 +65,20 @@ class Executor {
         }
     }
 
+    //Returns a path to the binary if it should be deleted
+    //If it should not be deleted then it returns null
+    #returnBinaryPathToDelete(binaryFilepath: string, options: InternalServerOptions): string | null {
+        if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
+            const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
+            const binariesIndex = splitPath.indexOf('binaries')
+            //The path will be the directory path for the binary download
+            splitPath.splice(binariesIndex + 2)
+            return splitPath.join('/')
+        }
+
+        return null
+    }
+
     #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
@@ -78,8 +92,14 @@ class Executor {
 
             const removeExitHandler = onExit(() => {
                 this.DBDestroySignal.abort()
+
                 if (options._DO_NOT_USE_deleteDBAfterStopped) {
                     fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
+                }
+
+                const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
+                if (binaryPathToDelete) {
+                    fs.rmSync(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
                 }
             })
 
@@ -122,13 +142,9 @@ class Executor {
                     this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
                 } finally {
                     try {
-                        if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
-                            const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/')
-                            const binariesIndex = splitPath.indexOf('binaries')
-                            //The path will be the directory path for the binary download
-                            splitPath.splice(binariesIndex + 2)
-                            //Delete the binary folder
-                            await fsPromises.rm(splitPath.join('/'), {force: true, recursive: true})
+                        const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
+                        if (binaryPathToDelete) {
+                            await fsPromises.rm(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
                         }
                     } catch (e) {
                         this.logger.error('An error occurred while deleting no longer needed MySQL binary:', e)  
