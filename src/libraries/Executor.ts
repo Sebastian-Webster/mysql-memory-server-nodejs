@@ -13,6 +13,7 @@ import { onExit } from "signal-exit";
 class Executor {
     logger: Logger;
     DBDestroySignal = new AbortController();
+    removeExitHandler: () => void
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -89,27 +90,6 @@ class Executor {
 
             const socket = os.platform() === 'win32' ? `MySQL-${crypto.randomUUID()}` : `${dbPath}/m.sock`
             const xSocket = os.platform() === 'win32' ? `MySQLX-${crypto.randomUUID()}` : `${dbPath}/x.sock`
-
-            const removeExitHandler = onExit(() => {
-                this.DBDestroySignal.abort()
-
-                if (options._DO_NOT_USE_deleteDBAfterStopped) {
-                    try {
-                        fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
-                    } catch (e) {
-                        this.logger.error('An error occurred while deleting database directory path:', e)
-                    }
-                }
-
-                const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
-                if (binaryPathToDelete) {
-                    try {
-                        fs.rmSync(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
-                    } catch (e) {
-                        this.logger.error('An error occurred while deleting database binary:', e)
-                    }
-                }
-            })
 
             const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
@@ -213,7 +193,7 @@ class Executor {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
 
-                                    removeExitHandler()
+                                    this.removeExitHandler()
                                    
                                     const killed = await this.#killProcess(process)
                                     
@@ -440,6 +420,27 @@ class Executor {
     }
 
     async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
+        this.removeExitHandler = onExit(() => {
+            this.DBDestroySignal.abort()
+
+            if (options._DO_NOT_USE_deleteDBAfterStopped) {
+                try {
+                    fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
+                } catch (e) {
+                    this.logger.error('An error occurred while deleting database directory path:', e)
+                }
+            }
+
+            const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
+            if (binaryPathToDelete) {
+                try {
+                    fs.rmSync(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
+                } catch (e) {
+                    this.logger.error('An error occurred while deleting database binary:', e)
+                }
+            }
+        })
+
         let retries = 0;
 
         const datadir = normalizePath(`${options._DO_NOT_USE_dbPath}/data`)
