@@ -94,12 +94,20 @@ class Executor {
                 this.DBDestroySignal.abort()
 
                 if (options._DO_NOT_USE_deleteDBAfterStopped) {
-                    fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
+                    try {
+                        fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
+                    } catch (e) {
+                        this.logger.error('An error occurred while deleting database directory path:', e)
+                    }
                 }
 
                 const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
                 if (binaryPathToDelete) {
-                    fs.rmSync(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
+                    try {
+                        fs.rmSync(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
+                    } catch (e) {
+                        this.logger.error('An error occurred while deleting database binary:', e)
+                    }
                 }
             })
 
