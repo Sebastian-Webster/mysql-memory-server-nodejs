@@ -9,14 +9,16 @@ export type ServerOptions = {
     lockRetries?: number | undefined;
     lockRetryWait?: number | undefined;
     username?: string | undefined;
-    deleteDBAfterStopped?: boolean | undefined;
-    dbPath?: string | undefined;
     ignoreUnsupportedSystemVersion?: boolean | undefined;
     port?: number | undefined;
     xPort?: number | undefined;
-    binaryDirectoryPath?: string | undefined;
     downloadRetries?: number | undefined;
     initSQLString?: string | undefined;
+    _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined;
+    _DO_NOT_USE_dbPath?: string | undefined;
+    _DO_NOT_USE_binaryDirectoryPath?: string | undefined;
+    _DO_NOT_USE_beforeSignalCleanupMessage?: string | undefined;
+    _DO_NOT_USE_afterSignalCleanupMessage?: string | undefined;
 };
 export type InternalServerOptions = {
     version?: string | undefined;
@@ -27,14 +29,16 @@ export type InternalServerOptions = {
     lockRetries: number;
     lockRetryWait: number;
     username: string;
-    deleteDBAfterStopped: boolean;
-    dbPath: string;
     ignoreUnsupportedSystemVersion: boolean;
     port: number;
     xPort: number;
-    binaryDirectoryPath: string;
     downloadRetries: number;
     initSQLString: string;
+    _DO_NOT_USE_deleteDBAfterStopped: boolean;
+    _DO_NOT_USE_dbPath: string;
+    _DO_NOT_USE_binaryDirectoryPath: string;
+    _DO_NOT_USE_beforeSignalCleanupMessage: string;
+    _DO_NOT_USE_afterSignalCleanupMessage: string;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;
@@ -47,6 +51,8 @@ export type ExecuteFileReturn = {
 export type MySQLDB = {
     port: number;
     xPort: number;
+    socket: string;
+    xSocket: string;
     dbName: string;
     username: string;
     stop: () => Promise<void>;
@@ -65,4 +71,11 @@ export type InstalledMySQLVersion = {
 export type BinaryInfo = {
     url: string;
     version: string;
+};
+export type OptionTypeChecks = {
+    [key in keyof Required<ServerOptions>]: {
+        check: (opt: any) => boolean;
+        errorMessage: string;
+        definedType: "string" | "boolean" | "number";
+    };
 };

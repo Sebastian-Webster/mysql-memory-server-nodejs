@@ -15,22 +15,29 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_deleteDatabaseDirectory, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
+var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_deleteDatabaseDirectory, _Executor_returnBinaryPathToDelete, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const semver_1 = require("semver");
@@ -38,13 +45,13 @@ const os = __importStar(require("os"));
 const fsPromises = __importStar(require("fs/promises"));
 const fs = __importStar(require("fs"));
 const Port_1 = require("./Port");
-const AbortSignal_1 = __importDefault(require("./AbortSignal"));
 const path_1 = require("path");
-const proper_lockfile_1 = require("proper-lockfile");
 const FileLock_1 = require("./FileLock");
+const signal_exit_1 = require("signal-exit");
 class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
+        this.DBDestroySignal = new AbortController();
         this.logger = logger;
     }
     getMySQLVersion(preferredVersion) {
@@ -107,8 +114,34 @@ class Executor {
         });
     }
     async startMySQL(options, binaryFilepath) {
+        this.removeExitHandler = (0, signal_exit_1.onExit)(() => {
+            if (options._DO_NOT_USE_beforeSignalCleanupMessage) {
+                console.log(options._DO_NOT_USE_beforeSignalCleanupMessage);
+            }
+            this.DBDestroySignal.abort();
+            if (options._DO_NOT_USE_deleteDBAfterStopped) {
+                try {
+                    fs.rmSync(options._DO_NOT_USE_dbPath, { recursive: true, maxRetries: 50, force: true });
+                }
+                catch (e) {
+                    this.logger.error('An error occurred while deleting database directory path:', e);
+                }
+            }
+            const binaryPathToDelete = __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_returnBinaryPathToDelete).call(this, binaryFilepath, options);
+            if (binaryPathToDelete) {
+                try {
+                    fs.rmSync(binaryPathToDelete, { force: true, recursive: true, maxRetries: 50 });
+                }
+                catch (e) {
+                    this.logger.error('An error occurred while deleting database binary:', e);
+                }
+            }
+            if (options._DO_NOT_USE_afterSignalCleanupMessage) {
+                console.log(options._DO_NOT_USE_afterSignalCleanupMessage);
+            }
+        });
         let retries = 0;
-        const datadir = (0, path_1.normalize)(`${options.dbPath}/data`);
+        const datadir = (0, path_1.normalize)(`${options._DO_NOT_USE_dbPath}/data`);
         do {
             await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binaryFilepath, datadir, true);
             this.logger.log('Setting up directories was successful');
@@ -117,7 +150,7 @@ class Executor {
             this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries);
             try {
                 this.logger.log('Starting MySQL process');
-                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, options.dbPath, binaryFilepath);
+                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, binaryFilepath);
                 this.logger.log('Starting process was successful');
                 return resolved;
             }
@@ -140,7 +173,7 @@ class Executor {
 }
 _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_executeFile(command, args) {
     return new Promise(resolve => {
-        (0, child_process_1.execFile)(command, args, { signal: AbortSignal_1.default.signal }, (error, stdout, stderr) => {
+        (0, child_process_1.execFile)(command, args, { signal: this.DBDestroySignal.signal }, (error, stdout, stderr) => {
             resolve({ error, stdout, stderr });
         });
     });
@@ -181,13 +214,24 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             this.logger.log('DB data directory deletion failed. Now on retry', retries);
         }
     }
+}, _Executor_returnBinaryPathToDelete = function _Executor_returnBinaryPathToDelete(binaryFilepath, options) {
+    if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
+        const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/');
+        const binariesIndex = splitPath.indexOf('binaries');
+        //The path will be the directory path for the binary download
+        splitPath.splice(binariesIndex + 2);
+        return splitPath.join('/');
+    }
+    return null;
 }, _Executor_startMySQLProcess = function _Executor_startMySQLProcess(options, port, mySQLXPort, datadir, dbPath, binaryFilepath) {
     const errors = [];
     const logFile = `${dbPath}/log.log`;
     const errorLogFile = `${datadir}/errorlog.err`;
     return new Promise(async (resolve, reject) => {
         await fsPromises.rm(logFile, { force: true });
-        const process = (0, child_process_1.spawn)(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${dbPath}/x.sock`, `--socket=${dbPath}/m.sock`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], { signal: AbortSignal_1.default.signal, killSignal: 'SIGKILL' });
+        const socket = os.platform() === 'win32' ? `MySQL-${crypto.randomUUID()}` : `${dbPath}/m.sock`;
+        const xSocket = os.platform() === 'win32' ? `MySQLX-${crypto.randomUUID()}` : `${dbPath}/x.sock`;
+        const process = (0, child_process_1.spawn)(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], { signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL' });
         //resolveFunction is the function that will be called to resolve the promise that stops the database.
         //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
         //Once ran, resolveFunction will be called.
@@ -206,7 +250,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             if (portIssue || xPortIssue) {
                 this.logger.log('Error log when exiting for port in use error:', errorLog);
                 try {
-                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, options.dbPath);
+                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, options._DO_NOT_USE_dbPath);
                 }
                 catch (e) {
                     this.logger.error(e);
@@ -215,22 +259,18 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 return reject('Port is already in use');
             }
             try {
-                if (options.deleteDBAfterStopped) {
+                if (options._DO_NOT_USE_deleteDBAfterStopped) {
                     await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, dbPath);
                 }
             }
             catch (e) {
-                this.logger.error('An erorr occurred while deleting database directory at path:', dbPath, '| The error was:', e);
+                this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e);
             }
             finally {
                 try {
-                    if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
-                        const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/');
-                        const binariesIndex = splitPath.indexOf('binaries');
-                        //The path will be the directory path for the binary download
-                        splitPath.splice(binariesIndex + 2);
-                        //Delete the binary folder
-                        await fsPromises.rm(splitPath.join('/'), { force: true, recursive: true });
+                    const binaryPathToDelete = __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_returnBinaryPathToDelete).call(this, binaryFilepath, options);
+                    if (binaryPathToDelete) {
+                        await fsPromises.rm(binaryPathToDelete, { force: true, recursive: true, maxRetries: 50 });
                     }
                 }
                 catch (e) {
@@ -282,11 +322,14 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     resolve({
                         port,
                         xPort: mySQLXPort,
+                        socket,
+                        xSocket,
                         dbName: options.dbName,
                         username: options.username,
                         stop: () => {
                             return new Promise(async (resolve, reject) => {
                                 resolveFunction = resolve;
+                                this.removeExitHandler();
                                 const killed = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_killProcess).call(this, process);
                                 if (!killed) {
                                     reject();
@@ -354,11 +397,11 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 let lockRelease;
                 while (true) {
                     try {
-                        lockRelease = (0, proper_lockfile_1.lockSync)(copyPath, { realpath: false });
+                        lockRelease = await (0, FileLock_1.lockFile)(copyPath);
                         break;
                     }
                     catch (e) {
-                        if (e.code === 'ELOCKED') {
+                        if (e === 'LOCKED') {
                             this.logger.log('Waiting for lock for libaio copy');
                             await (0, FileLock_1.waitForLock)(copyPath, options);
                             this.logger.log('Lock is gone for libaio copy');
@@ -396,7 +439,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     }
                     finally {
                         try {
-                            lockRelease();
+                            await lockRelease();
                         }
                         catch (e) {
                             this.logger.error('Error unlocking libaio file:', e);
@@ -427,7 +470,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         initText += `\n${options.initSQLString}`;
     }
     this.logger.log('Writing init file');
-    await fsPromises.writeFile(`${options.dbPath}/init.sql`, initText, { encoding: 'utf8' });
+    await fsPromises.writeFile(`${options._DO_NOT_USE_dbPath}/init.sql`, initText, { encoding: 'utf8' });
     this.logger.log('Finished writing init file');
 };
 exports.default = Executor;

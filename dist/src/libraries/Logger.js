@@ -1,13 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const LOG_LEVELS = {
-    'LOG': 0,
-    'WARN': 1,
-    'ERROR': 2
-};
+const constants_1 = require("../constants");
 class Logger {
     constructor(level) {
-        this.LOG_LEVEL = LOG_LEVELS[level];
+        this.LOG_LEVEL = constants_1.LOG_LEVELS[level];
     }
     log(...args) {
         if (this.LOG_LEVEL === 0) {

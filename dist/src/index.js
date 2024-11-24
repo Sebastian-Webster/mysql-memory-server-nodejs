@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -34,38 +44,37 @@ const semver_1 = require("semver");
 const Version_1 = __importDefault(require("./libraries/Version"));
 const versions_json_1 = __importDefault(require("./versions.json"));
 const Downloader_1 = require("./libraries/Downloader");
-const crypto_1 = require("crypto");
-const path_1 = require("path");
-const constants_1 = __importDefault(require("./constants"));
+const constants_1 = require("./constants");
 async function createDB(opts) {
-    const defaultOptions = {
-        dbName: 'dbdata',
-        logLevel: 'ERROR',
-        portRetries: 10,
-        downloadBinaryOnce: true,
-        lockRetries: 1000,
-        lockRetryWait: 1000,
-        username: 'root',
-        deleteDBAfterStopped: true,
-        //mysqlmsn = MySQL Memory Server Node.js
-        dbPath: (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
-        ignoreUnsupportedSystemVersion: false,
-        port: 0,
-        xPort: 0,
-        binaryDirectoryPath: `${os.tmpdir()}/mysqlmsn/binaries`,
-        downloadRetries: 10,
-        initSQLString: ''
-    };
-    const options = { ...defaultOptions, ...opts };
+    const suppliedOpts = opts || {};
+    const suppliedOptsKeys = Object.keys(suppliedOpts);
+    for (const opt of constants_1.INTERNAL_OPTIONS) {
+        if (suppliedOptsKeys.includes(opt)) {
+            console.warn(`[ mysql-memory-server - Options WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`);
+        }
+    }
+    const options = (0, constants_1.DEFAULT_OPTIONS_GENERATOR)();
+    for (const opt of suppliedOptsKeys) {
+        if (!constants_1.DEFAULT_OPTIONS_KEYS.includes(opt)) {
+            throw `Option ${opt} is not a valid option.`;
+        }
+        if (!constants_1.OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
+            //Supplied option failed the check
+            throw constants_1.OPTION_TYPE_CHECKS[opt].errorMessage;
+        }
+        if (suppliedOpts[opt] !== undefined) {
+            options[opt] = suppliedOpts[opt];
+        }
+    }
     const logger = new Logger_1.default(options.logLevel);
     const executor = new Executor_1.default(logger);
     const version = await executor.getMySQLVersion(options.version);
-    const unsupportedMySQLIsInstalled = version && (0, semver_1.lt)(version.version, constants_1.default.MIN_SUPPORTED_MYSQL);
+    const unsupportedMySQLIsInstalled = version && (0, semver_1.lt)(version.version, constants_1.MIN_SUPPORTED_MYSQL);
     const throwUnsupportedError = unsupportedMySQLIsInstalled && !options.ignoreUnsupportedSystemVersion && !options.version;
     if (throwUnsupportedError) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`;
     }
-    if (options.version && (0, semver_1.lt)(options.version, constants_1.default.MIN_SUPPORTED_MYSQL)) {
+    if (options.version && (0, semver_1.lt)(options.version, constants_1.MIN_SUPPORTED_MYSQL)) {
         //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
         //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
         throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`;
