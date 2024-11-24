@@ -421,6 +421,10 @@ class Executor {
 
     async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
         this.removeExitHandler = onExit(() => {
+            if (options._DO_NOT_USE_beforeSignalCleanupMessage) {
+                console.log(options._DO_NOT_USE_beforeSignalCleanupMessage)
+            }
+
             this.DBDestroySignal.abort()
 
             if (options._DO_NOT_USE_deleteDBAfterStopped) {
@@ -438,6 +442,10 @@ class Executor {
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database binary:', e)
                 }
+            }
+
+            if (options._DO_NOT_USE_afterSignalCleanupMessage) {
+                console.log(options._DO_NOT_USE_afterSignalCleanupMessage)
             }
         })
 

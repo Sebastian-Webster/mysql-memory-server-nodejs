@@ -23,7 +23,9 @@ export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     _DO_NOT_USE_deleteDBAfterStopped: true,
     //mysqlmsn = MySQL Memory Server Node.js
     _DO_NOT_USE_dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
-    _DO_NOT_USE_binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`
+    _DO_NOT_USE_binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
+    _DO_NOT_USE_beforeSignalCleanupMessage: '',
+    _DO_NOT_USE_afterSignalCleanupMessage: ''
 });
 
 export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS_GENERATOR()))
@@ -34,7 +36,7 @@ export const LOG_LEVELS = {
     'ERROR': 2
 } as const;
 
-export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath'] as const;
+export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_beforeSignalCleanup', '_DO_NOT_USE_afterSignalCleanup'] as const;
 
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
@@ -115,6 +117,16 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     _DO_NOT_USE_binaryDirectoryPath: {
         check: (opt: any) => opt === undefined || typeof opt === 'string',
         errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.',
+        definedType: 'string'
+    },
+    _DO_NOT_USE_beforeSignalCleanupMessage: {
+        check: (opt: any) => opt === undefined || typeof opt === 'string',
+        errorMessage: 'Option _DO_NOT_USE_beforeSignalCleanup must be either undefined or a string.',
+        definedType: 'string'
+    },
+    _DO_NOT_USE_afterSignalCleanupMessage: {
+        check: (opt: any) => opt === undefined || typeof opt === 'string',
+        errorMessage: 'Option _DO_NOT_USE_afterSignalCleanup must be either undefined or a string.',
         definedType: 'string'
     }
 } as const;

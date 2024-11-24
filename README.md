@@ -213,11 +213,9 @@ The internal queries that are ran before the queries in ```initSQLString``` are 
 ***
 ### :warning: Internal Options :warning:
 
-The following options are only meant for internal debugging use. Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
+The following options are only meant for internal use (such as CI or the internals for running this package via the CLI). Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
 
 - `_DO_NOT_USE_deleteDBAfterStopped: boolean`
-
-Required: No
 
 Default: true
 
@@ -225,16 +223,28 @@ Description: Changes whether or not the database will be deleted after it has be
 
 - `_DO_NOT_USE_dbPath: string`
 
-Required: No
-
 Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes).
 
 Description: The folder to store database-related data in
 
 - `_DO_NOT_USE_binaryDirectoryPath: string`
 
-Required: No
-
 Default: `TMPDIR/mysqlmsn/binaries` (replacing TMPDIR with the OS temp directory)
 
 Description: The folder to store the MySQL binaries when they are downloaded from the CDN.
+
+- `_DO_NOT_USE_beforeSignalCleanupMessage: string`
+
+Required: No
+
+Default: undefined
+
+Description: The message to get displayed in the console before the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.
+
+- `_DO_NOT_USE_afterSignalCleanupMessage: string`
+
+Required: No
+
+Default: undefined
+
+Description: The message to get displayed in the console after the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.

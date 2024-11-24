@@ -4,7 +4,10 @@ import { OPTION_TYPE_CHECKS } from "./constants";
 
 async function main() {
     const definedOptions = process.argv.filter((option) => option.startsWith('--'))
-    const options = {}
+    const options = {
+        _DO_NOT_USE_beforeSignalCleanupMessage: 'Shutting down the epehemeral MySQL database and cleaning all related files...',
+        _DO_NOT_USE_afterSignalCleanupMessage: 'Shutdown and cleanup is complete.'
+    }
     for (const opt of definedOptions) {
         const index = process.argv.indexOf(opt)
         const optionValue = process.argv[index + 1]
