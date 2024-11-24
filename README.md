@@ -1,6 +1,6 @@
 # MySQL Memory Server
 
-This package allows you to create ephemeral MySQL databases from JavaScript and/or TypeScript code, great for testing. When creating a new database, if the version selected is not installed on the system, the binary is downloaded from MySQL's CDN (cdn.mysql.com)
+This package allows you to create ephemeral MySQL databases from JavaScript and/or TypeScript code and also the CLI, great for testing, CI, and learning MySQL. When creating a new database, if the version selected is not installed on the system, the binary is downloaded from MySQL's CDN (cdn.mysql.com)
 
 You can run multiple MySQL databases with this package at the same time. Each database will use a random free port. The databases will automatically shutdown when the JS runtime process exits. A `stop()` method is also provided to stop each database instance.
 
@@ -30,7 +30,7 @@ Requirements for Linux:
 - If using the system installed MySQL server: 8.0.20 and newer
 - If not using the system installed MySQL server: 8.0.39, 8.0.40, 8.1.0, 8.2.0, 8.3.0, 8.4.2, 8.4.3, 9.0.1, 9.1.0
 
-## Usage
+## Example Usage - Application Code
 
 This package supports both ESM and CJS so you can use import or require.
 
@@ -45,7 +45,7 @@ const db = await createDB()
 
 //Create a new database with custom options set
 const db = await createDB({
-        // see Options for the options you can use in this object and their default values
+        // see Options below for the options you can use in this object and their default values
         // for example:
         version: '8.4.x'
 })
@@ -73,6 +73,14 @@ await db.stop()
 MySQL database initialization can take some time. If you run into a "Timeout exceeded" error with your tests, the timeout should be extended.
 If using Jest, information about how to do this can be found here: https://jestjs.io/docs/jest-object#jestsettimeouttimeout
 
+## Example Usage - CLI
+
+```sh
+# Options are added by doing --{optionName} {optionValue}
+# See Options below for the options you can use with this package
+npx mysql-memory-server --version 8.4.x
+```
+
 ## Documentation
 
 ##### `createDB(options: ServerOptions): Promise<MySQLDB>`
@@ -93,7 +101,7 @@ If on Windows, this is the name of the named pipe that the MySQL X Plugin is lis
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
-###### Options:
+#### Options:
 - `version: string`
 
 Required: No
@@ -213,11 +221,9 @@ The internal queries that are ran before the queries in ```initSQLString``` are 
 ***
 ### :warning: Internal Options :warning:
 
-The following options are only meant for internal debugging use. Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
+The following options are only meant for internal use (such as CI or the internals for running this package via the CLI). Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
 
 - `_DO_NOT_USE_deleteDBAfterStopped: boolean`
-
-Required: No
 
 Default: true
 
@@ -225,16 +231,28 @@ Description: Changes whether or not the database will be deleted after it has be
 
 - `_DO_NOT_USE_dbPath: string`
 
-Required: No
-
 Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes).
 
 Description: The folder to store database-related data in
 
 - `_DO_NOT_USE_binaryDirectoryPath: string`
 
-Required: No
-
 Default: `TMPDIR/mysqlmsn/binaries` (replacing TMPDIR with the OS temp directory)
 
 Description: The folder to store the MySQL binaries when they are downloaded from the CDN.
+
+- `_DO_NOT_USE_beforeSignalCleanupMessage: string`
+
+Required: No
+
+Default: undefined
+
+Description: The message to get displayed in the console before the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.
+
+- `_DO_NOT_USE_afterSignalCleanupMessage: string`
+
+Required: No
+
+Default: undefined
+
+Description: The message to get displayed in the console after the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.

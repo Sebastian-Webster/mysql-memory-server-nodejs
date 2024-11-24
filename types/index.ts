@@ -18,7 +18,9 @@ export type ServerOptions = {
     initSQLString?: string | undefined
     _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined,
     _DO_NOT_USE_dbPath?: string | undefined,
-    _DO_NOT_USE_binaryDirectoryPath?: string | undefined
+    _DO_NOT_USE_binaryDirectoryPath?: string | undefined,
+    _DO_NOT_USE_beforeSignalCleanupMessage?: string | undefined,
+    _DO_NOT_USE_afterSignalCleanupMessage?: string | undefined
 }
 
 export type InternalServerOptions = {
@@ -38,6 +40,8 @@ export type InternalServerOptions = {
     _DO_NOT_USE_deleteDBAfterStopped: boolean,
     _DO_NOT_USE_dbPath: string,
     _DO_NOT_USE_binaryDirectoryPath: string,
+    _DO_NOT_USE_beforeSignalCleanupMessage: string,
+    _DO_NOT_USE_afterSignalCleanupMessage: string
 }
 
 export type ExecutorOptions = {
@@ -81,6 +85,7 @@ export type BinaryInfo = {
 export type OptionTypeChecks = {
     [key in keyof Required<ServerOptions>]: {
         check: (opt: any) => boolean,
-        errorMessage: string
+        errorMessage: string,
+        definedType: "string" | "boolean" | "number"
     }
 }
