@@ -40,7 +40,15 @@ async function main() {
     console.log('Creating ephemeral MySQL database...')
     const db = await createDB(options);
     console.log(`A MySQL databases has been successfully created with the following parameters:\n\nUsername: ${db.username} \nDatabase Name: ${db.dbName} \nPort: ${db.port} \nX Plugin Port: ${db.xPort} \nSocket: ${db.socket} \nX Plugin Socket: ${db.xSocket}\n`)
-    console.log(`If you want to use the MySQL CLI client to connect to the database, you can use either commands: \nmysql -u ${db.username} -P ${db.port} --protocol tcp \nOR\nmysql -u ${db.username} --socket ${db.socket}`)
+    if (process.platform === 'win32') {
+        //The connection information logs will be different for Windows compared to other platforms.
+        //Windows uses mysqlsh instead of mysql to invoke the client shell, needs a --sql flag to be put into SQL mode, and also does not have a protocol flag.
+        //Also according to https://bugs.mysql.com/bug.php?id=106852, you cannot log into a MySQL database with a named pipe for the first connection so a socket connection suggestion
+        //should only be displayed for non-Windows platforms.
+        console.log(`If you want to use the MySQL CLI client to connect to the database, you can use the following command: \nmysqlsh --sql -u ${db.username} -P ${db.port}`)
+    } else {
+        console.log(`If you want to use the MySQL CLI client to connect to the database, you can use either commands: \nmysql -u ${db.username} -P ${db.port} --protocol tcp \nOR\nmysql -u ${db.username} --socket ${db.socket}`)
+    }
 }
 
 main()
