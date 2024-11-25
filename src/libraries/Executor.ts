@@ -9,7 +9,7 @@ import { ExecuteFileReturn, InstalledMySQLVersion, InternalServerOptions, MySQLD
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
-import * as crypto from 'crypto'
+import { randomUUID } from "crypto";
 
 class Executor {
     logger: Logger;
@@ -89,8 +89,8 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
 
-            const socket = os.platform() === 'win32' ? `MySQL-${crypto.randomUUID()}` : `${dbPath}/m.sock`
-            const xSocket = os.platform() === 'win32' ? `MySQLX-${crypto.randomUUID()}` : `${dbPath}/x.sock`
+            const socket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/m.sock`
+            const xSocket = os.platform() === 'win32' ? `MySQLX-${randomUUID()}` : `${dbPath}/x.sock`
 
             const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
