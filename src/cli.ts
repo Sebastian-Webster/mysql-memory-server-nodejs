@@ -45,9 +45,9 @@ async function main() {
         //Windows uses mysqlsh instead of mysql to invoke the client shell, needs a --sql flag to be put into SQL mode, and also does not have a protocol flag.
         //Also according to https://bugs.mysql.com/bug.php?id=106852, you cannot log into a MySQL database with a named pipe for the first connection so a socket connection suggestion
         //should only be displayed for non-Windows platforms.
-        console.log(`If you want to use the MySQL CLI client to connect to the database, you can use the following command: \nmysqlsh --sql -u ${db.username} -P ${db.port}\nIf prompted for a password, press enter. The database does not have a password set.`)
+        console.log(`If you want to use the MySQL CLI client to connect to the database, you can use the following command: \nmysqlsh --sql -u ${db.username} -P ${db.port}\nIf prompted for a password, leave the password field blank. The database does not have a password set.`)
     } else {
-        console.log(`If you want to use the MySQL CLI client to connect to the database, you can use either commands: \nmysql -u ${db.username} -P ${db.port} --protocol tcp \nOR\nmysql -u ${db.username} --socket ${db.socket}\nIf prompted for a password, press enter. The database does not have a password set.`)
+        console.log(`If you want to use the MySQL CLI client to connect to the database, you can use either commands: \nmysql -u ${db.username} -P ${db.port} --protocol tcp \nOR\nmysql -u ${db.username} --socket ${db.socket}\nIf prompted for a password, leave the password field blank. The database does not have a password set.`)
     }
 }
 
