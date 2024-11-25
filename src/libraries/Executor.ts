@@ -9,6 +9,7 @@ import { ExecuteFileReturn, InstalledMySQLVersion, InternalServerOptions, MySQLD
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
+import * as crypto from 'crypto'
 
 class Executor {
     logger: Logger;
