@@ -78,7 +78,7 @@ If using Jest, information about how to do this can be found here: https://jestj
 ```sh
 # Options are added by doing --{optionName} {optionValue}
 # See Options below for the options you can use with this package
-npx mysql-memory-server --version 8.4.x
+npx mysql-memory-server@latest --version 8.4.x
 ```
 
 ## Documentation
