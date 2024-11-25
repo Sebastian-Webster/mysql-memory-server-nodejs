@@ -48,7 +48,7 @@ const Port_1 = require("./Port");
 const path_1 = require("path");
 const FileLock_1 = require("./FileLock");
 const signal_exit_1 = require("signal-exit");
-const crypto = __importStar(require("crypto"));
+const crypto_1 = require("crypto");
 class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
@@ -230,8 +230,8 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
     const errorLogFile = `${datadir}/errorlog.err`;
     return new Promise(async (resolve, reject) => {
         await fsPromises.rm(logFile, { force: true });
-        const socket = os.platform() === 'win32' ? `MySQL-${crypto.randomUUID()}` : `${dbPath}/m.sock`;
-        const xSocket = os.platform() === 'win32' ? `MySQLX-${crypto.randomUUID()}` : `${dbPath}/x.sock`;
+        const socket = os.platform() === 'win32' ? `MySQL-${(0, crypto_1.randomUUID)()}` : `${dbPath}/m.sock`;
+        const xSocket = os.platform() === 'win32' ? `MySQLX-${(0, crypto_1.randomUUID)()}` : `${dbPath}/x.sock`;
         const process = (0, child_process_1.spawn)(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], { signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL' });
         //resolveFunction is the function that will be called to resolve the promise that stops the database.
         //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
