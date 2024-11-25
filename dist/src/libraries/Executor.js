@@ -48,6 +48,7 @@ const Port_1 = require("./Port");
 const path_1 = require("path");
 const FileLock_1 = require("./FileLock");
 const signal_exit_1 = require("signal-exit");
+const crypto = __importStar(require("crypto"));
 class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
