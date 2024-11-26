@@ -221,7 +221,7 @@ The internal queries that are ran before the queries in ```initSQLString``` are 
 ***
 ### :warning: Internal Options :warning:
 
-The following options are only meant for internal use (such as CI or the internals for running this package via the CLI). Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
+The following options are only meant for internal use (such as for testing this package or the internals for running this package via the CLI). Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
 
 - `_DO_NOT_USE_deleteDBAfterStopped: boolean`
 
@@ -243,15 +243,11 @@ Description: The folder to store the MySQL binaries when they are downloaded fro
 
 - `_DO_NOT_USE_beforeSignalCleanupMessage: string`
 
-Required: No
-
 Default: undefined
 
 Description: The message to get displayed in the console before the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.
 
 - `_DO_NOT_USE_afterSignalCleanupMessage: string`
-
-Required: No
 
 Default: undefined
 
