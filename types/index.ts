@@ -16,7 +16,7 @@ export type ServerOptions = {
     xPort?: number | undefined,
     downloadRetries?: number | undefined,
     initSQLString?: string | undefined,
-    arch: "arm64" | "x64" | undefined
+    arch: "arm64" | "x64" | undefined,
     _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined,
     _DO_NOT_USE_dbPath?: string | undefined,
     _DO_NOT_USE_binaryDirectoryPath?: string | undefined,

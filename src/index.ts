@@ -60,7 +60,7 @@ export async function createDB(opts?: ServerOptions) {
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
         try {
-            binaryInfo = getBinaryURL(MySQLVersions, options.version)
+            binaryInfo = getBinaryURL(MySQLVersions, options.version, options)
             logger.log('Using MySQL binary version:', binaryInfo.version, 'from URL:', binaryInfo.url)
         } catch (e) {
             logger.error(e)
