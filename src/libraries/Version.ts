@@ -2,7 +2,7 @@ import { InternalServerOptions, MySQLVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce } from "semver";
 
-export default function getBinaryURL(versions: MySQLVersion[], versionToGet: string = "9.x", options: InternalServerOptions) {
+export default function getBinaryURL(versions: MySQLVersion[], versionToGet: string = "x", options: InternalServerOptions) {
     let availableVersions = versions;
 
     availableVersions = availableVersions.filter(v => v.arch === options.arch)
