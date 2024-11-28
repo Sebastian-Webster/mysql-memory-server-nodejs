@@ -1,13 +1,13 @@
-import { MySQLVersion } from "../../types";
+import { InternalServerOptions, MySQLVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce } from "semver";
 
-export default function getBinaryURL(versions: MySQLVersion[], versionToGet: string = "9.x") {
+export default function getBinaryURL(versions: MySQLVersion[], versionToGet: string = "9.x", options: InternalServerOptions) {
     let availableVersions = versions;
 
-    availableVersions = availableVersions.filter(v => v.arch === process.arch)
+    availableVersions = availableVersions.filter(v => v.arch === options.arch)
 
-    if (availableVersions.length === 0) throw `No MySQL binary could be found for your CPU architecture: ${process.arch}`
+    if (availableVersions.length === 0) throw `No MySQL binary could be found for your CPU architecture: ${options.arch}`
 
     availableVersions = availableVersions.filter(v => v.os === process.platform)
 

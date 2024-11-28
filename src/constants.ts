@@ -20,6 +20,7 @@ export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
+    arch: process.arch,
     _DO_NOT_USE_deleteDBAfterStopped: true,
     //mysqlmsn = MySQL Memory Server Node.js
     _DO_NOT_USE_dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
@@ -38,6 +39,7 @@ export const LOG_LEVELS = {
 
 export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_beforeSignalCleanup', '_DO_NOT_USE_afterSignalCleanup'] as const;
 
+const allowedArches = ['x64', 'arm64', undefined]
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(opt) !== null,
@@ -102,6 +104,11 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     initSQLString: {
         check: (opt: any) => opt === undefined || typeof opt === 'string',
         errorMessage: 'Option initSQLString must be either undefined or a string.',
+        definedType: 'string'
+    },
+    arch: {
+        check: (opt: any) => allowedArches.includes(opt),
+        errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
         definedType: 'string'
     },
     _DO_NOT_USE_deleteDBAfterStopped: {

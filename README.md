@@ -218,6 +218,14 @@ Description: A string with MySQL queries to run before the database starts to ac
 
 The internal queries that are ran before the queries in ```initSQLString``` are renaming the user from ```root``` to the username specified in the ```username``` option if it's set, and creating a database with the name from the ```dbName``` option.
 
+- `arch: "arm64" | "x64"`
+
+Required: No
+
+Default: process.arch
+
+Description: The MySQL binary architecture to execute. MySQL does not offer server builds for Windows on ARM, so to get this package working on Windows on ARM, set the arch option to "x64" and Windows will emulate MySQL.
+
 ***
 ### :warning: Internal Options :warning:
 
