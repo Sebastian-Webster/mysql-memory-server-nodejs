@@ -14,7 +14,8 @@ import { randomUUID } from "crypto";
 class Executor {
     logger: Logger;
     DBDestroySignal = new AbortController();
-    removeExitHandler: () => void
+    removeExitHandler: () => void;
+    version: string;
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -190,6 +191,7 @@ class Executor {
                             xSocket,
                             dbName: options.dbName,
                             username: options.username,
+                            version: this.version,
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
@@ -420,7 +422,8 @@ class Executor {
         this.logger.log('Finished writing init file')
     }
 
-    async startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB> {
+    async startMySQL(options: InternalServerOptions, installedMySQLBinary: InstalledMySQLVersion): Promise<MySQLDB> {
+        this.version = installedMySQLBinary.version
         this.removeExitHandler = onExit(() => {
             if (options._DO_NOT_USE_beforeSignalCleanupMessage) {
                 console.log(options._DO_NOT_USE_beforeSignalCleanupMessage)
@@ -436,7 +439,7 @@ class Executor {
                 }
             }
 
-            const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
+            const binaryPathToDelete = this.#returnBinaryPathToDelete(installedMySQLBinary.path, options)
             if (binaryPathToDelete) {
                 try {
                     fs.rmSync(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
@@ -455,7 +458,7 @@ class Executor {
         const datadir = normalizePath(`${options._DO_NOT_USE_dbPath}/data`)
 
         do {
-            await this.#setupDataDirectories(options, binaryFilepath, datadir, true);
+            await this.#setupDataDirectories(options, installedMySQLBinary.path, datadir, true);
             this.logger.log('Setting up directories was successful')
 
             const port = options.port || GenerateRandomPort()
@@ -464,7 +467,7 @@ class Executor {
 
             try {
                 this.logger.log('Starting MySQL process')
-                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, binaryFilepath)
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, installedMySQLBinary.path)
                 this.logger.log('Starting process was successful')
                 return resolved
             } catch (e) {
