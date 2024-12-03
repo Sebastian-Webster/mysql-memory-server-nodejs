@@ -102,6 +102,7 @@ If on Windows, this is the name of the named pipe that the MySQL X Plugin is lis
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
 #### Options:
+##### For options that are not required, using ```undefined``` as a value will use the option's default value.
 - `version: string`
 
 Required: No
@@ -132,7 +133,7 @@ Required: No
 
 Default: "ERROR"
 
-Description: Log level for the database. If "ERROR" is used, only errors will show up in the console. If "WARN" is used, warnings and errors will show up in the console. If "LOG" is used, everything will show up in the console.
+Description: Log level for this package. If "ERROR" is used, only errors from this package will show up in the console. If "WARN" is used, warnings and errors from this package will show up in the console. If "LOG" is used, every log from this package will show up in the console.
 
 - `portRetries: number`
 
@@ -140,7 +141,7 @@ Required: No
 
 Default: 10
 
-Description: Number of times to try connecting MySQL to a randomly generated port before giving up. According to the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/server-options.html#option_mysqld_port "MySQL Documentation") if port 0 is used as the MySQL server port, the default value (3306) will be used. To get around this, a random number between 1025 - 65535 (inclusive) is generated and used for the database's port. If MySQL cannot successfully listen on a randomly generated port after `portRetries` then the `createDB()` promise is rejected. A warning is created when MySQL tries connecting to a port that is already in use.
+Description: Number of times to try connecting MySQL to a randomly generated port before giving up. According to the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/server-options.html#option_mysqld_port "MySQL Documentation") if port 0 is used as the MySQL server port, the default value (3306) will be used. To get around this, a random number between 1025 - 65535 (inclusive) is generated and used for the database's port. If MySQL cannot successfully listen on a randomly generated port after `portRetries` then the `createDB()` promise is rejected. A warning is created when MySQL tries connecting to a port that is already in use. This option only applies for the MySQL port if the MySQL port is not explicitly set or if it's set to 0. This option also only applies for the MySQL X port if the MySQL X port is not explicitly set or if it's set to 0.
 
 - `downloadBinaryOnce: boolean`
 
@@ -158,7 +159,7 @@ Required: No
 
 Default: 1,000
 
-Description: If `downloadBinaryOnce` is set to `true`, `lockRetries` is the number of times to check to see if the lock for the binary has been released (meaning it has been successfully downloaded and extracted). If the number of retries exceeds `lockRetries`, the `createDB()` promise gets rejected.
+Description: If `downloadBinaryOnce` is set to `true`, `lockRetries` is the number of times to check to see if the lock for the binary has been released (meaning it has been successfully downloaded and extracted). If the number of retries exceeds `lockRetries`, the `createDB()` promise gets rejected. This option is also used for the number of times to check to see if the lock for libaio has been released (only on Linux distros that use libaio1t64 instead of libaio1)
 
 - `lockRetryWait: number`
 
@@ -166,7 +167,7 @@ Required: No
 
 Default: 1,000
 
-Description: If `downloadBinaryOnce` is set to `true`, `lockRetryWait` is the number of milliseconds to wait before checking if the lock has been released.
+Description: If `downloadBinaryOnce` is set to `true` and/or on Linux distros that use libaio1t64 instead of libaio1, `lockRetryWait` is the number of milliseconds to wait before checking if the lock has been released.
 
 - `username: string`
 
