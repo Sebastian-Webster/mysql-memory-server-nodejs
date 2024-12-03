@@ -425,8 +425,8 @@ class Executor {
     async startMySQL(options: InternalServerOptions, installedMySQLBinary: InstalledMySQLVersion): Promise<MySQLDB> {
         this.version = installedMySQLBinary.version
         this.removeExitHandler = onExit(() => {
-            if (options._DO_NOT_USE_beforeSignalCleanupMessage) {
-                console.log(options._DO_NOT_USE_beforeSignalCleanupMessage)
+            if (options._DO_NOT_USE_cli) {
+                console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...')
             }
 
             this.DBDestroySignal.abort()
@@ -448,8 +448,8 @@ class Executor {
                 }
             }
 
-            if (options._DO_NOT_USE_afterSignalCleanupMessage) {
-                console.log(options._DO_NOT_USE_afterSignalCleanupMessage)
+            if (options._DO_NOT_USE_cli) {
+                console.log('Shutdown and cleanup is complete.')
             }
         })
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { createDB } from "./index";
 import { OPTION_TYPE_CHECKS } from "./constants";
+import { ServerOptions } from "../types";
 
 async function main() {
     const definedOptions = process.argv.filter((option) => option.startsWith('--'))
-    const options = {
-        _DO_NOT_USE_beforeSignalCleanupMessage: '\nShutting down the ephemeral MySQL database and cleaning all related files...',
-        _DO_NOT_USE_afterSignalCleanupMessage: 'Shutdown and cleanup is complete.'
+    const options: ServerOptions = {
+        _DO_NOT_USE_cli: true
     }
     for (const opt of definedOptions) {
         const index = process.argv.indexOf(opt)

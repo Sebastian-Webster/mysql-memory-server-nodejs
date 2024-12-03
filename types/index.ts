@@ -20,8 +20,7 @@ export type ServerOptions = {
     _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined,
     _DO_NOT_USE_dbPath?: string | undefined,
     _DO_NOT_USE_binaryDirectoryPath?: string | undefined,
-    _DO_NOT_USE_beforeSignalCleanupMessage?: string | undefined,
-    _DO_NOT_USE_afterSignalCleanupMessage?: string | undefined
+    _DO_NOT_USE_cli?: boolean | undefined
 }
 
 export type InternalServerOptions = {
@@ -42,8 +41,7 @@ export type InternalServerOptions = {
     _DO_NOT_USE_deleteDBAfterStopped: boolean,
     _DO_NOT_USE_dbPath: string,
     _DO_NOT_USE_binaryDirectoryPath: string,
-    _DO_NOT_USE_beforeSignalCleanupMessage: string,
-    _DO_NOT_USE_afterSignalCleanupMessage: string
+    _DO_NOT_USE_cli: boolean
 }
 
 export type ExecutorOptions = {

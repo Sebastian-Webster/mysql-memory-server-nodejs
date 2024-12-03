@@ -250,14 +250,8 @@ Default: `TMPDIR/mysqlmsn/binaries` (replacing TMPDIR with the OS temp directory
 
 Description: The folder to store the MySQL binaries when they are downloaded from the CDN.
 
-- `_DO_NOT_USE_beforeSignalCleanupMessage: string`
+- `_DO_NOT_USE_cli: boolean`
 
-Default: undefined
+Default: ```false``` if the package is not being executed via the CLI and ```true``` if it is.
 
-Description: The message to get displayed in the console before the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.
-
-- `_DO_NOT_USE_afterSignalCleanupMessage: string`
-
-Default: undefined
-
-Description: The message to get displayed in the console after the cleanup that happens when the Node.js process is stopped without the ```stop()``` method being called first.
+Description: If set to ```true```, this enables certain CLI-only functionality. For example, when ran by the CLI, logging a message to the console when a shutdown signal (like CTRL + C) has been received and the MySQL database is shutting down and getting deleted.

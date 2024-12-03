@@ -25,8 +25,7 @@ export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     //mysqlmsn = MySQL Memory Server Node.js
     _DO_NOT_USE_dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
     _DO_NOT_USE_binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
-    _DO_NOT_USE_beforeSignalCleanupMessage: '',
-    _DO_NOT_USE_afterSignalCleanupMessage: ''
+    _DO_NOT_USE_cli: false
 });
 
 export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS_GENERATOR()))
@@ -126,14 +125,9 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
         errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.',
         definedType: 'string'
     },
-    _DO_NOT_USE_beforeSignalCleanupMessage: {
-        check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_beforeSignalCleanup must be either undefined or a string.',
-        definedType: 'string'
-    },
-    _DO_NOT_USE_afterSignalCleanupMessage: {
-        check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_afterSignalCleanup must be either undefined or a string.',
-        definedType: 'string'
+    _DO_NOT_USE_cli: {
+        check: (opt: any) => opt === undefined || typeof opt === 'boolean',
+        errorMessage: 'Option _DO_NOT_USE_cli must be either undefined or a boolean.',
+        definedType: 'boolean'
     }
 } as const;
