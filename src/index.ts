@@ -27,7 +27,7 @@ export async function createDB(opts?: ServerOptions) {
 
         if (!OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
             //Supplied option failed the check
-            throw OPTION_TYPE_CHECKS[opt].errorMessage
+            throw `${OPTION_TYPE_CHECKS[opt].errorMessage} | Received value: ${suppliedOpts[opt]} (type: ${typeof suppliedOpts[opt]})`
         }
 
         if (suppliedOpts[opt] !== undefined) {
