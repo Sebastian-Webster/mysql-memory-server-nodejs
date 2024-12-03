@@ -2,7 +2,7 @@ import { InternalServerOptions, OptionTypeChecks } from "../types";
 import { randomUUID } from "crypto";
 import {normalize as normalizePath} from 'path'
 import { tmpdir } from "os";
-import { valid as validSemver } from "semver";
+import { valid as validSemver, coerce as coerceSemver } from "semver";
 
 export const MIN_SUPPORTED_MYSQL = '8.0.20';
 
@@ -41,7 +41,7 @@ export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_US
 const allowedArches = ['x64', 'arm64', undefined]
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
-        check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(opt) !== null,
+        check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(coerceSemver(opt)) !== null,
         errorMessage: 'Option version must be either undefined or a valid semver string.',
         definedType: 'string'
     },
