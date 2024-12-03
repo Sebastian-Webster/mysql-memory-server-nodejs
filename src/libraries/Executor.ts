@@ -16,6 +16,7 @@ class Executor {
     DBDestroySignal = new AbortController();
     removeExitHandler: () => void;
     version: string;
+    versionInstalledOnSystem: boolean;
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -191,7 +192,10 @@ class Executor {
                             xSocket,
                             dbName: options.dbName,
                             username: options.username,
-                            version: this.version,
+                            mysql: {
+                                version: this.version,
+                                versionIsInstalledOnSystem: this.versionInstalledOnSystem
+                            },
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
                                     resolveFunction = resolve;
@@ -424,6 +428,7 @@ class Executor {
 
     async startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB> {
         this.version = installedMySQLBinary.version
+        this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem
         this.removeExitHandler = onExit(() => {
             if (options._DO_NOT_USE_cli) {
                 console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...')

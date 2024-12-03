@@ -61,7 +61,10 @@ export type MySQLDB = {
     xSocket: string,
     dbName: string,
     username: string,
-    version: string,
+    mysql: {
+        version: string,
+        versionIsInstalledOnSystem: boolean
+    },
     stop: () => Promise<void>
 }
 
