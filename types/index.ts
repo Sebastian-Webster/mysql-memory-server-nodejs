@@ -61,7 +61,10 @@ export type MySQLDB = {
     xSocket: string,
     dbName: string,
     username: string,
-    version: string,
+    mysql: {
+        version: string,
+        versionIsInstalledOnSystem: boolean
+    },
     stop: () => Promise<void>
 }
 
@@ -73,9 +76,10 @@ export type MySQLVersion = {
     url: string
 }
 
-export type InstalledMySQLVersion = {
+export type DownloadedMySQLVersion = {
     version: string,
-    path: string
+    path: string,
+    installedOnSystem: boolean
 }
 
 export type BinaryInfo = {

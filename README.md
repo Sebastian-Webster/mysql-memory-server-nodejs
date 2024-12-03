@@ -98,6 +98,8 @@ The name of the user to use to login to the database
 If on Windows, this is the name of the named pipe that MySQL is listening on. If not on Windows, this is the path to the socket that MySQL is listening on.
 - `xSocket: string`
 If on Windows, this is the name of the named pipe that the MySQL X Plugin is listening on. If not on Windows, this is the path that the MySQL X Plugin is listening on.
+- `mysql: {version: string, versionIsInstalledOnSystem: boolean}`
+An object with two properties. The first one, version, is the version of MySQL Server that is being used for the database. The second one, versionIsInstalledOnSystem, will be true if the MySQL Server that is being used is already installed on the system. versionIsInstalledOnSystem will be false if the MySQL Server version had to be downloaded from the MySQL CDN.
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 

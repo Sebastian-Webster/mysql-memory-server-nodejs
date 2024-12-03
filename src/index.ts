@@ -78,7 +78,7 @@ export async function createDB(opts?: ServerOptions) {
         }
 
         logger.log('Running downloaded binary')
-        return await executor.startMySQL(options, {path: binaryFilepath, version: binaryInfo.version})
+        return await executor.startMySQL(options, {path: binaryFilepath, version: binaryInfo.version, installedOnSystem: false})
     } else {
         logger.log(version)
         return await executor.startMySQL(options, version)
