@@ -99,7 +99,7 @@ If on Windows, this is the name of the named pipe that MySQL is listening on. If
 - `xSocket: string`
 If on Windows, this is the name of the named pipe that the MySQL X Plugin is listening on. If not on Windows, this is the path that the MySQL X Plugin is listening on.
 - `mysql: {version: string, versionIsInstalledOnSystem: boolean}`
-An object with two properties. The first one, version, is the version of MySQL Server that is being used for the database. The second one, versionIsInstalledOnSystem, will be true if the MySQL Server that is being used is already installed on the system. versionIsInstalledOnSystem will be false if the MySQL Server version had to be downloaded from the MySQL CDN.
+An object with two properties. ```version``` is the version of MySQL used to create the database. ```versionIsInstalledOnSystem``` will be true if the MySQL version used is already installed on the system and false if the version had to be downloaded from MySQL's CDN.
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
