@@ -73,9 +73,10 @@ export type MySQLVersion = {
     url: string
 }
 
-export type InstalledMySQLVersion = {
+export type DownloadedMySQLVersion = {
     version: string,
-    path: string
+    path: string,
+    installedOnSystem: boolean
 }
 
 export type BinaryInfo = {

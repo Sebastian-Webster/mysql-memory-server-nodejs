@@ -5,7 +5,7 @@ import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
 import Logger from "./Logger";
 import { GenerateRandomPort } from "./Port";
-import { ExecuteFileReturn, InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
+import { ExecuteFileReturn, DownloadedMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
@@ -212,7 +212,7 @@ class Executor {
         })
     }
 
-    getMySQLVersion(preferredVersion?: string): Promise<InstalledMySQLVersion | null> {
+    getMySQLVersion(preferredVersion?: string): Promise<DownloadedMySQLVersion | null> {
         return new Promise(async (resolve, reject) => {
             if (process.platform === 'win32') {
                 try {
@@ -225,7 +225,7 @@ class Executor {
 
                     this.logger.log(servers)
 
-                    const versions: {version: string, path: string}[] = []
+                    const versions: DownloadedMySQLVersion[] = []
 
                     for (const dir of servers) {
                         const path = `${process.env.PROGRAMFILES}\\MySQL\\${dir}\\bin\\mysqld`
@@ -241,7 +241,7 @@ class Executor {
                         if (version === null) {
                             return reject('Could not get MySQL version')
                         } else {
-                            versions.push({version: version.version, path})
+                            versions.push({version: version.version, path, installedOnSystem: true})
                         }
                     }
 
@@ -266,7 +266,7 @@ class Executor {
                     if (version === null) {
                         reject('Could not get installed MySQL version')
                     } else {
-                        resolve({version: version.version, path: 'mysqld'})
+                        resolve({version: version.version, path: 'mysqld', installedOnSystem: true})
                     }
                 }
             }
@@ -422,7 +422,7 @@ class Executor {
         this.logger.log('Finished writing init file')
     }
 
-    async startMySQL(options: InternalServerOptions, installedMySQLBinary: InstalledMySQLVersion): Promise<MySQLDB> {
+    async startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB> {
         this.version = installedMySQLBinary.version
         this.removeExitHandler = onExit(() => {
             if (options._DO_NOT_USE_cli) {
