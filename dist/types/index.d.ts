@@ -14,11 +14,11 @@ export type ServerOptions = {
     xPort?: number | undefined;
     downloadRetries?: number | undefined;
     initSQLString?: string | undefined;
+    arch?: "arm64" | "x64" | undefined;
     _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined;
     _DO_NOT_USE_dbPath?: string | undefined;
     _DO_NOT_USE_binaryDirectoryPath?: string | undefined;
-    _DO_NOT_USE_beforeSignalCleanupMessage?: string | undefined;
-    _DO_NOT_USE_afterSignalCleanupMessage?: string | undefined;
+    _DO_NOT_USE_cli?: boolean | undefined;
 };
 export type InternalServerOptions = {
     version?: string | undefined;
@@ -34,11 +34,11 @@ export type InternalServerOptions = {
     xPort: number;
     downloadRetries: number;
     initSQLString: string;
+    arch: string;
     _DO_NOT_USE_deleteDBAfterStopped: boolean;
     _DO_NOT_USE_dbPath: string;
     _DO_NOT_USE_binaryDirectoryPath: string;
-    _DO_NOT_USE_beforeSignalCleanupMessage: string;
-    _DO_NOT_USE_afterSignalCleanupMessage: string;
+    _DO_NOT_USE_cli: boolean;
 };
 export type ExecutorOptions = {
     logLevel: LOG_LEVEL;
@@ -55,6 +55,10 @@ export type MySQLDB = {
     xSocket: string;
     dbName: string;
     username: string;
+    mysql: {
+        version: string;
+        versionIsInstalledOnSystem: boolean;
+    };
     stop: () => Promise<void>;
 };
 export type MySQLVersion = {
@@ -64,9 +68,10 @@ export type MySQLVersion = {
     osKernelVersionsSupported: string;
     url: string;
 };
-export type InstalledMySQLVersion = {
+export type DownloadedMySQLVersion = {
     version: string;
     path: string;
+    installedOnSystem: boolean;
 };
 export type BinaryInfo = {
     url: string;

@@ -1,12 +1,14 @@
 import Logger from "./Logger";
-import { InstalledMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
+import { DownloadedMySQLVersion, InternalServerOptions, MySQLDB } from "../../types";
 declare class Executor {
     #private;
     logger: Logger;
     DBDestroySignal: AbortController;
     removeExitHandler: () => void;
+    version: string;
+    versionInstalledOnSystem: boolean;
     constructor(logger: Logger);
-    getMySQLVersion(preferredVersion?: string): Promise<InstalledMySQLVersion | null>;
-    startMySQL(options: InternalServerOptions, binaryFilepath: string): Promise<MySQLDB>;
+    getMySQLVersion(preferredVersion?: string): Promise<DownloadedMySQLVersion | null>;
+    startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB>;
 }
 export default Executor;

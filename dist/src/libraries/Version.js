@@ -36,11 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = getBinaryURL;
 const os = __importStar(require("os"));
 const semver_1 = require("semver");
-function getBinaryURL(versions, versionToGet = "9.x") {
+function getBinaryURL(versions, versionToGet = "x", options) {
     let availableVersions = versions;
-    availableVersions = availableVersions.filter(v => v.arch === process.arch);
+    availableVersions = availableVersions.filter(v => v.arch === options.arch);
     if (availableVersions.length === 0)
-        throw `No MySQL binary could be found for your CPU architecture: ${process.arch}`;
+        throw `No MySQL binary could be found for your CPU architecture: ${options.arch}. ${process.platform === 'win32' && process.arch === 'arm64' ? 'This package has detected you are running Windows on ARM. MySQL does not support Windows on ARM. To get this package working, please try setting the "arch" option to "x64".' : ''}`;
     availableVersions = availableVersions.filter(v => v.os === process.platform);
     if (availableVersions.length === 0)
         throw `No MySQL binary could be found for your OS: ${process.platform}`;

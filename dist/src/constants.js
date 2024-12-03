@@ -20,12 +20,12 @@ const DEFAULT_OPTIONS_GENERATOR = () => ({
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
+    arch: process.arch,
     _DO_NOT_USE_deleteDBAfterStopped: true,
     //mysqlmsn = MySQL Memory Server Node.js
     _DO_NOT_USE_dbPath: (0, path_1.normalize)(`${(0, os_1.tmpdir)()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
     _DO_NOT_USE_binaryDirectoryPath: `${(0, os_1.tmpdir)()}/mysqlmsn/binaries`,
-    _DO_NOT_USE_beforeSignalCleanupMessage: '',
-    _DO_NOT_USE_afterSignalCleanupMessage: ''
+    _DO_NOT_USE_cli: false
 });
 exports.DEFAULT_OPTIONS_GENERATOR = DEFAULT_OPTIONS_GENERATOR;
 exports.DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys((0, exports.DEFAULT_OPTIONS_GENERATOR)()));
@@ -35,9 +35,10 @@ exports.LOG_LEVELS = {
     'ERROR': 2
 };
 exports.INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_beforeSignalCleanup', '_DO_NOT_USE_afterSignalCleanup'];
+const allowedArches = ['x64', 'arm64', undefined];
 exports.OPTION_TYPE_CHECKS = {
     version: {
-        check: (opt) => opt === undefined || typeof opt === 'string' && (0, semver_1.valid)(opt) !== null,
+        check: (opt) => opt === undefined || typeof opt === 'string' && (0, semver_1.valid)((0, semver_1.coerce)(opt)) !== null,
         errorMessage: 'Option version must be either undefined or a valid semver string.',
         definedType: 'string'
     },
@@ -101,6 +102,11 @@ exports.OPTION_TYPE_CHECKS = {
         errorMessage: 'Option initSQLString must be either undefined or a string.',
         definedType: 'string'
     },
+    arch: {
+        check: (opt) => allowedArches.includes(opt),
+        errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
+        definedType: 'string'
+    },
     _DO_NOT_USE_deleteDBAfterStopped: {
         check: (opt) => opt === undefined || typeof opt === 'boolean',
         errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be either undefined or a boolean.',
@@ -116,14 +122,9 @@ exports.OPTION_TYPE_CHECKS = {
         errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.',
         definedType: 'string'
     },
-    _DO_NOT_USE_beforeSignalCleanupMessage: {
-        check: (opt) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_beforeSignalCleanup must be either undefined or a string.',
-        definedType: 'string'
-    },
-    _DO_NOT_USE_afterSignalCleanupMessage: {
-        check: (opt) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_afterSignalCleanup must be either undefined or a string.',
-        definedType: 'string'
+    _DO_NOT_USE_cli: {
+        check: (opt) => opt === undefined || typeof opt === 'boolean',
+        errorMessage: 'Option _DO_NOT_USE_cli must be either undefined or a boolean.',
+        definedType: 'boolean'
     }
 };

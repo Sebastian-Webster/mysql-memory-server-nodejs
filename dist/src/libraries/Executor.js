@@ -78,7 +78,7 @@ class Executor {
                             return reject('Could not get MySQL version');
                         }
                         else {
-                            versions.push({ version: version.version, path });
+                            versions.push({ version: version.version, path, installedOnSystem: true });
                         }
                     }
                     if (preferredVersion) {
@@ -108,16 +108,18 @@ class Executor {
                         reject('Could not get installed MySQL version');
                     }
                     else {
-                        resolve({ version: version.version, path: 'mysqld' });
+                        resolve({ version: version.version, path: 'mysqld', installedOnSystem: true });
                     }
                 }
             }
         });
     }
-    async startMySQL(options, binaryFilepath) {
+    async startMySQL(options, installedMySQLBinary) {
+        this.version = installedMySQLBinary.version;
+        this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem;
         this.removeExitHandler = (0, signal_exit_1.onExit)(() => {
-            if (options._DO_NOT_USE_beforeSignalCleanupMessage) {
-                console.log(options._DO_NOT_USE_beforeSignalCleanupMessage);
+            if (options._DO_NOT_USE_cli) {
+                console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...');
             }
             this.DBDestroySignal.abort();
             if (options._DO_NOT_USE_deleteDBAfterStopped) {
@@ -128,7 +130,7 @@ class Executor {
                     this.logger.error('An error occurred while deleting database directory path:', e);
                 }
             }
-            const binaryPathToDelete = __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_returnBinaryPathToDelete).call(this, binaryFilepath, options);
+            const binaryPathToDelete = __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_returnBinaryPathToDelete).call(this, installedMySQLBinary.path, options);
             if (binaryPathToDelete) {
                 try {
                     fs.rmSync(binaryPathToDelete, { force: true, recursive: true, maxRetries: 50 });
@@ -137,21 +139,21 @@ class Executor {
                     this.logger.error('An error occurred while deleting database binary:', e);
                 }
             }
-            if (options._DO_NOT_USE_afterSignalCleanupMessage) {
-                console.log(options._DO_NOT_USE_afterSignalCleanupMessage);
+            if (options._DO_NOT_USE_cli) {
+                console.log('Shutdown and cleanup is complete.');
             }
         });
         let retries = 0;
         const datadir = (0, path_1.normalize)(`${options._DO_NOT_USE_dbPath}/data`);
         do {
-            await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binaryFilepath, datadir, true);
+            await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, installedMySQLBinary.path, datadir, true);
             this.logger.log('Setting up directories was successful');
             const port = options.port || (0, Port_1.GenerateRandomPort)();
             const mySQLXPort = options.xPort || (0, Port_1.GenerateRandomPort)();
             this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries);
             try {
                 this.logger.log('Starting MySQL process');
-                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, binaryFilepath);
+                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, installedMySQLBinary.path);
                 this.logger.log('Starting process was successful');
                 return resolved;
             }
@@ -327,6 +329,10 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                         xSocket,
                         dbName: options.dbName,
                         username: options.username,
+                        mysql: {
+                            version: this.version,
+                            versionIsInstalledOnSystem: this.versionInstalledOnSystem
+                        },
                         stop: () => {
                             return new Promise(async (resolve, reject) => {
                                 resolveFunction = resolve;

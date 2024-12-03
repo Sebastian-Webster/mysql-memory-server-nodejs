@@ -6,8 +6,7 @@ const constants_1 = require("./constants");
 async function main() {
     const definedOptions = process.argv.filter((option) => option.startsWith('--'));
     const options = {
-        _DO_NOT_USE_beforeSignalCleanupMessage: '\nShutting down the ephemeral MySQL database and cleaning all related files...',
-        _DO_NOT_USE_afterSignalCleanupMessage: 'Shutdown and cleanup is complete.'
+        _DO_NOT_USE_cli: true
     };
     for (const opt of definedOptions) {
         const index = process.argv.indexOf(opt);
@@ -41,7 +40,7 @@ async function main() {
     }
     console.log('Creating ephemeral MySQL database...');
     const db = await (0, index_1.createDB)(options);
-    console.log(`A MySQL database has been successfully created with the following parameters:\n\nUsername: ${db.username} \nDatabase Name: ${db.dbName} \nPort: ${db.port} \nX Plugin Port: ${db.xPort} \nSocket: ${db.socket} \nX Plugin Socket: ${db.xSocket}\n`);
+    console.log(`A MySQL database has been successfully created with the following parameters:\n\nMySQL Version: ${db.mysql.version} (${db.mysql.versionIsInstalledOnSystem ? 'installed on this system' : 'not installed on this system - downloaded from the MySQL CDN'}) \nUsername: ${db.username} \nDatabase Name: ${db.dbName} \nPort: ${db.port} \nX Plugin Port: ${db.xPort} \nSocket: ${db.socket} \nX Plugin Socket: ${db.xSocket}\n`);
     if (process.platform === 'win32') {
         //The connection information logs will be different for Windows compared to other platforms.
         //Windows uses mysqlsh instead of mysql to invoke the client shell, needs a --sql flag to be put into SQL mode, and also does not have a protocol flag.

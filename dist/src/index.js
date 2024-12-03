@@ -60,7 +60,7 @@ async function createDB(opts) {
         }
         if (!constants_1.OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
             //Supplied option failed the check
-            throw constants_1.OPTION_TYPE_CHECKS[opt].errorMessage;
+            throw `${constants_1.OPTION_TYPE_CHECKS[opt].errorMessage} | Received value: ${suppliedOpts[opt]} (type: ${typeof suppliedOpts[opt]})`;
         }
         if (suppliedOpts[opt] !== undefined) {
             options[opt] = suppliedOpts[opt];
@@ -84,7 +84,7 @@ async function createDB(opts) {
         let binaryInfo;
         let binaryFilepath;
         try {
-            binaryInfo = (0, Version_1.default)(versions_json_1.default, options.version);
+            binaryInfo = (0, Version_1.default)(versions_json_1.default, options.version, options);
             logger.log('Using MySQL binary version:', binaryInfo.version, 'from URL:', binaryInfo.url);
         }
         catch (e) {
@@ -102,10 +102,10 @@ async function createDB(opts) {
             throw `Failed to download binary. The error was: "${error}"`;
         }
         logger.log('Running downloaded binary');
-        return await executor.startMySQL(options, binaryFilepath);
+        return await executor.startMySQL(options, { path: binaryFilepath, version: binaryInfo.version, installedOnSystem: false });
     }
     else {
         logger.log(version);
-        return await executor.startMySQL(options, version.path);
+        return await executor.startMySQL(options, version);
     }
 }
