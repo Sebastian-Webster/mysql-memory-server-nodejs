@@ -104,10 +104,8 @@ An object with two properties. ```version``` is the version of MySQL used to cre
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
 #### Options:
-##### For options that are not required, using ```undefined``` as a value will use the option's default value.
+##### All options are not required to be set. Using ```undefined``` as a value will use the option's default value.
 - `version: string`
-
-Required: No
 
 Default: undefined
 
@@ -123,15 +121,11 @@ If defined:
 
 - `dbName: string`
 
-Required: No
-
 Default: "dbdata"
 
 Description: The name of the database to create when initializing MySQL. You'd use this name to connect to the database.
 
 - `logLevel: "LOG" | "WARN" | "ERROR"`
-
-Required: No
 
 Default: "ERROR"
 
@@ -139,15 +133,11 @@ Description: Log level for this package. If "ERROR" is used, only errors from th
 
 - `portRetries: number`
 
-Required: No
-
 Default: 10
 
 Description: Number of times to try connecting MySQL to a randomly generated port before giving up. According to the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/server-options.html#option_mysqld_port "MySQL Documentation") if port 0 is used as the MySQL server port, the default value (3306) will be used. To get around this, a random number between 1025 - 65535 (inclusive) is generated and used for the database's port. If MySQL cannot successfully listen on a randomly generated port after `portRetries` then the `createDB()` promise is rejected. A warning is created when MySQL tries connecting to a port that is already in use. This option only applies for the MySQL port if the MySQL port is not explicitly set or if it's set to 0. This option also only applies for the MySQL X port if the MySQL X port is not explicitly set or if it's set to 0.
 
 - `downloadBinaryOnce: boolean`
-
-Required: No
 
 Default: true
 
@@ -157,15 +147,11 @@ Use `false` to save disk space after the databases have been stopped, or use `tr
 
 - `lockRetries: number`
 
-Required: No
-
 Default: 1,000
 
 Description: If `downloadBinaryOnce` is set to `true`, `lockRetries` is the number of times to check to see if the lock for the binary has been released (meaning it has been successfully downloaded and extracted). If the number of retries exceeds `lockRetries`, the `createDB()` promise gets rejected. This option is also used for the number of times to check to see if the lock for libaio has been released (only on Linux distros that use libaio1t64 instead of libaio1)
 
 - `lockRetryWait: number`
-
-Required: No
 
 Default: 1,000
 
@@ -173,15 +159,11 @@ Description: If `downloadBinaryOnce` is set to `true` and/or on Linux distros th
 
 - `username: string`
 
-Required: No
-
 Default: root
 
 Description: The username of the user that is used to login to the database.
 
 - `port: number`
-
-Required: No
 
 Default: 0
 
@@ -189,15 +171,11 @@ Description: The port that the database will listen on. If set to 0, a randomly 
 
 - `xPort: number`
 
-Required: No
-
 Default: 0
 
 Description: The port that the MySQL X Plugin will listen on. If set to 0, a randomly generated port is used.
 
 - `ignoreUnsupportedSystemVersion: boolean`
-
-Required: No
 
 Default: false
 
@@ -205,15 +183,11 @@ Description: This option only applies if the system-installed MySQL version is l
 
 - `downloadRetries: number`
 
-Required: No
-
 Default: 3
 
 Description: The number of times to try to download a MySQL binary before giving up and rejecting the `createDB()` promise.
 
 - `initSQLString: string`
-
-Required: No
 
 Default: ""
 
@@ -222,8 +196,6 @@ Description: A string with MySQL queries to run before the database starts to ac
 The internal queries that are ran before the queries in ```initSQLString``` are renaming the user from ```root``` to the username specified in the ```username``` option if it's set, and creating a database with the name from the ```dbName``` option.
 
 - `arch: "arm64" | "x64"`
-
-Required: No
 
 Default: process.arch
 
