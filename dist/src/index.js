@@ -74,11 +74,6 @@ async function createDB(opts) {
     if (throwUnsupportedError) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`;
     }
-    if (options.version && (0, semver_1.lt)(options.version, constants_1.MIN_SUPPORTED_MYSQL)) {
-        //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
-        //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
-        throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`;
-    }
     logger.log('Version currently installed:', version);
     if (version === null || (options.version && !(0, semver_1.satisfies)(version.version, options.version)) || unsupportedMySQLIsInstalled) {
         let binaryInfo;
@@ -93,6 +88,11 @@ async function createDB(opts) {
                 throw `A MySQL version ${options.version} binary could not be found that supports your OS (${os.platform()} | ${os.version()} | ${os.release()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support the version you want to use, feel free to make a pull request to add support!`;
             }
             throw `A MySQL binary could not be found that supports your OS (${os.platform()} | ${os.version()} | ${os.release()}) and CPU architecture (${os.arch()}). Please check you have the latest version of mysql-memory-server. If the latest version still doesn't support your OS and CPU architecture, feel free to make a pull request to add support!`;
+        }
+        if ((0, semver_1.lt)(binaryInfo.version, constants_1.MIN_SUPPORTED_MYSQL)) {
+            //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
+            //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
+            throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`;
         }
         try {
             binaryFilepath = await (0, Downloader_1.downloadBinary)(binaryInfo, options, logger);
