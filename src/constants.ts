@@ -36,7 +36,7 @@ export const LOG_LEVELS = {
     'ERROR': 2
 } as const;
 
-export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_beforeSignalCleanup', '_DO_NOT_USE_afterSignalCleanup'] as const;
+export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_cli'] as const;
 
 const allowedArches = ['x64', 'arm64', undefined]
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
