@@ -10,14 +10,16 @@ async function main() {
     }
     for (const opt of definedOptions) {
         if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
-            throw `Option ${opt} is not a valid option.`
+            console.error(`Option ${opt} is not a valid option.`)
+            return
         }
 
         const index = process.argv.indexOf(opt)
         const optionValue = process.argv[index + 1]
 
         if (optionValue === undefined) {
-            throw `Option ${opt} must have a value.`
+            console.error(`Option ${opt} must have a value.`)
+            return
         }
 
         const optionName = opt.slice(2)
