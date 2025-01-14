@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createDB } from "./index";
-import { OPTION_TYPE_CHECKS } from "./constants";
+import { DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS } from "./constants";
 import { ServerOptions } from "../types";
 
 async function main() {
@@ -9,6 +9,10 @@ async function main() {
         _DO_NOT_USE_cli: true
     }
     for (const opt of definedOptions) {
+        if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
+            throw `Option ${opt} is not a valid option.`
+        }
+
         const index = process.argv.indexOf(opt)
         const optionValue = process.argv[index + 1]
 
