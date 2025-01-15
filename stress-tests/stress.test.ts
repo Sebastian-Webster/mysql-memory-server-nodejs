@@ -11,8 +11,7 @@ const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
 const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 for (let i = 0; i < 100; i++) {
-    test.concurrent(`if run ${i} is successful`, async () => {
-        Error.stackTraceLimit = Infinity
+    test(`if run ${i} is successful`, async () => {
         console.log('CI:', process.env.useCIDBPath)
 
         process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)

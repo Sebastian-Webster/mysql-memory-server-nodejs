@@ -17,7 +17,7 @@ jest.setTimeout(500_000);
 
 for (const version of versions) {
     for (const username of usernames) {
-        test.concurrent(`running on version ${version} with username ${username}`, async () => {
+        test(`running on version ${version} with username ${username}`, async () => {
             process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
 
             const options: ServerOptions = {
