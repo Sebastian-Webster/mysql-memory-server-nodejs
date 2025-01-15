@@ -9,7 +9,7 @@ function main() {
         _DO_NOT_USE_cli: true
     }
     for (const opt of definedOptions) {
-        if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
+        if (!DEFAULT_OPTIONS_KEYS.includes(opt.replace('--', ''))) {
             console.error(`Option ${opt} is not a valid option.`)
             return
         }
