@@ -48,11 +48,6 @@ const constants_1 = require("./constants");
 async function createDB(opts) {
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
-    for (const opt of constants_1.INTERNAL_OPTIONS) {
-        if (suppliedOptsKeys.includes(opt)) {
-            console.warn(`[ mysql-memory-server - Options WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`);
-        }
-    }
     const options = (0, constants_1.DEFAULT_OPTIONS_GENERATOR)();
     for (const opt of suppliedOptsKeys) {
         if (!constants_1.DEFAULT_OPTIONS_KEYS.includes(opt)) {

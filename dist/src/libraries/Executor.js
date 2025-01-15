@@ -49,6 +49,7 @@ const path_1 = require("path");
 const FileLock_1 = require("./FileLock");
 const signal_exit_1 = require("signal-exit");
 const crypto_1 = require("crypto");
+const constants_1 = require("../constants");
 class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
@@ -118,13 +119,13 @@ class Executor {
         this.version = installedMySQLBinary.version;
         this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem;
         this.removeExitHandler = (0, signal_exit_1.onExit)(() => {
-            if (options._DO_NOT_USE_cli) {
+            if ((0, constants_1.getInternalEnvVariable)('cli') === 'true') {
                 console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...');
             }
             this.DBDestroySignal.abort();
-            if (options._DO_NOT_USE_deleteDBAfterStopped) {
+            if ((0, constants_1.getInternalEnvVariable)('deleteDBAfterStopped') === 'true') {
                 try {
-                    fs.rmSync(options._DO_NOT_USE_dbPath, { recursive: true, maxRetries: 50, force: true });
+                    fs.rmSync((0, constants_1.getInternalEnvVariable)('dbPath'), { recursive: true, maxRetries: 50, force: true });
                 }
                 catch (e) {
                     this.logger.error('An error occurred while deleting database directory path:', e);
@@ -139,12 +140,12 @@ class Executor {
                     this.logger.error('An error occurred while deleting database binary:', e);
                 }
             }
-            if (options._DO_NOT_USE_cli) {
+            if ((0, constants_1.getInternalEnvVariable)('cli') === 'true') {
                 console.log('Shutdown and cleanup is complete.');
             }
         });
         let retries = 0;
-        const datadir = (0, path_1.normalize)(`${options._DO_NOT_USE_dbPath}/data`);
+        const datadir = (0, path_1.normalize)(`${(0, constants_1.getInternalEnvVariable)('dbPath')}/data`);
         do {
             await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, installedMySQLBinary.path, datadir, true);
             this.logger.log('Setting up directories was successful');
@@ -153,7 +154,7 @@ class Executor {
             this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries);
             try {
                 this.logger.log('Starting MySQL process');
-                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, installedMySQLBinary.path);
+                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, (0, constants_1.getInternalEnvVariable)('dbPath'), installedMySQLBinary.path);
                 this.logger.log('Starting process was successful');
                 return resolved;
             }
@@ -253,7 +254,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             if (portIssue || xPortIssue) {
                 this.logger.log('Error log when exiting for port in use error:', errorLog);
                 try {
-                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, options._DO_NOT_USE_dbPath);
+                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, (0, constants_1.getInternalEnvVariable)('dbPath'));
                 }
                 catch (e) {
                     this.logger.error(e);
@@ -262,7 +263,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 return reject('Port is already in use');
             }
             try {
-                if (options._DO_NOT_USE_deleteDBAfterStopped) {
+                if ((0, constants_1.getInternalEnvVariable)('deleteDBAfterStopped') === 'true') {
                     await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, dbPath);
                 }
             }
@@ -477,7 +478,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         initText += `\n${options.initSQLString}`;
     }
     this.logger.log('Writing init file');
-    await fsPromises.writeFile(`${options._DO_NOT_USE_dbPath}/init.sql`, initText, { encoding: 'utf8' });
+    await fsPromises.writeFile(`${(0, constants_1.getInternalEnvVariable)('dbPath')}/init.sql`, initText, { encoding: 'utf8' });
     this.logger.log('Finished writing init file');
 };
 exports.default = Executor;

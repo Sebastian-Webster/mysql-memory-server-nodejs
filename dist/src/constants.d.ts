@@ -7,5 +7,12 @@ export declare const LOG_LEVELS: {
     readonly WARN: 1;
     readonly ERROR: 2;
 };
-export declare const INTERNAL_OPTIONS: readonly ["_DO_NOT_USE_deleteDBAfterStopped", "_DO_NOT_USE_dbPath", "_DO_NOT_USE_binaryDirectoryPath", "_DO_NOT_USE_beforeSignalCleanup", "_DO_NOT_USE_afterSignalCleanup"];
+declare const internalOptions: {
+    deleteDBAfterStopped: string;
+    dbPath: string;
+    binaryDirectoryPath: string;
+    cli: string;
+};
+export declare function getInternalEnvVariable(envVar: keyof typeof internalOptions): string;
 export declare const OPTION_TYPE_CHECKS: OptionTypeChecks;
+export {};

@@ -46,6 +46,7 @@ const path_1 = require("path");
 const crypto_1 = require("crypto");
 const child_process_1 = require("child_process");
 const FileLock_1 = require("./FileLock");
+const constants_1 = require("../constants");
 function getZipData(entry) {
     return new Promise((resolve, reject) => {
         entry.getDataAsync((data, err) => {
@@ -208,7 +209,7 @@ function extractBinary(url, archiveLocation, extractedLocation, logger) {
 function downloadBinary(binaryInfo, options, logger) {
     return new Promise(async (resolve, reject) => {
         const { url, version } = binaryInfo;
-        const dirpath = options._DO_NOT_USE_binaryDirectoryPath;
+        const dirpath = (0, constants_1.getInternalEnvVariable)('binaryDirectoryPath');
         logger.log('Binary path:', dirpath);
         await fsPromises.mkdir(dirpath, { recursive: true });
         const lastDashIndex = url.lastIndexOf('-');

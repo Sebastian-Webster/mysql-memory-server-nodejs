@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OPTION_TYPE_CHECKS = exports.INTERNAL_OPTIONS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS_GENERATOR = exports.MIN_SUPPORTED_MYSQL = void 0;
+exports.OPTION_TYPE_CHECKS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS_GENERATOR = exports.MIN_SUPPORTED_MYSQL = void 0;
+exports.getInternalEnvVariable = getInternalEnvVariable;
 const crypto_1 = require("crypto");
 const path_1 = require("path");
 const os_1 = require("os");
@@ -20,12 +21,7 @@ const DEFAULT_OPTIONS_GENERATOR = () => ({
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
-    arch: process.arch,
-    _DO_NOT_USE_deleteDBAfterStopped: true,
-    //mysqlmsn = MySQL Memory Server Node.js
-    _DO_NOT_USE_dbPath: (0, path_1.normalize)(`${(0, os_1.tmpdir)()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
-    _DO_NOT_USE_binaryDirectoryPath: `${(0, os_1.tmpdir)()}/mysqlmsn/binaries`,
-    _DO_NOT_USE_cli: false
+    arch: process.arch
 });
 exports.DEFAULT_OPTIONS_GENERATOR = DEFAULT_OPTIONS_GENERATOR;
 exports.DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys((0, exports.DEFAULT_OPTIONS_GENERATOR)()));
@@ -34,7 +30,16 @@ exports.LOG_LEVELS = {
     'WARN': 1,
     'ERROR': 2
 };
-exports.INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_beforeSignalCleanup', '_DO_NOT_USE_afterSignalCleanup'];
+const internalOptions = {
+    deleteDBAfterStopped: 'true',
+    //mysqlmsn = MySQL Memory Server Node.js
+    dbPath: (0, path_1.normalize)(`${(0, os_1.tmpdir)()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replace(/-/g, '')}`),
+    binaryDirectoryPath: `${(0, os_1.tmpdir)()}/mysqlmsn/binaries`,
+    cli: 'false'
+};
+function getInternalEnvVariable(envVar) {
+    return process.env['mysqlmsn_internal_DO_NOT_USE_' + envVar] || internalOptions[envVar];
+}
 const allowedArches = ['x64', 'arm64', undefined];
 exports.OPTION_TYPE_CHECKS = {
     version: {
@@ -106,25 +111,5 @@ exports.OPTION_TYPE_CHECKS = {
         check: (opt) => allowedArches.includes(opt),
         errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
         definedType: 'string'
-    },
-    _DO_NOT_USE_deleteDBAfterStopped: {
-        check: (opt) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be either undefined or a boolean.',
-        definedType: 'boolean'
-    },
-    _DO_NOT_USE_dbPath: {
-        check: (opt) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_dbPath must be either undefined or a string.',
-        definedType: 'string'
-    },
-    _DO_NOT_USE_binaryDirectoryPath: {
-        check: (opt) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.',
-        definedType: 'string'
-    },
-    _DO_NOT_USE_cli: {
-        check: (opt) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option _DO_NOT_USE_cli must be either undefined or a boolean.',
-        definedType: 'boolean'
     }
 };
