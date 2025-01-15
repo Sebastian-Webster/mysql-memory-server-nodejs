@@ -20,12 +20,7 @@ export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
-    arch: process.arch,
-    _DO_NOT_USE_deleteDBAfterStopped: true,
-    //mysqlmsn = MySQL Memory Server Node.js
-    _DO_NOT_USE_dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
-    _DO_NOT_USE_binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
-    _DO_NOT_USE_cli: false
+    arch: process.arch
 });
 
 export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS_GENERATOR()))
@@ -36,7 +31,17 @@ export const LOG_LEVELS = {
     'ERROR': 2
 } as const;
 
-export const INTERNAL_OPTIONS = ['_DO_NOT_USE_deleteDBAfterStopped', '_DO_NOT_USE_dbPath', '_DO_NOT_USE_binaryDirectoryPath', '_DO_NOT_USE_cli'] as const;
+const internalOptions = {
+    deleteDBAfterStopped: 'true',
+    //mysqlmsn = MySQL Memory Server Node.js
+    dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
+    binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
+    cli: 'false'
+}
+
+export function getInternalEnvVariable(envVar: keyof typeof internalOptions): string {
+    return process.env['mysqlmsn_internal_DO_NOT_USE_' + envVar] || internalOptions[envVar]
+}
 
 const allowedArches = ['x64', 'arm64', undefined]
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
@@ -109,25 +114,5 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
         check: (opt: any) => allowedArches.includes(opt),
         errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
         definedType: 'string'
-    },
-    _DO_NOT_USE_deleteDBAfterStopped: {
-        check: (opt: any) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option _DO_NOT_USE_deleteDBAfterStopped must be either undefined or a boolean.',
-        definedType: 'boolean'
-    },
-    _DO_NOT_USE_dbPath: {
-        check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_dbPath must be either undefined or a string.',
-        definedType: 'string'
-    },
-    _DO_NOT_USE_binaryDirectoryPath: {
-        check: (opt: any) => opt === undefined || typeof opt === 'string',
-        errorMessage: 'Option _DO_NOT_USE_binaryDirectoryPath must be either undefined or a string.',
-        definedType: 'string'
-    },
-    _DO_NOT_USE_cli: {
-        check: (opt: any) => opt === undefined || typeof opt === 'boolean',
-        errorMessage: 'Option _DO_NOT_USE_cli must be either undefined or a boolean.',
-        definedType: 'boolean'
     }
 } as const;

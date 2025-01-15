@@ -5,9 +5,8 @@ import { ServerOptions } from "../types";
 
 function main() {
     const definedOptions = process.argv.filter((option) => option.startsWith('--'))
-    const options: ServerOptions = {
-        _DO_NOT_USE_cli: true
-    }
+    const options: ServerOptions = {}
+    process.env.mysqlmsn_internal_DO_NOT_USE_cli = 'true'
     for (const opt of definedOptions) {
         if (!DEFAULT_OPTIONS_KEYS.includes(opt.replace('--', ''))) {
             console.error(`Option ${opt} is not a valid option.`)

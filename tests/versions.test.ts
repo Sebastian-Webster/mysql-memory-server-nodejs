@@ -17,21 +17,21 @@ jest.setTimeout(500_000);
 
 for (const version of versions) {
     for (const username of usernames) {
-        test.concurrent(`running on version ${version} with username ${username}`, async () => {
-            Error.stackTraceLimit = Infinity
+        test(`running on version ${version} with username ${username}`, async () => {
+            process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
+
             const options: ServerOptions = {
                 version,
                 dbName: 'testingdata',
                 username: username,
                 logLevel: 'LOG',
-                _DO_NOT_USE_deleteDBAfterStopped: !process.env.useCIDBPath,
                 ignoreUnsupportedSystemVersion: true,
                 initSQLString: 'CREATE DATABASE mytestdb;'
             }
     
             if (process.env.useCIDBPath) {
-                options._DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
-                options._DO_NOT_USE_binaryDirectoryPath = binaryPath
+                process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
+                process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
             }
     
             const db = await createDB(options)

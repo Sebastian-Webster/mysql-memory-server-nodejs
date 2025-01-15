@@ -16,11 +16,7 @@ export type ServerOptions = {
     xPort?: number | undefined,
     downloadRetries?: number | undefined,
     initSQLString?: string | undefined,
-    arch?: "arm64" | "x64" | undefined,
-    _DO_NOT_USE_deleteDBAfterStopped?: boolean | undefined,
-    _DO_NOT_USE_dbPath?: string | undefined,
-    _DO_NOT_USE_binaryDirectoryPath?: string | undefined,
-    _DO_NOT_USE_cli?: boolean | undefined
+    arch?: "arm64" | "x64" | undefined
 }
 
 export type InternalServerOptions = {
@@ -37,11 +33,7 @@ export type InternalServerOptions = {
     xPort: number,
     downloadRetries: number,
     initSQLString: string,
-    arch: string,
-    _DO_NOT_USE_deleteDBAfterStopped: boolean,
-    _DO_NOT_USE_dbPath: string,
-    _DO_NOT_USE_binaryDirectoryPath: string,
-    _DO_NOT_USE_cli: boolean
+    arch: string
 }
 
 export type ExecutorOptions = {
