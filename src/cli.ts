@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createDB } from "./index";
-import { OPTION_TYPE_CHECKS } from "./constants";
+import { DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS } from "./constants";
 import { ServerOptions } from "../types";
 
 async function main() {
@@ -9,11 +9,17 @@ async function main() {
         _DO_NOT_USE_cli: true
     }
     for (const opt of definedOptions) {
+        if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
+            console.error(`Option ${opt} is not a valid option.`)
+            return
+        }
+
         const index = process.argv.indexOf(opt)
         const optionValue = process.argv[index + 1]
 
         if (optionValue === undefined) {
-            throw `Option ${opt} must have a value.`
+            console.error(`Option ${opt} must have a value.`)
+            return
         }
 
         const optionName = opt.slice(2)
