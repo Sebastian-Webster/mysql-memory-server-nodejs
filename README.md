@@ -200,32 +200,3 @@ The internal queries that are ran before the queries in ```initSQLString``` are 
 Default: process.arch
 
 Description: The MySQL binary architecture to execute. MySQL does not offer server builds for Windows on ARM, so to get this package working on Windows on ARM, set the arch option to "x64" and Windows will emulate MySQL.
-
-***
-### :warning: Internal Options :warning:
-
-The following options are only meant for internal use (such as for testing this package or the internals for running this package via the CLI). Their behaviour may change or they may get removed between major/minor/patch versions and they are not to be considered stable. The options below will not follow Semantic Versioning so it is advised to not use them.
-
-- `_DO_NOT_USE_deleteDBAfterStopped: boolean`
-
-Default: true
-
-Description: Changes whether or not the database will be deleted after it has been stopped. If set to `true`, the database WILL be deleted after it has been stopped.
-
-- `_DO_NOT_USE_dbPath: string`
-
-Default: `TMPDIR/mysqlmsn/dbs/UUID` (replacing TMPDIR with the OS temp directory and UUID with a UUIDv4 without seperating dashes).
-
-Description: The folder to store database-related data in
-
-- `_DO_NOT_USE_binaryDirectoryPath: string`
-
-Default: `TMPDIR/mysqlmsn/binaries` (replacing TMPDIR with the OS temp directory)
-
-Description: The folder to store the MySQL binaries when they are downloaded from the CDN.
-
-- `_DO_NOT_USE_cli: boolean`
-
-Default: ```false``` if the package is not being executed via the CLI and ```true``` if it is.
-
-Description: If set to ```true```, this enables certain CLI-only functionality. For example, when ran by the CLI, logging a message to the console when a shutdown signal (like CTRL + C) has been received and the MySQL database is shutting down and getting deleted.

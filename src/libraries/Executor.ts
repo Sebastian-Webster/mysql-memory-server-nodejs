@@ -10,6 +10,7 @@ import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
 import { randomUUID } from "crypto";
+import { getInternalEnvVariable } from "../constants";
 
 class Executor {
     logger: Logger;
@@ -117,7 +118,7 @@ class Executor {
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
-                        await this.#deleteDatabaseDirectory(options._DO_NOT_USE_dbPath)
+                        await this.#deleteDatabaseDirectory(getInternalEnvVariable('dbPath'))
                     } catch (e) {
                         this.logger.error(e)
                         return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
@@ -126,7 +127,7 @@ class Executor {
                 }
 
                 try {
-                    if (options._DO_NOT_USE_deleteDBAfterStopped) {
+                    if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
                         await this.#deleteDatabaseDirectory(dbPath)
                     }
                 } catch (e) {
@@ -421,7 +422,7 @@ class Executor {
 
         this.logger.log('Writing init file')
 
-        await fsPromises.writeFile(`${options._DO_NOT_USE_dbPath}/init.sql`, initText, {encoding: 'utf8'})
+        await fsPromises.writeFile(`${getInternalEnvVariable('dbPath')}/init.sql`, initText, {encoding: 'utf8'})
 
         this.logger.log('Finished writing init file')
     }
@@ -430,15 +431,15 @@ class Executor {
         this.version = installedMySQLBinary.version
         this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem
         this.removeExitHandler = onExit(() => {
-            if (options._DO_NOT_USE_cli) {
+            if (getInternalEnvVariable('cli') === 'true') {
                 console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...')
             }
 
             this.DBDestroySignal.abort()
 
-            if (options._DO_NOT_USE_deleteDBAfterStopped) {
+            if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
                 try {
-                    fs.rmSync(options._DO_NOT_USE_dbPath, {recursive: true, maxRetries: 50, force: true})
+                    fs.rmSync(getInternalEnvVariable('dbPath'), {recursive: true, maxRetries: 50, force: true})
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database directory path:', e)
                 }
@@ -453,14 +454,14 @@ class Executor {
                 }
             }
 
-            if (options._DO_NOT_USE_cli) {
+            if (getInternalEnvVariable('cli') === 'true') {
                 console.log('Shutdown and cleanup is complete.')
             }
         })
 
         let retries = 0;
 
-        const datadir = normalizePath(`${options._DO_NOT_USE_dbPath}/data`)
+        const datadir = normalizePath(`${getInternalEnvVariable('dbPath')}/data`)
 
         do {
             await this.#setupDataDirectories(options, installedMySQLBinary.path, datadir, true);
@@ -472,7 +473,7 @@ class Executor {
 
             try {
                 this.logger.log('Starting MySQL process')
-                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, options._DO_NOT_USE_dbPath, installedMySQLBinary.path)
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, getInternalEnvVariable('dbPath'), installedMySQLBinary.path)
                 this.logger.log('Starting process was successful')
                 return resolved
             } catch (e) {

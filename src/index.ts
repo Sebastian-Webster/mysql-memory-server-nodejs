@@ -2,21 +2,15 @@ import Logger from './libraries/Logger'
 import * as os from 'node:os'
 import Executor from "./libraries/Executor"
 import { satisfies, lt, coerce } from "semver"
-import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
+import { BinaryInfo, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
-import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, INTERNAL_OPTIONS, DEFAULT_OPTIONS_GENERATOR } from './constants'
+import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_OPTIONS_GENERATOR } from './constants'
 
 export async function createDB(opts?: ServerOptions) {
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
-
-    for (const opt of INTERNAL_OPTIONS) {
-        if (suppliedOptsKeys.includes(opt)) {
-            console.warn(`[ mysql-memory-server - Options WARN ]: Creating MySQL database with option ${opt}. This is considered unstable and should not be used externally. Please consider removing this option.`)
-        }
-    }
 
     const options = DEFAULT_OPTIONS_GENERATOR();
     

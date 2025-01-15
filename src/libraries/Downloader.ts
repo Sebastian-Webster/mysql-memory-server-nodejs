@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { execFile } from 'child_process';
 import { BinaryInfo, InternalServerOptions } from '../../types';
 import { lockFile, waitForLock } from './FileLock';
+import { getInternalEnvVariable } from '../constants';
 
 function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -181,7 +182,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const {url, version} = binaryInfo;
-        const dirpath = options._DO_NOT_USE_binaryDirectoryPath
+        const dirpath = getInternalEnvVariable('binaryDirectoryPath')
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
 

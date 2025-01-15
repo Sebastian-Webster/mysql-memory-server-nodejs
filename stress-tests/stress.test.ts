@@ -14,17 +14,18 @@ for (let i = 0; i < 100; i++) {
     test.concurrent(`if run ${i} is successful`, async () => {
         Error.stackTraceLimit = Infinity
         console.log('CI:', process.env.useCIDBPath)
+
+        process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
     
         const options: ServerOptions = {
             username: 'dbuser',
             logLevel: 'LOG',
-            _DO_NOT_USE_deleteDBAfterStopped: !process.env.useCIDBPath,
             ignoreUnsupportedSystemVersion: true
         }
     
         if (process.env.useCIDBPath) {
-            options._DO_NOT_USE_dbPath = `${dbPath}/${i}`
-            options._DO_NOT_USE_binaryDirectoryPath = binaryPath
+            process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${i}`
+            process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
         }
         
         const db = await createDB(options)

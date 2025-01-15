@@ -14,24 +14,23 @@ const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
 const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 beforeEach(async () => {
-    Error.stackTraceLimit = Infinity
+    process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
+
     const options: ServerOptions = {
         username: 'root',
         logLevel: 'LOG',
-        _DO_NOT_USE_deleteDBAfterStopped: !process.env.useCIDBPath,
         ignoreUnsupportedSystemVersion: true
     }
 
     if (process.env.useCIDBPath) {
-        options._DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
-        options._DO_NOT_USE_binaryDirectoryPath = binaryPath
+        process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
+        process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
     }
     
     db = await createDB(options)
 })
 
 afterEach(async () => {
-    Error.stackTraceLimit = Infinity
     await db.stop();
 })
 
