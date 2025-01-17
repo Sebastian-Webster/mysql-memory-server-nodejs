@@ -4,7 +4,7 @@ import {normalize as normalizePath} from 'path'
 import { tmpdir } from "os";
 import { valid as validSemver, coerce as coerceSemver } from "semver";
 
-export const MIN_SUPPORTED_MYSQL = '8.0.20';
+export const MIN_SUPPORTED_MYSQL = '8.0.11';
 
 export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     version: undefined,

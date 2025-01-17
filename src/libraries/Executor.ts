@@ -302,7 +302,7 @@ class Executor {
             stderr = result?.stderr
         }
             
-        if (stderr && !stderr.includes('InnoDB initialization has ended')) {
+        if (stderr && !stderr.includes('is created with an empty password')) {
             if (process.platform === 'win32' && stderr.includes('Command failed')) {
                 this.logger.error(stderr)
                 throw 'The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.'
