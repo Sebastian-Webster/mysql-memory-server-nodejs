@@ -43,7 +43,7 @@ export function getInternalEnvVariable(envVar: keyof typeof internalOptions): st
     return process.env['mysqlmsn_internal_DO_NOT_USE_' + envVar] || internalOptions[envVar]
 }
 
-const allowedArches = ['x64', 'arm64', undefined]
+const allowedArches = ['x64', 'arm64']
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(coerceSemver(opt)) !== null,
@@ -111,7 +111,7 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
         definedType: 'string'
     },
     arch: {
-        check: (opt: any) => allowedArches.includes(opt),
+        check: (opt: any) => opt === undefined || allowedArches.includes(opt),
         errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
         definedType: 'string'
     }
