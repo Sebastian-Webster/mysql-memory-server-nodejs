@@ -46,30 +46,6 @@ class Executor {
         return killed;
     }
 
-    async #deleteDatabaseDirectory(path: string): Promise<void> {
-        let retries = 0;
-        //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
-        const waitTime = 500;
-        const maxRetries = 20;
-
-        //Since the database processes are killed instantly (SIGKILL) sometimes the database file handles may still be open
-        //This would cause an EBUSY error. Retrying the deletions for 10 seconds should give the OS enough time to close
-        //the file handles.
-        while (retries <= maxRetries) {
-            try {
-                await fsPromises.rm(path, {recursive: true, force: true})
-                return
-            } catch (e) {
-                if (retries === maxRetries) {
-                    throw e
-                }
-                await new Promise(resolve => setTimeout(resolve, waitTime))
-                retries++
-                this.logger.log('DB data directory deletion failed. Now on retry', retries)
-            }
-        }
-    }
-
     //Returns a path to the binary if it should be deleted
     //If it should not be deleted then it returns null
     #returnBinaryPathToDelete(binaryFilepath: string, options: InternalServerOptions): string | null {
@@ -118,7 +94,7 @@ class Executor {
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
-                        await this.#deleteDatabaseDirectory(getInternalEnvVariable('dbPath'))
+                        await fsPromises.rm(dbPath, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
                     } catch (e) {
                         this.logger.error(e)
                         return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
@@ -128,7 +104,7 @@ class Executor {
 
                 try {
                     if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
-                        await this.#deleteDatabaseDirectory(dbPath)
+                        await fsPromises.rm(dbPath, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
                     }
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
@@ -396,7 +372,7 @@ class Executor {
 
                             //Retry setting up directory now that libaio has been copied
                             this.logger.log('Retrying directory setup')
-                            await this.#deleteDatabaseDirectory(datadir)
+                            await fsPromises.rm(datadir, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
                             await this.#setupDataDirectories(options, binaryFilepath, datadir, false)
                             return
                         }
