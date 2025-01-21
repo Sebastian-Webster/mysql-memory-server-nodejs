@@ -91,7 +91,7 @@ class Executor {
             //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
             //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
             //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
-            if (lt(this.version, '8.0.11') && gte(this.version, '5.7.12')) {
+            if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
                 const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
                 let pluginPath: string;
                 const firstPath = resolvePath(`${binaryFilepath}/../../lib/plugin`)
