@@ -73,6 +73,7 @@ class Executor {
 
             if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
                 const initSocket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/i.sock`
+                const initXSocket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/ix.sock`
                 const initFileLocation = `${dbPath}/installX.sql`
                 const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
                 //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
@@ -98,7 +99,7 @@ class Executor {
                     throw 'Could not install MySQL X as the path to the plugin cannot be found.'
                 }
 
-                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--socket=${initSocket}`, `--datadir=${datadir}`, `--plugin-dir=${pluginPath}`, `--plugin-load-add=mysqlx=mysqlx.${pluginExtension}`])
+                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--socket=${initSocket}`, `--datadir=${datadir}`, `--plugin-dir=${pluginPath}`, `--plugin-load-add=mysqlx=mysqlx.${pluginExtension}`, `--mysqlx-socket=${initXSocket}`])
                 this.logger.log('Executed:', executed)
             }
 
