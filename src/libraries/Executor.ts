@@ -1,5 +1,5 @@
 import { ChildProcess, execFile, spawn } from "child_process"
-import {coerce, satisfies} from 'semver';
+import {coerce, gte, lt, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
@@ -71,7 +71,23 @@ class Executor {
             const socket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/m.sock`
             const xSocket = os.platform() === 'win32' ? `MySQLX-${randomUUID()}` : `${dbPath}/x.sock`
 
-            const process = spawn(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
+            /*
+            if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
+                //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
+                //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
+                //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
+                const initFileText = `INSTALL PLUGIN mysqlx SONAME 'mysqlx.${os.platform() === 'win32' ? 'dll' : 'so'}';`
+                try {
+                    await fsPromises.writeFile(`${dbPath}/installX.sql`, initFileText, {encoding: 'utf8'})
+                } catch (e) {
+                    this.logger.error('An error occurred while writing the init file to install MySQL X. The error was:', e)
+                    throw e
+                }
+                const process = this.#executeFile(binaryFilepath, ['--no-defaults', `--init-file=${dbPath}/installX.sql`])
+            }
+            */
+
+            const process = spawn(binaryFilepath, ['--no-defaults', `--init-file=${dbPath}/init.sql`, `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
 
             //resolveFunction is the function that will be called to resolve the promise that stops the database.
             //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
@@ -390,6 +406,10 @@ class Executor {
 
         if (options.username !== 'root') {
             initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+        }
+
+        if (lt(this.version, '8.0.11')) {
+            initText += `INSTALL PLUGIN mysqlx SONAME 'mysqlx.${os.platform() === 'win32' ? 'dll' : 'so'}';`
         }
 
         if (options.initSQLString.length > 0) {
