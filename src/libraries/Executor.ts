@@ -85,7 +85,7 @@ class Executor {
                     throw e
                 }
 
-                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--init-file=${initFileLocation}`, `--socket=${initSocket}`])
+                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--init-file=${initFileLocation}`, `--socket=${initSocket}`, `--datadir=${datadir}`])
                 this.logger.log('Executed:', executed)
             }
 
