@@ -98,7 +98,7 @@ class Executor {
                     throw 'Could not install MySQL X as the path to the plugin cannot be found.'
                 }
 
-                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--init-file=${initFileLocation}`, `--socket=${initSocket}`, `--datadir=${datadir}`, `--plugin-dir=${pluginPath}`])
+                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--socket=${initSocket}`, `--datadir=${datadir}`, `--plugin-dir=${pluginPath}`, `--plugin-load-add="mysqlx=mysqlx.${pluginExtension}`])
                 this.logger.log('Executed:', executed)
             }
 
