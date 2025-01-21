@@ -196,7 +196,7 @@ class Executor {
                         if (!killed) {
                             reject('Failed to kill MySQL process to retry listening on a free port.')
                         }
-                    } else if (file.includes('ready for connections. Version:')) {
+                    } else if (file.includes('ready for connections. Version:') || file.includes('Server starts handling incoming connections')) {
                         fs.unwatchFile(errorLogFile)
                         resolve({
                             port,
