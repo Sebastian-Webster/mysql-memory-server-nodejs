@@ -74,10 +74,11 @@ class Executor {
             if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
                 const initSocket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/i.sock`
                 const initFileLocation = `${dbPath}/installX.sql`
+                const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
                 //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
                 //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
                 //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
-                const initFileText = `INSTALL PLUGIN mysqlx SONAME 'mysqlx.${os.platform() === 'win32' ? 'dll' : 'so'}';`
+                const initFileText = `INSTALL PLUGIN mysqlx SONAME 'mysqlx.${pluginExtension}';`
                 try {
                     await fsPromises.writeFile(initFileLocation, initFileText, {encoding: 'utf8'})
                 } catch (e) {
@@ -85,7 +86,19 @@ class Executor {
                     throw e
                 }
 
-                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--init-file=${initFileLocation}`, `--socket=${initSocket}`, `--datadir=${datadir}`])
+                let pluginPath: string;
+                const firstPath = resolvePath(`${binaryFilepath}/../../lib/plugin`)
+                const secondPath = '/usr/lib/mysql/plugin'
+
+                if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
+                    pluginPath = firstPath
+                } else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
+                    pluginPath = secondPath
+                } else {
+                    throw 'Could not install MySQL X as the path to the plugin cannot be found.'
+                }
+
+                const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--init-file=${initFileLocation}`, `--socket=${initSocket}`, `--datadir=${datadir}`, `--plugin-dir=${pluginPath}`])
                 this.logger.log('Executed:', executed)
             }
 
