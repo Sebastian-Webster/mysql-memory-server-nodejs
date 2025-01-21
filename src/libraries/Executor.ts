@@ -71,38 +71,6 @@ class Executor {
             const socket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/m.sock`
             const xSocket = os.platform() === 'win32' ? `MySQLX-${randomUUID()}` : `${dbPath}/x.sock`
 
-            // if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
-            //     const initSocket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/i.sock`
-            //     const initXSocket = os.platform() === 'win32' ? `MySQL-${randomUUID()}` : `${dbPath}/ix.sock`
-            //     const initFileLocation = `${dbPath}/installX.sql`
-            //     const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
-            //     //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
-            //     //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
-            //     //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
-            //     const initFileText = `INSTALL PLUGIN mysqlx SONAME 'mysqlx.${pluginExtension}';`
-            //     try {
-            //         await fsPromises.writeFile(initFileLocation, initFileText, {encoding: 'utf8'})
-            //     } catch (e) {
-            //         this.logger.error('An error occurred while writing the init file to install MySQL X. The error was:', e)
-            //         throw e
-            //     }
-
-            //     let pluginPath: string;
-            //     const firstPath = resolvePath(`${binaryFilepath}/../../lib/plugin`)
-            //     const secondPath = '/usr/lib/mysql/plugin'
-
-            //     if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
-            //         pluginPath = firstPath
-            //     } else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
-            //         pluginPath = secondPath
-            //     } else {
-            //         throw 'Could not install MySQL X as the path to the plugin cannot be found.'
-            //     }
-
-            //     const executed = await this.#executeFile(binaryFilepath, ['--no-defaults', '--skip-networking', `--socket=${initSocket}`, `--datadir=${datadir}`, `--plugin-dir=${pluginPath}`, `--plugin-load-add=mysqlx=mysqlx.${pluginExtension}`, `--mysqlx-socket=${initXSocket}`])
-            //     this.logger.log('Executed:', executed)
-            // }
-
             const mysqlArguments = [
                 '--no-defaults',
                 `--port=${port}`,
@@ -120,6 +88,9 @@ class Executor {
                 `--user=${os.userInfo().username}`
             ]
 
+            //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
+            //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
+            //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
             if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
                 const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
                 let pluginPath: string;
