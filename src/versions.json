@@ -1,5 +1,40 @@
 [
     {
+        "version": "9.2.0",
+        "arch": "arm64",
+        "os": "darwin",
+        "osKernelVersionsSupported": ">=22",
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.2/mysql-9.2.0-macos15-arm64.tar.gz"
+    },
+    {
+        "version": "9.2.0",
+        "arch": "x64",
+        "os": "darwin",
+        "osKernelVersionsSupported": ">=22",
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.2/mysql-9.2.0-macos15-x86_64.tar.gz"
+    },
+    {
+        "version": "9.2.0",
+        "arch": "x64",
+        "os": "linux",
+        "osKernelVersionsSupported": "*",
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.2/mysql-9.2.0-linux-glibc2.17-x86_64-minimal.tar.xz"
+    },
+    {
+        "version": "9.2.0",
+        "arch": "arm64",
+        "os": "linux",
+        "osKernelVersionsSupported": "*",
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.2/mysql-9.2.0-linux-glibc2.17-aarch64-minimal.tar.xz"
+    },
+    {
+        "version": "9.2.0",
+        "arch": "x64",
+        "os": "win32",
+        "osKernelVersionsSupported": "*",
+        "url": "https://cdn.mysql.com//Downloads/MySQL-9.2/mysql-9.2.0-winx64.zip"
+    },
+    {
         "version": "9.1.0",
         "arch": "arm64",
         "os": "darwin",
