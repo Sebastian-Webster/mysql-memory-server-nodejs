@@ -18,8 +18,7 @@ beforeEach(async () => {
 
     const options: ServerOptions = {
         username: 'root',
-        logLevel: 'LOG',
-        ignoreUnsupportedSystemVersion: true
+        logLevel: 'LOG'
     }
 
     if (process.env.useCIDBPath) {

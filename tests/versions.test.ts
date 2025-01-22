@@ -25,7 +25,6 @@ for (const version of versions) {
                 dbName: 'testingdata',
                 username: username,
                 logLevel: 'LOG',
-                ignoreUnsupportedSystemVersion: true,
                 initSQLString: 'CREATE DATABASE mytestdb;'
             }
     

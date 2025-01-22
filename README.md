@@ -27,7 +27,7 @@ Requirements for Linux:
 
 #### Currently supported MySQL versions
 
-- If using the system installed MySQL server: 8.0.11 and newer
+- If using the system installed MySQL server: 5.7.19 and newer
 - If not using the system installed MySQL server: 8.0.39 - 8.0.41, 8.1.0 - 8.3.0, 8.4.2 - 8.4.4, and 9.0.1 - 9.2.0
 
 ## Example Usage - Application Code
@@ -112,11 +112,11 @@ Default: undefined
 Description: Version of MySQL to use for the database. Uses semver for getting the version, so valid semver versions are allowed. For example, `8.x` is a valid version and will use the latest 8.x MySQL version. 
 
 If left undefined:
-- If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <8.0.11), an error will be thrown unless `ignoreUnsupportedSystemVersion` is set to `true`.
+- If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <5.7.19), an error will be thrown unless `ignoreUnsupportedSystemVersion` is set to `true`.
 - If the system does not have MySQL installed, the latest version of MySQL in the `versions.json` file in this package will be downloaded.
 
 If defined:
-- If the version is older than 8.0.11, an error will be thrown as this package does not currently support those versions of MySQL.
+- If the version is older than 5.7.19, an error will be thrown as this package does not currently support those versions of MySQL.
 - If the desired version of MySQL is installed on the system, the installed version will be used. Otherwise the selected version will be downloaded from the MySQL CDN as long as it can be found in the `versions.json` file. If it cannot be found in that file, an error will be thrown.
 
 - `dbName: string`
@@ -179,7 +179,7 @@ Description: The port that the MySQL X Plugin will listen on. If set to 0, a ran
 
 Default: false
 
-Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (8.0.11) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
+Description: This option only applies if the system-installed MySQL version is lower than the oldest supported MySQL version for this package (5.7.19) and the `version` option is not defined. If set to `true`, this package will use the latest version of MySQL instead of the system-installed version. If `false`, the package will throw an error.
 
 - `downloadRetries: number`
 
