@@ -28,7 +28,7 @@ Requirements for Linux:
 #### Currently supported MySQL versions
 
 - If using the system installed MySQL server: 5.7.19 and newer
-- If not using the system installed MySQL server: 8.0.39, 8.0.40, 8.1.0, 8.2.0, 8.3.0, 8.4.2, 8.4.3, 9.0.1, 9.1.0
+- If not using the system installed MySQL server: 8.0.39 - 8.0.41, 8.1.0 - 8.3.0, 8.4.2 - 8.4.4, and 9.0.1 - 9.2.0
 
 ## Example Usage - Application Code
 
