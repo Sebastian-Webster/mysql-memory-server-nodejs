@@ -18,8 +18,7 @@ for (let i = 0; i < 100; i++) {
     
         const options: ServerOptions = {
             username: 'dbuser',
-            logLevel: 'LOG',
-            ignoreUnsupportedSystemVersion: true
+            logLevel: 'LOG'
         }
     
         if (process.env.useCIDBPath) {
