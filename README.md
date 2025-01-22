@@ -183,7 +183,7 @@ Description: This option only applies if the system-installed MySQL version is l
 
 - `downloadRetries: number`
 
-Default: 3
+Default: 10
 
 Description: The number of times to try to download a MySQL binary before giving up and rejecting the `createDB()` promise.
 
