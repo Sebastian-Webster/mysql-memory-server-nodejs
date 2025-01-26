@@ -162,5 +162,5 @@ export const MYSQL_MIN_OS_SUPPORT = {
         '8.0.40 - 8.0.41 || 8.4.3 - 9.2.0': '23.0.0'
     }
 } as const;
-export const DMR_MYSQL_VERSIONS = '8.0.0 - 8.02';
+export const DMR_MYSQL_VERSIONS = '8.0.0 - 8.0.2';
 export const RC_MYSQL_VERSIONS = '8.0.3 - 8.0.4'
