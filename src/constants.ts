@@ -144,10 +144,10 @@ export const MYSQL_ARCH_SUPPORT = {
 } as const;
 export const MYSQL_MIN_OS_SUPPORT = {
     win32: {
-        x: 'x'
+        x: '0.0.0' // No minimum version is documented as far as I can tell, so allow any minimum version
     },
     linux: {
-        x: 'x'
+        x: '0.0.0'// No minimum version is documented as far as I can tell, so allow any minimum version
     },
     darwin: {
         '5.7.19 - 5.7.23 || 8.0.1 - 8.0.3 || 8.0.11 - 8.0.12': '16.0.0',
