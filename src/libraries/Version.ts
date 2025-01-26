@@ -46,7 +46,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     }
     // End of checking if the CPU architecture is compatible with the selected MySQL version
 
-    let url: string = '';
+    let url: string = 'https://www.google.com/404';
 
     if (currentOS === 'win32') {
         url = `https://cdn.mysql.com/archives/mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-winx64.zip`
