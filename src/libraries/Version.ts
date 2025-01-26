@@ -1,7 +1,7 @@
 import { BinaryInfo, InternalServerOptions } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MIN_OS_SUPPORT } from "../constants";
+import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
 export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): BinaryInfo {
     const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(versionToGet, version));
@@ -48,8 +48,11 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     let url: string = 'https://www.google.com/404';
 
+    const isRC = satisfies(selectedVersion, RC_MYSQL_VERSIONS)
+    const isDMR = satisfies(selectedVersion, DMR_MYSQL_VERSIONS)
+
     if (currentOS === 'win32') {
-        url = `https://cdn.mysql.com/archives/mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-winx64.zip`
+        url = `https://cdn.mysql.com/archives/mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
         
     }
 
