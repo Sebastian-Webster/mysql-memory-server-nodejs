@@ -233,6 +233,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 try {
                     downloadTries++;
                     await downloadFromCDN(url, archivePath, logger)
+                    logger.log(`Finished downloading MySQL version ${version} from ${url}`)
                     await extractBinary(url, archivePath, extractedPath, logger)
                     break
                 } catch (e) {
@@ -280,6 +281,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                 try {
                     downloadTries++
                     await downloadFromCDN(url, zipFilepath, logger)
+                    logger.log(`Finished downloading MySQL version ${version} from ${url}`)
                     const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger)
                     return resolve(binaryPath)
                 } catch (e) {
