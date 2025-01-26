@@ -60,14 +60,6 @@ export type MySQLDB = {
     stop: () => Promise<void>
 }
 
-export type MySQLVersion = {
-    version: string,
-    arch: string,
-    os: string,
-    osKernelVersionsSupported: string,
-    url: string
-}
-
 export type DownloadedMySQLVersion = {
     version: string,
     path: string,

@@ -4,8 +4,6 @@ import {normalize as normalizePath} from 'path'
 import { tmpdir } from "os";
 import { valid as validSemver, coerce as coerceSemver } from "semver";
 
-export const MIN_SUPPORTED_MYSQL = '5.7.19';
-
 export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     version: undefined,
     dbName: 'dbdata',
@@ -116,3 +114,51 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
         definedType: 'string'
     }
 } as const;
+
+export const MIN_SUPPORTED_MYSQL = '5.7.19';
+export const DOWNLOADABLE_MYSQL_VERSIONS = [
+    '5.7.19', '5.7.20', '5.7.21', '5.7.22', '5.7.23', '5.7.24', '5.7.25', '5.7.26', '5.7.27', '5.7.28', '5.7.29', '5.7.30', '5.7.31', '5.7.32', '5.7.33', '5.7.34', '5.7.35', '5.7.36', '5.7.37', '5.7.38', '5.7.39', '5.7.40', '5.7.41', '5.7.42', '5.7.43', '5.7.44',
+
+    '8.0.0', '8.0.1', '8.0.2', '8.0.3', '8.0.4',
+
+    '8.0.11', '8.0.12', '8.0.13', '8.0.14', '8.0.15', '8.0.16', '8.0.17', '8.0.18', '8.0.19', '8.0.20', '8.0.21', '8.0.22', '8.0.23', '8.0.24', '8.0.25', '8.0.26', '8.0.27', '8.0.28', '8.0.30', '8.0.31', '8.0.32', '8.0.33', '8.0.34', '8.0.35', '8.0.36', '8.0.37', '8.0.39', '8.0.40', '8.0.41',
+
+    '8.1.0', '8.2.0', '8.3.0',
+
+    '8.4.0', '8.4.1', '8.4.2', '8.4.3', '8.4.4',
+
+    '9.0.0', '9.1.0', '9.2.0'
+] as const;
+export const MYSQL_ARCH_SUPPORT = {
+    darwin: {
+        arm64: '8.0.26 - 9.2.0',
+        x64: '5.7.19 - 9.2.0'
+    },
+    linux: {
+        arm64: '8.0.31 - 9.2.0',
+        x64: '5.7.19 - 9.2.0'
+    },
+    win32: {
+        x64: '5.7.19 - 9.2.0'
+    }
+} as const;
+export const MYSQL_MIN_OS_SUPPORT = {
+    win32: {
+        x: 'x'
+    },
+    linux: {
+        x: 'x'
+    },
+    darwin: {
+        '5.7.19 - 5.7.23 || 8.0.1 - 8.0.3 || 8.0.11 - 8.0.12': '16.0.0',
+        '5.7.24 - 5.7.29 || 8.0.4 || 8.0.13 - 8.0.18': '17.0.0',
+        '5.7.30 - 5.7.31, 8.0.19 - 8.0.22': '18.0.0',
+        //5.7.32 - 5.7.44 is not supported for macOS by MySQL. Those versions are not appearing in this list
+        '8.0.0': '13.0.0',
+        '8.0.23 - 8.0.27': '19.0.0',
+        '8.0.28 - 8.0.31': '20.0.0',
+        '8.0.32 - 8.0.34': '21.0.0',
+        '8.0.35 - 8.0.39 || 8.1.0 - 8.4.2': '22.0.0',
+        '8.0.40 - 8.0.41 || 8.4.3 - 9.2.0': '23.0.0'
+    }
+}

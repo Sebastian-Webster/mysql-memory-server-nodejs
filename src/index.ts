@@ -4,7 +4,6 @@ import Executor from "./libraries/Executor"
 import { satisfies, lt, coerce } from "semver"
 import { BinaryInfo, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
-import MySQLVersions from './versions.json'
 import { downloadBinary } from './libraries/Downloader'
 import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_OPTIONS_GENERATOR } from './constants'
 
@@ -48,7 +47,7 @@ export async function createDB(opts?: ServerOptions) {
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
         try {
-            binaryInfo = getBinaryURL(MySQLVersions, options.version, options)
+            binaryInfo = getBinaryURL(options.version, options)
             logger.log('Using MySQL binary version:', binaryInfo.version, 'from URL:', binaryInfo.url)
         } catch (e) {
             if (options.version && lt(coerce(options.version), MIN_SUPPORTED_MYSQL)) {
