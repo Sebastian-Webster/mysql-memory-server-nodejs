@@ -19,13 +19,13 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     const currentOS = os.platform();
     const OSVersionSupport = MYSQL_MIN_OS_SUPPORT[currentOS];
 
-    if (!OSVersionSupport) throw `MySQL and/or mysql-memory-server does not support your operating system. Please try running on a different operating system or report an issue on GitHub if you believe this is a bug.`
+    if (!OSVersionSupport) throw `MySQL and/or mysql-memory-server does not support your operating system. Please make sure you are running the latest version of mysql-memory-server or try running on a different operating system or report an issue on GitHub if you believe this is a bug.`
 
     const OSSupportVersionRanges = Object.keys(OSVersionSupport);
 
     const OSKey = OSSupportVersionRanges.find(item => satisfies(selectedVersion, item))
 
-    if (!OSKey) throw `This version of MySQL (${selectedVersion}) does not support your operating system. Please choose a different version of MySQL or report an issue on GitHub if you believe this is a bug.`
+    if (!OSKey) throw `This version of MySQL (${selectedVersion}) does not support your operating system. Please make sure you are running the latest version of mysql-memory-server or choose a different version of MySQL or report an issue on GitHub if you believe this is a bug.`
 
     const minOSForMySQLVersion = OSVersionSupport[OSKey]
 
@@ -38,7 +38,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     if (!archSupport) {
         if (currentOS === 'win32' && currentArch === 'arm64') throw 'mysql-memory-server has detected you are running Windows on ARM. MySQL does not support Windows on ARM. To get this package working, please try setting the "arch" option to "x64".'
-        throw `MySQL and/or mysql-memory-server does not support the CPU architecture you want to use (${currentArch}). Please try using a different architecture, or if you believe this is a bug, please report this on GitHub.`
+        throw `MySQL and/or mysql-memory-server does not support the CPU architecture you want to use (${currentArch}). Please make sure you are using the latest version of mysql-memory-server or try using a different architecture, or if you believe this is a bug, please report this on GitHub.`
     }
 
     if (!satisfies(selectedVersion, archSupport)) {
