@@ -5,8 +5,8 @@ import { coerce } from 'semver';
 import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
+import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 
-const versions = ['8.0.39', '8.0.40', '8.0.41', '8.1.0', '8.2.0', '8.3.0', '8.4.2', '8.4.3', '8.4.4', '9.0.1', '9.1.0', '9.2.0']
 const usernames = ['root', 'dbuser']
 
 const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
@@ -15,7 +15,7 @@ const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 jest.setTimeout(500_000);
 
-for (const version of versions) {
+for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
     for (const username of usernames) {
         test(`running on version ${version} with username ${username}`, async () => {
             process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
