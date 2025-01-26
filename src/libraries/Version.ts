@@ -49,7 +49,8 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     let url: string = '';
 
     if (currentOS === 'win32') {
-        url = `https://cdn.mysql.com/archives//mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-winx64.zip`
+        url = `https://cdn.mysql.com/archives/mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-winx64.zip`
+        
     }
 
     //TODO: Support for other platforms will be coming soon.
