@@ -4,7 +4,7 @@ import { satisfies, coerce, lt, major, minor } from "semver";
 import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
 export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): BinaryInfo {
-    const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(versionToGet, version));
+    const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
         throw `mysql-memory-server does not support downloading the version of MySQL requested (${versionToGet}). Please check for typos, choose a different version of MySQL to use, or make an issue or pull request to add support for this MySQL version on GitHub.`
