@@ -20,7 +20,8 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
         const options: ServerOptions = {
             username: 'dbuser',
             logLevel: 'LOG',
-            version
+            version,
+            downloadBinaryOnce: false
         }
     
         if (process.env.useCIDBPath) {
