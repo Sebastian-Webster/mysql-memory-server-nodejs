@@ -1,7 +1,7 @@
 import {expect, test, jest} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
-import { coerce } from 'semver';
+import { coerce, satisfies } from 'semver';
 import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
@@ -48,7 +48,7 @@ for (const version of versions) {
             await connection.end();
             await db.stop();
     
-            expect(coerce(mySQLVersion)?.version).toBe(version)
+            expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
         })
     }
 }
