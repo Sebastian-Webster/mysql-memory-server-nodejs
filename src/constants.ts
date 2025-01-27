@@ -127,7 +127,7 @@ export const DOWNLOADABLE_MYSQL_VERSIONS = [
 
     '8.4.0', '8.4.1', '8.4.2', '8.4.3', '8.4.4',
 
-    '9.0.0', '9.1.0', '9.2.0'
+    '9.0.0', '9.0.1', '9.1.0', '9.2.0'
 ] as const;
 export const MYSQL_ARCH_SUPPORT = {
     darwin: {
