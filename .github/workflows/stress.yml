@@ -53,7 +53,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run stress --shard=${{ matrix.shard-number }}/10
+        run: npm run stress:ci
 
       - name: Upload mysqlmsn directory (Windows)
         if: ${{ failure() && runner.os == 'Windows' }}
