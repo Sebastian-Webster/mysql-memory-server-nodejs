@@ -46,7 +46,6 @@ export async function createDB(opts?: ServerOptions) {
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
         const binaryInfoArray = getBinaryURL(options.version, options)
-        logger.log('Using MySQL binary version:', binaryInfo.version, 'from URL:', binaryInfo.url)
 
         try {
             binaryFilepath = await downloadBinary(binaryInfoArray[0], options, logger);

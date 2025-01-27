@@ -232,9 +232,11 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             do {
                 try {
                     downloadTries++;
+                    logger.log(`Starting download for MySQL version ${version} from ${url}.`)
                     await downloadFromCDN(url, archivePath, logger)
-                    logger.log(`Finished downloading MySQL version ${version} from ${url}`)
+                    logger.log(`Finished downloading MySQL version ${version} from ${url}. Now starting binary extraction.`)
                     await extractBinary(url, archivePath, extractedPath, logger)
+                    logger.log(`Finished extraction for version ${version}`)
                     break
                 } catch (e) {
                     //Delete generated files since either download or extraction failed
