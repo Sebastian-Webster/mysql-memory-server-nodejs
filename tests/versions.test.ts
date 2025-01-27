@@ -26,7 +26,7 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
                 username: username,
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
-                downloadBinaryOnce: true
+                downloadBinaryOnce: false
             }
     
             if (process.env.useCIDBPath) {
