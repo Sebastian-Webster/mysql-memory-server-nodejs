@@ -69,9 +69,9 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                             logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err)
                         }
 
-                        fs.unlink(downloadLocation, (unlinkErr) => {
-                            if (unlinkErr) {
-                                logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', err)
+                        fs.rm(downloadLocation, {force: true}, (rmError) => {
+                            if (rmError) {
+                                logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', rmError)
                             }
 
                             logger.error('Received status code:', response.statusCode, 'while downloading MySQL binary.')
@@ -92,9 +92,9 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                 error = err;
                 logger.error(err)
                 fileStream.end(() => {
-                    fs.unlink(downloadLocation, (unlinkError) => {
-                        if (unlinkError) {
-                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', unlinkError)
+                    fs.rm(downloadLocation, {force: true}, (rmError) => {
+                        if (rmError) {
+                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', rmError)
                         }
                         reject(err.message);
                     })
@@ -106,9 +106,9 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
             error = err;
             logger.error(err)
             fileStream.end(() => {
-                fs.unlink(downloadLocation, (unlinkError) => {
-                    if (unlinkError) {
-                        logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', unlinkError)
+                fs.rm(downloadLocation, {force: true}, (rmError) => {
+                    if (rmError) {
+                        logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', rmError)
                     }
                     reject(err.message)
                 })
