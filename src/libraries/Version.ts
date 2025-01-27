@@ -1,13 +1,13 @@
 import { BinaryInfo, InternalServerOptions } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
+import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MIN_SUPPORTED_MYSQL, MYSQL_ARCH_SUPPORT, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
-export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): BinaryInfo {
+export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): [BinaryInfo, BinaryInfo] {
     const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
-        throw `mysql-memory-server does not support downloading the version of MySQL requested (${versionToGet}). Please check for typos, choose a different version of MySQL to use, or make an issue or pull request to add support for this MySQL version on GitHub.`
+        throw `mysql-memory-server does not support downloading the version of MySQL requested (${versionToGet}). This package only supports downloads of MySQL for MySQL >= ${MIN_SUPPORTED_MYSQL} <= ${DOWNLOADABLE_MYSQL_VERSIONS.at(-1)}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`
     }
 
     //Sorts versions in descending order
@@ -46,20 +46,27 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     }
     // End of checking if the CPU architecture is compatible with the selected MySQL version
 
-    let url: string = 'https://www.google.com/404';
-
     const isRC = satisfies(selectedVersion, RC_MYSQL_VERSIONS)
     const isDMR = satisfies(selectedVersion, DMR_MYSQL_VERSIONS)
+    const downloadsURL = 'https://cdn.mysql.com//Downloads/MySQL-'
+    const archiveURL = 'https://cdn.mysql.com/archives/mysql-'
+    let fileLocation: string = ''
 
     if (currentOS === 'win32') {
-        url = `https://cdn.mysql.com/archives/mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
         
     }
 
     //TODO: Support for other platforms will be coming soon.
 
-    return {
-        version: selectedVersion,
-        url
-    }
+    return [
+        {
+            version: selectedVersion,
+            url: archiveURL + fileLocation
+        },
+        {
+            version: selectedVersion,
+            url: downloadsURL + fileLocation
+        },
+    ]
 }

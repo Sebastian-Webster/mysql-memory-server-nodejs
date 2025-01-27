@@ -1,7 +1,6 @@
 import Logger from './libraries/Logger'
-import * as os from 'node:os'
 import Executor from "./libraries/Executor"
-import { satisfies, lt, coerce } from "semver"
+import { satisfies, lt } from "semver"
 import { BinaryInfo, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import { downloadBinary } from './libraries/Downloader'
@@ -44,22 +43,29 @@ export async function createDB(opts?: ServerOptions) {
 
     logger.log('Version currently installed:', version)
     if (version === null || (options.version && !satisfies(version.version, options.version)) || unsupportedMySQLIsInstalled) {
-        if (options.version && lt(coerce(options.version), MIN_SUPPORTED_MYSQL)) {
-            //The difference between the throw here and the throw above is this throw is because the selected "version" is not supported.
-            //The throw above is because the system-installed MySQL is out of date and "ignoreUnsupportedSystemVersion" is not set to true.
-            throw `The selected version of MySQL (${options.version}) is not currently supported by this package. Please choose a different version to use.`
-        }
-
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
-        binaryInfo = getBinaryURL(options.version, options)
+        const binaryInfoArray = getBinaryURL(options.version, options)
         logger.log('Using MySQL binary version:', binaryInfo.version, 'from URL:', binaryInfo.url)
 
         try {
-            binaryFilepath = await downloadBinary(binaryInfo, options, logger);
+            binaryFilepath = await downloadBinary(binaryInfoArray[0], options, logger);
+            binaryInfo = binaryInfoArray[0]
         } catch (error) {
-            logger.error('Failed to download binary:', error)
-            throw `Failed to download binary. The error was: "${error}"`  
+            if (error.includes?.('404')) {
+                //Error includes 404. Most likely because the download got a 404 response. Try using the 2nd URL provided by getBinaryURL.
+                logger.warn('Failed to download binary because of error:', error, ' | This download will be retried with a different URL before giving up.')
+                try {
+                    binaryFilepath = await downloadBinary(binaryInfoArray[1], options, logger);
+                    binaryInfo = binaryInfoArray[1]
+                } catch (retryError) {
+                    logger.error('Failed to download binary after retry because of error:', retryError)
+                    throw `Failed to download binary after retrying with a different URL. The error was: "${error}"`
+                }
+            } else {
+                logger.error('Failed to download binary:', error)
+                throw `Failed to download binary. The error was: "${error}"`
+            }
         }
 
         logger.log('Running downloaded binary')
