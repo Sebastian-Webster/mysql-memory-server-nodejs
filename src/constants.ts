@@ -116,6 +116,7 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
 } as const;
 
 export const MIN_SUPPORTED_MYSQL = '5.7.19';
+// Versions 8.0.29, 8.0.38, and 9.0.0 have been purposefully left out of this list as MySQL has removed them from the CDN due to critical issues.
 export const DOWNLOADABLE_MYSQL_VERSIONS = [
     '5.7.20', '5.7.21', '5.7.22', '5.7.23', '5.7.24', '5.7.25', '5.7.26', '5.7.27', '5.7.28', '5.7.29', '5.7.30', '5.7.31', '5.7.32', '5.7.33', '5.7.34', '5.7.35', '5.7.36', '5.7.37', '5.7.38', '5.7.39', '5.7.40', '5.7.41', '5.7.42', '5.7.43', '5.7.44',
 
@@ -127,7 +128,7 @@ export const DOWNLOADABLE_MYSQL_VERSIONS = [
 
     '8.4.0', '8.4.1', '8.4.2', '8.4.3', '8.4.4',
 
-    '9.0.0', '9.0.1', '9.1.0', '9.2.0'
+    '9.0.1', '9.1.0', '9.2.0'
 ] as const;
 export const MYSQL_ARCH_SUPPORT = {
     darwin: {
@@ -163,4 +164,16 @@ export const MYSQL_MIN_OS_SUPPORT = {
     }
 } as const;
 export const DMR_MYSQL_VERSIONS = '8.0.0 - 8.0.2';
-export const RC_MYSQL_VERSIONS = '8.0.3 - 8.0.4'
+export const RC_MYSQL_VERSIONS = '8.0.3 - 8.0.4';
+export const MYSQL_MACOS_VERSIONS_IN_FILENAME = {
+    '5.7.19 - 5.7.20 || 8.0.1 - 8.0.3': 'macos10.12',
+    '5.7.21 - 5.7.23 || 8.0.4 - 8.0.12': 'macos10.13',
+    '5.7.24 - 5.7.31 || 8.0.13 - 8.0.18': 'macos10.14',
+    '8.0.0': 'osx10.11',
+    '8.0.19 - 8.0.23': 'macos10.15',
+    '8.0.24 - 8.0.28': 'macos11',
+    '8.0.30 - 8.0.31': 'macos12',
+    '8.0.32 - 8.0.35 || 8.1.0 - 8.2.0': 'macos13',
+    '8.0.36 - 8.0.40 || 8.3.0 - 8.4.3 || 9.0.1 - 9.1.0': 'macos14',
+    '8.0.41 || 8.4.4 || 9.2.0': 'macos15'
+} as const;

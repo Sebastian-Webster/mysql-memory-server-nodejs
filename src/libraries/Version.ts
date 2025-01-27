@@ -1,7 +1,7 @@
 import { BinaryInfo, InternalServerOptions } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MIN_SUPPORTED_MYSQL, MYSQL_ARCH_SUPPORT, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
+import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MIN_SUPPORTED_MYSQL, MYSQL_ARCH_SUPPORT, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
 export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): [BinaryInfo, BinaryInfo] {
     const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
@@ -54,7 +54,11 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     if (currentOS === 'win32') {
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
+    } else if (currentOS === 'darwin') {
+        const MySQLmacOSVersionNameKeys = Object.keys(MYSQL_MACOS_VERSIONS_IN_FILENAME);
+        const macOSVersionNameKey = MySQLmacOSVersionNameKeys.find(range => satisfies(selectedVersion, range))
         
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch}.tar.gz`
     }
 
     //TODO: Support for other platforms will be coming soon.
