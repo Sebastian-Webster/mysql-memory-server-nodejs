@@ -3,6 +3,7 @@ import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
+import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 
 jest.setTimeout(500_000);
 
@@ -10,19 +11,20 @@ const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNE
 const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
 const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
-for (let i = 0; i < 100; i++) {
-    test(`if run ${i} is successful`, async () => {
+for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
+    test(`if ${version} works with package`, async () => {
         console.log('CI:', process.env.useCIDBPath)
 
         process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
     
         const options: ServerOptions = {
             username: 'dbuser',
-            logLevel: 'LOG'
+            logLevel: 'LOG',
+            version
         }
     
         if (process.env.useCIDBPath) {
-            process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${i}`
+            process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${version}`
             process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
         }
         
