@@ -14,7 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-2019, windows-2022]
-        shard-number: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     steps:
       - name: Free Disk Space (Ubuntu)
