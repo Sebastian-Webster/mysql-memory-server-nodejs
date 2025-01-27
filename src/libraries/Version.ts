@@ -52,7 +52,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     const isDMR = satisfies(selectedVersion, DMR_MYSQL_VERSIONS)
 
     if (currentOS === 'win32') {
-        url = `https://cdn.mysql.com//Downloads/MySQL-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
+        url = `https://cdn.mysql.com/archives/mysql-${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
         
     }
 
