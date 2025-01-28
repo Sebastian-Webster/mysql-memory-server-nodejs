@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
 
-const versions = ['5.7.19', '5.7.x', '8.0.x', '8.4.x', '9.x']
+const versions = ['5.7.x', '8.0.x', '8.4.x', '9.x']
 const usernames = ['root', 'dbuser']
 
 const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
