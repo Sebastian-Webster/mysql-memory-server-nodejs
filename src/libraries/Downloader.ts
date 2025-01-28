@@ -64,7 +64,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
         fileStream.on('open', () => {
             const request = https.get(url, (response) => {
                 if (response.statusCode !== 200) {
-                    fileStream.close((err) => {
+                    fileStream.end((err) => {
                         if (err) {
                             logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err)
                         }
