@@ -1,9 +1,9 @@
-import { BinaryInfo, InternalServerOptions } from "../../types";
+import { BinaryInfo } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
 import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
-export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): [BinaryInfo, BinaryInfo] {
+export default function getBinaryURL(versionToGet: string = "x", currentArch: string): [BinaryInfo, BinaryInfo] {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
@@ -26,7 +26,6 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
         throw `No version of MySQL could be found that supports your operating system and fits the following version requirement: ${versionToGet}. Please check for typos, choose a different version of MySQL to run, or if you think this is a bug, please report this on GitHub.`
     }
 
-    const currentArch = options.arch;
     const archSupport = MYSQL_ARCH_SUPPORT[currentOS][currentArch]
 
     if (!archSupport) {
@@ -37,7 +36,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     selectedVersions = selectedVersions.filter(possibleVersion => satisfies(possibleVersion, archSupport))
 
     if (selectedVersions.length === 0) {
-        throw `No version of MySQL could be found that supports the CPU architecture ${options.arch === os.arch() ? 'for your system' : 'you have chosen'} (${options.arch}). Please try choosing a different version of MySQL, or if you believe this is a bug, please report this on GitHub.`
+        throw `No version of MySQL could be found that supports the CPU architecture ${currentArch === os.arch() ? 'for your system' : 'you have chosen'} (${currentArch}). Please try choosing a different version of MySQL, or if you believe this is a bug, please report this on GitHub.`
     }
 
     const versionsBeforeOSVersionCheck = selectedVersions.slice()

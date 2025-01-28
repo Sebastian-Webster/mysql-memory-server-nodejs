@@ -45,7 +45,7 @@ export async function createDB(opts?: ServerOptions) {
     if (version === null || (options.version && !satisfies(version.version, options.version)) || unsupportedMySQLIsInstalled) {
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
-        const binaryInfoArray = getBinaryURL(options.version, options)
+        const binaryInfoArray = getBinaryURL(options.version, options.arch)
 
         try {
             binaryFilepath = await downloadBinary(binaryInfoArray[0], options, logger);

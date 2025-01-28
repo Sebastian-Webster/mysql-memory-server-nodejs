@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
 import { MYSQL_ARCH_SUPPORT } from '../src/constants';
+import getBinaryURL from '../src/libraries/Version';
 
 const versions = ['5.7.x', '8.0.x', '8.4.x', '9.x']
 const usernames = ['root', 'dbuser']
@@ -17,11 +18,12 @@ const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 jest.setTimeout(500_000);
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
-const archSupport = MYSQL_ARCH_SUPPORT[process.platform]?.[arch]
 
 for (const version of versions) {
-    if (!archSupport || !satisfies(version, archSupport)) {
-        console.warn(`Skipping test for version ${version} because this version either does not support this type of operating system and/or CPU architecture.`)
+    try {
+        getBinaryURL(version, arch)
+    } catch (e) {
+        console.warn(`Skipping version ${version} because the version is not supported on this system. The reason given from getBinaryURL was: ${e}`)
         continue
     }
 
