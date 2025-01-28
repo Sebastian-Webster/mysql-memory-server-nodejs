@@ -44,6 +44,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     const coercedOSRelease = coerce(os.release())
     selectedVersions.filter(possibleVersion => {
         const OSVersionKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
+        console.log('OSVersionKey:', OSVersionKey, 'possibleVersion:', possibleVersion)
         return !lt(coercedOSRelease, OSVersionSupport[OSVersionKey])
     })
 
