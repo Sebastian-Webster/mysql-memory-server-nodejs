@@ -60,7 +60,7 @@ jobs:
         with:
           name: ${{ matrix.os }}
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
-          compression-level: 9
+          compression-level: 0
 
       - name: Upload mysqlmsn directory (Not Windows)
         if: ${{ failure() && runner.os != 'Windows' }}
@@ -68,4 +68,4 @@ jobs:
         with:
           name: ${{ matrix.os }}
           path: /tmp/mysqlmsn
-          compression-level: 9
+          compression-level: 0
