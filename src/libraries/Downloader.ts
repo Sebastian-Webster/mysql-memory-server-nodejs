@@ -74,7 +74,6 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                                 logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', rmError)
                             }
 
-                            logger.warn('Received status code:', response.statusCode, 'while downloading MySQL binary.')
                             reject(`Received status code ${response.statusCode} while downloading MySQL binary.`)
                         })
                     })
