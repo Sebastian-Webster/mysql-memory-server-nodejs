@@ -25,8 +25,7 @@ for (const version of versions) {
                 dbName: 'testingdata',
                 username: username,
                 logLevel: 'LOG',
-                initSQLString: 'CREATE DATABASE mytestdb;',
-                downloadBinaryOnce: false
+                initSQLString: 'CREATE DATABASE mytestdb;'
             }
     
             if (process.env.useCIDBPath) {
