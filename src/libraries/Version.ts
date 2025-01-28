@@ -19,7 +19,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     selectedVersions.filter(possibleVersion => {
         const OSKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
-        console.log('OS check key:', OSKey, 'possibleVersion:', possibleVersion)
+        console.log('OS check key:', OSKey, 'possibleVersion:', possibleVersion, !!OSKey)
         return !!OSKey
     })
 
