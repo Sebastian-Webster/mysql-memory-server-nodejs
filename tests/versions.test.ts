@@ -5,6 +5,7 @@ import { coerce, satisfies } from 'semver';
 import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
+import { MYSQL_ARCH_SUPPORT } from '../src/constants';
 
 const versions = ['5.7.x', '8.0.x', '8.4.x', '9.x']
 const usernames = ['root', 'dbuser']
@@ -15,7 +16,15 @@ const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 jest.setTimeout(500_000);
 
+const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
+const archSupport = MYSQL_ARCH_SUPPORT[process.platform]?.[arch]
+
 for (const version of versions) {
+    if (!archSupport || !satisfies(version, archSupport)) {
+        console.warn(`Skipping test for version ${version} because this version either does not support this type of operating system and/or CPU architecture.`)
+        continue
+    }
+
     for (const username of usernames) {
         test(`running on version ${version} with username ${username}`, async () => {
             process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
@@ -26,7 +35,7 @@ for (const version of versions) {
                 username: username,
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
-                arch: process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64'
+                arch
             }
     
             if (process.env.useCIDBPath) {
