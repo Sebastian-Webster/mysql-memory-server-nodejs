@@ -4,7 +4,7 @@ import { satisfies, coerce, lt, major, minor } from "semver";
 import { DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
 export default function getBinaryURL(versionToGet: string = "x", options: InternalServerOptions): [BinaryInfo, BinaryInfo] {
-    const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
+    let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
         throw `mysql-memory-server does not support downloading a version of MySQL that fits the following version requirement: ${versionToGet}. This package only supports downloads of MySQL for MySQL >= ${DOWNLOADABLE_MYSQL_VERSIONS[0]} <= ${DOWNLOADABLE_MYSQL_VERSIONS.at(-1)}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`
@@ -17,13 +17,10 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     const OSSupportVersionRanges = Object.keys(OSVersionSupport);
 
-    selectedVersions.filter(possibleVersion => {
+    selectedVersions = selectedVersions.filter(possibleVersion => {
         const OSKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
-        console.log('OS check key:', OSKey, 'possibleVersion:', possibleVersion, !!OSKey)
         return !!OSKey
     })
-
-    console.log('Selected versions after OS filter:', selectedVersions)
 
     if (selectedVersions.length === 0) {
         throw `No version of MySQL could be found that supports your operating system and fits the following version requirement: ${versionToGet}. Please check for typos, choose a different version of MySQL to run, or if you think this is a bug, please report this on GitHub.`
@@ -37,7 +34,7 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
         throw `MySQL and/or mysql-memory-server does not support the CPU architecture you want to use (${currentArch}). Please make sure you are using the latest version of mysql-memory-server or try using a different architecture, or if you believe this is a bug, please report this on GitHub.`
     }
 
-    selectedVersions.filter(possibleVersion => satisfies(possibleVersion, archSupport))
+    selectedVersions = selectedVersions.filter(possibleVersion => satisfies(possibleVersion, archSupport))
 
     if (selectedVersions.length === 0) {
         throw `No version of MySQL could be found that supports the CPU architecture ${options.arch === os.arch() ? 'for your system' : 'you have chosen'} (${options.arch}). Please try choosing a different version of MySQL, or if you believe this is a bug, please report this on GitHub.`
@@ -45,9 +42,8 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     const versionsBeforeOSVersionCheck = selectedVersions.slice()
     const coercedOSRelease = coerce(os.release())
-    selectedVersions.filter(possibleVersion => {
+    selectedVersions = selectedVersions.filter(possibleVersion => {
         const OSVersionKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
-        console.log('OSVersionKey:', OSVersionKey, 'possibleVersion:', possibleVersion)
         return !lt(coercedOSRelease, OSVersionSupport[OSVersionKey])
     })
 
