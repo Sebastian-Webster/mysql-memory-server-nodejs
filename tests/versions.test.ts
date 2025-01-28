@@ -25,7 +25,8 @@ for (const version of versions) {
                 dbName: 'testingdata',
                 username: username,
                 logLevel: 'LOG',
-                initSQLString: 'CREATE DATABASE mytestdb;'
+                initSQLString: 'CREATE DATABASE mytestdb;',
+                arch: process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64'
             }
     
             if (process.env.useCIDBPath) {
