@@ -23,6 +23,8 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
         return !!OSKey
     })
 
+    console.log('Selected versions after OS filter:', selectedVersions)
+
     if (selectedVersions.length === 0) {
         throw `No version of MySQL could be found that supports your operating system and fits the following version requirement: ${versionToGet}. Please check for typos, choose a different version of MySQL to run, or if you think this is a bug, please report this on GitHub.`
     }
