@@ -7,15 +7,9 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
     const selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
-        throw `mysql-memory-server does not support downloading the version of MySQL requested (${versionToGet}). This package only supports downloads of MySQL for MySQL >= ${MIN_SUPPORTED_MYSQL} <= ${DOWNLOADABLE_MYSQL_VERSIONS.at(-1)}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`
+        throw `mysql-memory-server does not support downloading a version of MySQL that fits the following version requirement: ${versionToGet}. This package only supports downloads of MySQL for MySQL >= ${MIN_SUPPORTED_MYSQL} <= ${DOWNLOADABLE_MYSQL_VERSIONS.at(-1)}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`
     }
 
-    //Sorts versions in descending order
-    selectedVersions.sort((a, b) => a < b ? 1 : -1)
-
-    const selectedVersion = selectedVersions[0]
-
-    // Start of checking if the OS version is compatible with the selected MySQL version
     const currentOS = os.platform();
     const OSVersionSupport = MYSQL_MIN_OS_SUPPORT[currentOS];
 
@@ -23,16 +17,15 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
 
     const OSSupportVersionRanges = Object.keys(OSVersionSupport);
 
-    const OSKey = OSSupportVersionRanges.find(item => satisfies(selectedVersion, item))
+    selectedVersions.filter(possibleVersion => {
+        const OSKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
+        return !!OSKey
+    })
 
-    if (!OSKey) throw `This version of MySQL (${selectedVersion}) does not support your operating system. Please make sure you are running the latest version of mysql-memory-server or choose a different version of MySQL or report an issue on GitHub if you believe this is a bug.`
+    if (selectedVersions.length === 0) {
+        throw `No version of MySQL could be found that supports your operating system and fits the following version requirement: ${versionToGet}. Please check for typos, choose a different version of MySQL to run, or if you think this is a bug, please report this on GitHub.`
+    }
 
-    const minOSForMySQLVersion = OSVersionSupport[OSKey]
-
-    if (lt(coerce(os.release()), minOSForMySQLVersion)) throw `Your operating system is too out of date to use version ${selectedVersion} of MySQL. MySQL requires >= ${minOSForMySQLVersion} but your system is ${os.release()}. Please update your operating system, choose a different version of MySQL to use, or report an issue on GitHub if you believe this is a bug.`
-    // End of checking if the OS version is compatible with the selected MySQL version
-
-    // Start of checking if the CPU architecture is compatible with the selected MySQL version
     const currentArch = options.arch;
     const archSupport = MYSQL_ARCH_SUPPORT[currentOS][currentArch]
 
@@ -41,10 +34,35 @@ export default function getBinaryURL(versionToGet: string = "x", options: Intern
         throw `MySQL and/or mysql-memory-server does not support the CPU architecture you want to use (${currentArch}). Please make sure you are using the latest version of mysql-memory-server or try using a different architecture, or if you believe this is a bug, please report this on GitHub.`
     }
 
-    if (!satisfies(selectedVersion, archSupport)) {
-        throw `The desired version of MySQL to run (${selectedVersion}) does not support the CPU architecture (${currentArch}). Please try using a different architecture or MySQL version, or if you believe this is a bug, please report this on GitHub.`
+    selectedVersions.filter(possibleVersion => satisfies(possibleVersion, archSupport))
+
+    if (selectedVersions.length === 0) {
+        throw `No version of MySQL could be found that supports the CPU architecture ${options.arch === os.arch() ? 'for your system' : 'you have chosen'} (${options.arch}). Please try choosing a different version of MySQL, or if you believe this is a bug, please report this on GitHub.`
     }
-    // End of checking if the CPU architecture is compatible with the selected MySQL version
+
+    const versionsBeforeOSVersionCheck = selectedVersions.slice()
+    const coercedOSRelease = coerce(os.release())
+    selectedVersions.filter(possibleVersion => {
+        const OSVersionKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
+        return !lt(coercedOSRelease, OSVersionSupport[OSVersionKey])
+    })
+
+    if (selectedVersions.length === 0) {
+        const versionKeys = new Set()
+        for (const v of versionsBeforeOSVersionCheck) {
+            versionKeys.add(OSSupportVersionRanges.find(item => satisfies(v, item)))
+        }
+        const minVersions = Array.from(versionKeys).map(v => OSVersionSupport[v])
+        //Sorts versions in ascending order
+        minVersions.sort((a, b) => a < b ? -1 : 1)
+        const minVersion = minVersions[0]
+        throw `Your operating system is too out of date to run a version of MySQL that fits the following requirement: ${versionToGet}. The oldest version for your operating system that you would need to get a version that satisfies the version requirement is ${minVersion} but your current operating system is ${coercedOSRelease.version}. Please try changing your MySQL version requirement, updating your OS to a newer version, or if you believe this is a bug, please report this on GitHub.`
+    }
+
+    //Sorts versions in descending order
+    selectedVersions.sort((a, b) => a < b ? 1 : -1)
+
+    const selectedVersion = selectedVersions[0]
 
     const isRC = satisfies(selectedVersion, RC_MYSQL_VERSIONS)
     const isDMR = satisfies(selectedVersion, DMR_MYSQL_VERSIONS)
