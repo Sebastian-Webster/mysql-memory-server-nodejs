@@ -91,7 +91,7 @@ jobs:
           check-latest: true
 
       - name: Install required libraries
-        run: sudo dnf install libaio numactl -y
+        run: sudo dnf install libaio numactl libxcrypt-compat -y
 
       - name: Install packages
         run: npm ci
