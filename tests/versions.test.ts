@@ -37,7 +37,8 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
                 username: username,
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
-                arch
+                arch,
+                downloadBinaryOnce: false
             }
 
             const CIDBPath = `${dbPath}/${randomUUID()}`
