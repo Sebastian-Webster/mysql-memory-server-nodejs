@@ -19,7 +19,7 @@ jest.setTimeout(500_000);
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
-for (const version of ['5.7.20', '9.x']) {
+for (const version of ['5.7.20', '5.7.30', '5.7.40', '8.0.11', '9.x']) {
     try {
         getBinaryURL(version, arch)
     } catch (e) {
