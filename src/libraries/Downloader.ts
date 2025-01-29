@@ -255,6 +255,8 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                             //Retry with downloads URL
                             downloadTries--;
                             useDownloadsURL = true;
+                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`)
+                            continue;
                         } else {
                             try {
                                 await releaseFunction()
@@ -276,7 +278,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         logger.error('downloadRetries have been exceeded. Aborting download.')
                         return reject(e)
                     } else {
-                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                        logger.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                     }
                 }
             } while (downloadTries <= options.downloadRetries)
@@ -323,6 +325,8 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                             //Retry with downloads URL
                             downloadTries--;
                             useDownloadsURL = true;
+                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`)
+                            continue;
                         } else {
                             return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`)
                         }
