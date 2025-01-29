@@ -7,6 +7,7 @@ import { ServerOptions } from '../types';
 import { normalize } from 'path';
 import getBinaryURL from '../src/libraries/Version';
 import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
+import fsPromises from 'fs/promises'
 
 const usernames = ['root', 'dbuser']
 
@@ -38,9 +39,11 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
                 initSQLString: 'CREATE DATABASE mytestdb;',
                 arch
             }
+
+            const CIDBPath = `${dbPath}/${randomUUID()}`
     
             if (process.env.useCIDBPath) {
-                process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
+                process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = CIDBPath
                 process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
             }
     
@@ -58,6 +61,15 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
     
             await connection.end();
             await db.stop();
+
+            //If everything was successful, delete the database if running in CI (if not running in CI, deleteDBAfterStopped is set to true and so the db is deleted automatically)
+            try {
+                if (process.env.useCIDBPath) {
+                    await fsPromises.rm(CIDBPath, {recursive: true, force: true, retryDelay: 100, maxRetries: 50})
+                }
+            } catch (e) {
+                console.error('An error occurred while deleting successful database with version:', version, 'and username:', username, '. The error was:', e)
+            }
     
             expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
         })
