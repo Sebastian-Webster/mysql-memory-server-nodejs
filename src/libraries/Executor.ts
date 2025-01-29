@@ -348,7 +348,7 @@ class Executor {
 
                     const libaioPath = await fsPromises.realpath(libaioSymlinkPath)
 
-                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
+                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/libaio.so.1`)
 
                     let lockRelease: () => Promise<void>;
 
