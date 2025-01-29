@@ -5,10 +5,9 @@ import { coerce, satisfies } from 'semver';
 import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
 import { normalize } from 'path';
-import { MYSQL_ARCH_SUPPORT } from '../src/constants';
 import getBinaryURL from '../src/libraries/Version';
+import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 
-const versions = ['5.7.x', '8.0.x', '8.4.x', '9.x']
 const usernames = ['root', 'dbuser']
 
 const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
@@ -19,7 +18,7 @@ jest.setTimeout(500_000);
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
-for (const version of versions) {
+for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
     try {
         getBinaryURL(version, arch)
     } catch (e) {
