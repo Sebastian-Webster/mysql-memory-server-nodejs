@@ -87,7 +87,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const fileExtensionKey = fileExtensionKeys.find(range => satisfies(selectedVersion, range))
         const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[fileExtensionKey]
 
-        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
     }
 
     return {
