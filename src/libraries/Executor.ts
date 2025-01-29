@@ -348,7 +348,11 @@ class Executor {
 
                     const libaioPath = await fsPromises.realpath(libaioSymlinkPath)
 
-                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/libaio.so.1`)
+                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
+
+                    if (lt(this.version, '8.0.18')) {
+                        await fsPromises.mkdir(resolvePath(`${binaryFilepath}/../../lib/private`))
+                    }
 
                     let lockRelease: () => Promise<void>;
 
