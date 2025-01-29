@@ -351,7 +351,8 @@ class Executor {
                     let copyPath: string;
 
                     if (lt(this.version, '8.0.4')) {
-                        copyPath = resolvePath(`${binaryFilepath}/../../support-files/libaio.so.1`)
+                        await fsPromises.mkdir(resolvePath(`${binaryFilepath}/../../lib/private`))
+                        copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
                     } else if (lt(this.version, '8.0.18')) {
                         copyPath = resolvePath(`${binaryFilepath}/../../bin/libaio.so.1`)
                     } else {
