@@ -81,6 +81,9 @@ jobs:
     container: fedora:${{ matrix.version }}
 
     steps:
+      - name: Print available storage space
+        run: df -h
+        
       - name: Checkout
         uses: actions/checkout@v4
 
