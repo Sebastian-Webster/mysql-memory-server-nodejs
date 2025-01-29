@@ -350,11 +350,8 @@ class Executor {
 
                     let copyPath: string;
 
-                    if (lt(this.version, '8.0.18')) {
-                        copyPath = resolvePath(`${binaryFilepath}/../../bin/libaio.so.1`)
-                    } else {
-                        copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
-                    }
+                   
+                    copyPath = resolvePath(`${binaryFilepath}/../../bin/libaio.so.1`)
 
                     let lockRelease: () => Promise<void>;
 
