@@ -1,7 +1,7 @@
 import { BinaryInfo } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
+import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
 
 export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
@@ -73,11 +73,18 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     } else if (currentOS === 'darwin') {
         const MySQLmacOSVersionNameKeys = Object.keys(MYSQL_MACOS_VERSIONS_IN_FILENAME);
         const macOSVersionNameKey = MySQLmacOSVersionNameKeys.find(range => satisfies(selectedVersion, range))
-        
-        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch}.tar.gz`
-    }
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
+    } else if (currentOS === 'linux') {
+        const glibcVersionKeys = Object.keys(MYSQL_LINUX_GLIBC_VERSIONS);
+        const glibcVersionKey = glibcVersionKeys.find(range => satisfies(selectedVersion, range))
+        const glibcVersion = MYSQL_LINUX_GLIBC_VERSIONS[glibcVersionKey];
 
-    //TODO: Support for other platforms will be coming soon.
+        const minimalInstallAvailableKeys = Object.keys(MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE);
+        const minimalInstallAvailableKey = minimalInstallAvailableKeys.find(range => satisfies(selectedVersion, range))
+        const minimalInstallAvailable = MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE[minimalInstallAvailableKey]
+
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? '-minimal' : ''}.tar.xz`
+    }
 
     return {
         version: selectedVersion,

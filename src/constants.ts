@@ -179,3 +179,12 @@ export const MYSQL_MACOS_VERSIONS_IN_FILENAME = {
     '8.0.36 - 8.0.40 || 8.3.0 - 8.4.3 || 9.0.1 - 9.1.0': 'macos14',
     '8.0.41 || 8.4.4 || 9.2.0': 'macos15'
 } as const;
+export const MYSQL_LINUX_GLIBC_VERSIONS = {
+    '5.7.19 - 8.0.20': '2.12',
+    '8.0.21 - 9.2.0': '2.17'
+} as const;
+export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
+    '5.7.19 - 8.0.15': 'no',
+    '8.0.16 - 8.0.20': 'no-glibc-tag',
+    '8.0.21 - 9.2.0': 'glibc-tag'
+} as const;
