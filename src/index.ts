@@ -45,26 +45,13 @@ export async function createDB(opts?: ServerOptions) {
     if (version === null || (options.version && !satisfies(version.version, options.version)) || unsupportedMySQLIsInstalled) {
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
-        const binaryInfoArray = getBinaryURL(options.version, options.arch)
+        binaryInfo = getBinaryURL(options.version, options.arch)
 
         try {
-            binaryFilepath = await downloadBinary(binaryInfoArray[0], options, logger);
-            binaryInfo = binaryInfoArray[0]
+            binaryFilepath = await downloadBinary(binaryInfo, options, logger);
         } catch (error) {
-            if (error.includes?.('404')) {
-                //Error includes 404. Most likely because the download got a 404 response. Try using the 2nd URL provided by getBinaryURL.
-                logger.warn('Failed to download binary because of error:', error, ' | This download will be retried with a different URL before giving up.')
-                try {
-                    binaryFilepath = await downloadBinary(binaryInfoArray[1], options, logger);
-                    binaryInfo = binaryInfoArray[1]
-                } catch (retryError) {
-                    logger.error('Failed to download binary after retry because of error:', retryError)
-                    throw `Failed to download binary after retrying with a different URL. The error was: "${error}"`
-                }
-            } else {
-                logger.error('Failed to download binary:', error)
-                throw `Failed to download binary. The error was: "${error}"`
-            }
+            logger.error('Failed to download binary:', error)
+            throw `Failed to download binary. The error was: "${error}"`
         }
 
         logger.log('Running downloaded binary')
