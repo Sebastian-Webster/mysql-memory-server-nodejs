@@ -191,4 +191,5 @@ export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
 export const MYSQL_LINUX_FILE_EXTENSIONS = {
     '5.7.19 - 8.0.11': 'gz',
     '8.0.12 - 9.2.0': 'xz'
-}
+} as const;
+export const MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = '8.0.26';

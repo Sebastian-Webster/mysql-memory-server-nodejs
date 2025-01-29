@@ -1,7 +1,7 @@
 import { BinaryInfo } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS } from "../constants";
+import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS } from "../constants";
 
 export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
@@ -87,7 +87,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const fileExtensionKey = fileExtensionKeys.find(range => satisfies(selectedVersion, range))
         const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[fileExtensionKey]
 
-        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? '-minimal' : ''}.tar.${fileExtension}`
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
     }
 
     return {
