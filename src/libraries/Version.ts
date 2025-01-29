@@ -83,7 +83,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const minimalInstallAvailableKey = minimalInstallAvailableKeys.find(range => satisfies(selectedVersion, range))
         const minimalInstallAvailable = MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE[minimalInstallAvailableKey]
 
-        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? '-minimal' : ''}.tar.xz`
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? '-minimal' : ''}.tar.xz`
     }
 
     return {
