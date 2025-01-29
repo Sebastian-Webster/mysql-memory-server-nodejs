@@ -9,11 +9,15 @@ on:
 jobs:
   stress:
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
 
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-2019, windows-2022]
+        include:
+          - os: ubuntu-latest
+            container: fedora:40
 
     steps:
       - name: Free Disk Space (Ubuntu)
