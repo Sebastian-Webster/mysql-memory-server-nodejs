@@ -16,28 +16,28 @@ jobs:
         os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022]
 
     steps:
-      # - name: Free Disk Space (Ubuntu)
-      #   uses: jlumbroso/free-disk-space@main
-      #   if: ${{ runner.os == 'Linux' }}
-      #   with:
-      #     tool-cache: true
-      #     android: true
-      #     dotnet: true
-      #     haskell: true
-      #     large-packages: true
-      #     docker-images: true
-      #     swap-storage: true
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        if: ${{ runner.os == 'Linux' }}
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
-      # - name: Free Disk Space (macOS)
-      #   if: ${{ runner.os == 'macOS' }}
-      #   working-directory: /Applications
-      #   run: |
-      #     echo 'BEFORE CLEANUP:'
-      #     df -h
-      #     sudo find . -name Xcode\*.app -delete
-      #     sudo rm -rf /Users/runner/Library/Android
-      #     echo 'AFTER CLEANUP:'
-      #     df -h
+      - name: Free Disk Space (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        working-directory: /Applications
+        run: |
+          echo 'BEFORE CLEANUP:'
+          df -h
+          sudo find . -name Xcode\*.app -delete
+          sudo rm -rf /Users/runner/Library/Android
+          echo 'AFTER CLEANUP:'
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
         with:
           name: ${{ matrix.os }}
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
-          compression-level: 9
+          compression-level: 0
 
       - name: Upload mysqlmsn directory (Not Windows)
         if: ${{ failure() && runner.os != 'Windows' }}
@@ -68,7 +68,7 @@ jobs:
         with:
           name: ${{ matrix.os }}
           path: /tmp/mysqlmsn
-          compression-level: 9
+          compression-level: 0
 
   fedora-docker:
     runs-on: ubuntu-latest
@@ -108,4 +108,4 @@ jobs:
         with:
           name: docker-fedora-${{ matrix.version }}
           path: /tmp/mysqlmsn
-          compression-level: 9
+          compression-level: 0
