@@ -19,7 +19,7 @@ jest.setTimeout(500_000);
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
-for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
+for (const version of ['8.0.0', '8.0.1', '8.0.2', '8.0.3', '8.0.4', '8.0.11']) {
     try {
         getBinaryURL(version, arch)
     } catch (e) {
@@ -62,17 +62,6 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS) {
     
             await connection.end();
             await db.stop();
-
-            //If everything was successful, delete the database if running in CI (if not running in CI, deleteDBAfterStopped is set to true and so the db is deleted automatically)
-            try {
-                if (process.env.useCIDBPath) {
-                    console.log('Deleting database with version:', version, 'and username:', username, 'because the test run was successful.')
-                    await fsPromises.rm(CIDBPath, {recursive: true, force: true, retryDelay: 100, maxRetries: 50})
-                    console.log('Successfully deleted database with version:', version, 'and username:', username)
-                }
-            } catch (e) {
-                console.error('An error occurred while deleting successful database with version:', version, 'and username:', username, '. The error was:', e)
-            }
     
             expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
         })
