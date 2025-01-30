@@ -431,7 +431,7 @@ class Executor {
         let initText = `CREATE DATABASE ${options.dbName};`;
 
         if (options.username !== 'root') {
-            initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+            initText += `\nCREATE USER '${options.username}'@'localhost';\nGRANT ALL ON *.* TO '${options.username}'@'localhost' WITH GRANT OPTION;`
         }
 
         if (options.initSQLString.length > 0) {
