@@ -78,3 +78,14 @@ export type OptionTypeChecks = {
         definedType: "string" | "boolean" | "number"
     }
 }
+
+export type LinuxEtcOSRelease = {
+    PRETTY_NAME?: string,
+    NAME?: string,
+    VERSION_ID?: string,
+    VERSION?: string,
+    VERSION_CODENAME?: string,
+    ID?: string,
+    ID_LIKE: string,
+    UBUNTU_CODENAME?: string
+}
