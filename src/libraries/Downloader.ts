@@ -140,7 +140,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             //Only Windows MySQL files use the .zip extension
             const zip = new AdmZip(archiveLocation)
             
-            zip.extractAllToAsync(extractedLocation, true, false, (err) => {throw err;})
+            zip.extractAllToAsync(extractedLocation, true, true, (err) => {throw err;})
 
             try {
                 await fsPromises.rm(archiveLocation)
