@@ -140,14 +140,13 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             //Only Windows MySQL files use the .zip extension
             const zip = new AdmZip(archiveLocation)
             
-            zip.extractAllToAsync(extractedLocation, true, true, (err) => {throw err;})
+            zip.extractAllToAsync(extractedLocation, false, false, (err) => {throw err;})
 
             try {
                 await fsPromises.rm(archiveLocation)
             } catch (e) {
                 logger.error('A non-fatal error occurred while removing no longer needed archive file:', e)  
             } finally {
-                logger.log('readdir:', fs.readdirSync(extractedLocation))
                 await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
                 return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
             }
