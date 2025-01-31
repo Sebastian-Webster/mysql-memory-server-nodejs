@@ -133,6 +133,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             return reject(`Folder name is undefined for url: ${url}`)
         }
         const folderName = mySQLFolderName.replace(`.${fileExtension}`, '')
+        
+        console.log('The MySQL folder:', folderName, 'will be renamed.')
 
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
