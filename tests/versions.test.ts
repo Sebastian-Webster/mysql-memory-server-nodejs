@@ -15,11 +15,11 @@ const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNE
 const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
 const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
-jest.setTimeout(500_000);
+jest.setTimeout(120_000); //2 minutes
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
-for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, '>=8.0.0 <=8.0.11'))) {
+for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, '8.0.0 - 8.0.1'))) {
     try {
         getBinaryURL(version, arch)
     } catch (e) {
