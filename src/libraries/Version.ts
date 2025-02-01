@@ -1,9 +1,10 @@
-import { BinaryInfo } from "../../types";
+import { BinaryInfo, LinuxEtcOSRelease } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
 import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS } from "../constants";
+import etcOSRelease from "./LinuxOSRelease";
 
-export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
+export default async function getBinaryURL(versionToGet: string = "x", currentArch: string): Promise<BinaryInfo> {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
@@ -56,6 +57,19 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         minVersions.sort((a, b) => a < b ? -1 : 1)
         const minVersion = minVersions[0]
         throw `Your operating system is too out of date to run a version of MySQL that fits the following requirement: ${versionToGet}. The oldest version for your operating system that you would need to get a version that satisfies the version requirement is ${minVersion} but your current operating system is ${coercedOSRelease.version}. Please try changing your MySQL version requirement, updating your OS to a newer version, or if you believe this is a bug, please report this on GitHub.`
+    }
+
+    if (process.platform === 'linux' && etcOSRelease.NAME === 'Ubuntu' && lt(etcOSRelease.VERSION_ID, '24.04')) {
+        //Since Ubuntu >= 24.04 uses libaio1t64 instead of libaio, this package has to copy libaio1t64 into a folder that MySQL looks in for dynamically linked libraries with the filename "libaio.so.1".
+        //I have not been able to find a suitable folder for libaio1t64 to be copied into for MySQL < 8.0.4, so here we are filtering all versions lower than 8.0.4 since they fail to launch in Ubuntu 24.04.
+        //If there is a suitable filepath for libaio1t64 to be copied into for MySQL < 8.0.4 then this check can be removed and these older MySQL versions can run on Ubuntu.
+        //Pull requests are welcome for adding >= Ubuntu 24.04 support for MySQL < 8.0.4.
+        //A way to get MySQL running on Ubuntu >= 24.04 is to symlink libaio1t64 to the location libaio would be. It is not suitable for this package to be doing that automatically, so instead this package has been copying libaio1t64 into the MySQL binary folder.
+        selectedVersions = selectedVersions.filter(v => lt(v, '8.0.4'))
+    }
+
+    if (selectedVersions.length === 0) {
+        throw `You are running a version of Ubuntu that is too modern to run any MySQL versions with this package that match the following version requirement: ${versionToGet}. Please choose a newer version of MySQL to use, or if you believe this is a bug please report this on GitHub.`
     }
 
     //Sorts versions in descending order

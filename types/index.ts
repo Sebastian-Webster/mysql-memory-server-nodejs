@@ -86,6 +86,6 @@ export type LinuxEtcOSRelease = {
     VERSION?: string,
     VERSION_CODENAME?: string,
     ID?: string,
-    ID_LIKE: string,
+    ID_LIKE?: string,
     UBUNTU_CODENAME?: string
 }
