@@ -61,7 +61,7 @@ jobs:
         if: ${{ failure() && runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: ${{ matrix.os }}
+          name: ${{ matrix.os }}-${{ matrix.version-requirement }}
           path: "C:\\Users\\RUNNER~1\\mysqlmsn"
           compression-level: 0
 
@@ -69,7 +69,7 @@ jobs:
         if: ${{ failure() && runner.os != 'Windows' }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: ${{ matrix.os }}
+          name: ${{ matrix.os }}-${{ matrix.version-requirement }}
           path: /tmp/mysqlmsn
           compression-level: 0
 
@@ -112,6 +112,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: docker-fedora-${{ matrix.version }}
+          name: docker-fedora-${{ matrix.version }}-${{ matrix.version-requirement }}
           path: /tmp/mysqlmsn
           compression-level: 0
