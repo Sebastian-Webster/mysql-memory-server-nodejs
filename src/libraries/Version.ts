@@ -59,7 +59,7 @@ export default async function getBinaryURL(versionToGet: string = "x", currentAr
         throw `Your operating system is too out of date to run a version of MySQL that fits the following requirement: ${versionToGet}. The oldest version for your operating system that you would need to get a version that satisfies the version requirement is ${minVersion} but your current operating system is ${coercedOSRelease.version}. Please try changing your MySQL version requirement, updating your OS to a newer version, or if you believe this is a bug, please report this on GitHub.`
     }
 
-    if (process.platform === 'linux' && etcOSRelease.NAME === 'Ubuntu' && lt(etcOSRelease.VERSION_ID, '24.04')) {
+    if (process.platform === 'linux' && etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
         //Since Ubuntu >= 24.04 uses libaio1t64 instead of libaio, this package has to copy libaio1t64 into a folder that MySQL looks in for dynamically linked libraries with the filename "libaio.so.1".
         //I have not been able to find a suitable folder for libaio1t64 to be copied into for MySQL < 8.0.4, so here we are filtering all versions lower than 8.0.4 since they fail to launch in Ubuntu 24.04.
         //If there is a suitable filepath for libaio1t64 to be copied into for MySQL < 8.0.4 then this check can be removed and these older MySQL versions can run on Ubuntu.
