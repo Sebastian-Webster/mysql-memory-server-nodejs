@@ -14,6 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022]
+        version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '>8.0.40 <9.0.0', '>=9.0.0']
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -52,6 +53,8 @@ jobs:
         run: npm ci
 
       - name: Run tests
+        env:
+          VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
         run: npm run test:ci
 
       - name: Upload mysqlmsn directory (Windows)
@@ -77,6 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         version: [40]
+        version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '>8.0.40 <9.0.0', '>=9.0.0']
 
     container: fedora:${{ matrix.version }}
 
@@ -100,6 +104,8 @@ jobs:
         run: df -h
 
       - name: Run tests
+        env:
+          VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
         run: npm run test:ci
 
       - name: Upload mysqlmsn directory

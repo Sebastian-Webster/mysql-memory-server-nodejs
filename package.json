@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "test": "jest --testPathIgnorePatterns=/stress-tests/ --verbose --colors",
-    "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js --verbose --colors",
+    "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js --verbose --colors --passWithNoTests",
     "stress:ci": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js --verbose --colors"
   },
   "engines": {
