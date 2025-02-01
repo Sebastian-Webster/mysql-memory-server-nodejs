@@ -4,7 +4,7 @@ import { satisfies, coerce, lt, major, minor } from "semver";
 import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS } from "../constants";
 import etcOSRelease from "./LinuxOSRelease";
 
-export default async function getBinaryURL(versionToGet: string = "x", currentArch: string): Promise<BinaryInfo> {
+export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
