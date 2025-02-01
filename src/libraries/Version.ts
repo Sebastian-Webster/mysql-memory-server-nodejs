@@ -65,7 +65,7 @@ export default async function getBinaryURL(versionToGet: string = "x", currentAr
         //If there is a suitable filepath for libaio1t64 to be copied into for MySQL < 8.0.4 then this check can be removed and these older MySQL versions can run on Ubuntu.
         //Pull requests are welcome for adding >= Ubuntu 24.04 support for MySQL < 8.0.4.
         //A way to get MySQL running on Ubuntu >= 24.04 is to symlink libaio1t64 to the location libaio would be. It is not suitable for this package to be doing that automatically, so instead this package has been copying libaio1t64 into the MySQL binary folder.
-        selectedVersions = selectedVersions.filter(v => lt(v, '8.0.4'))
+        selectedVersions = selectedVersions.filter(v => !lt(v, '8.0.4'))
     }
 
     if (selectedVersions.length === 0) {
