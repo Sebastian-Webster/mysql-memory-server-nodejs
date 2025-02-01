@@ -8,7 +8,7 @@ if (process.platform === 'linux') {
     const entries = file.split('\n')
     for (const entry of entries) {
         const [key, value] = entry.split('=')
-        releaseDetails[key] = value
+        releaseDetails[key] = value.replaceAll('"', '')
     }
 }
 
