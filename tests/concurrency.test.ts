@@ -6,7 +6,7 @@ jest.setTimeout(500_000);
 
 test('concurrency with 10 simulataneous database creations', async () => {
    const dbs = await Promise.all(
-        new Array(10).fill(createDB({logLevel: 'LOG'}))
+        Array.from(new Array(10)).map(() => createDB({logLevel: 'LOG'}))
     )
 
     for (const db of dbs) {
