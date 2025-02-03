@@ -78,3 +78,7 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, proce
         })
     }
 }
+
+test('dummy test', () => {
+    expect(1 + 1).toBe(2)
+})
