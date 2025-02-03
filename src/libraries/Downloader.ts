@@ -116,6 +116,20 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
     })
 }
 
+function promisifiedZipExtraction(archiveLocation: string, extractedLocation: string): Promise<void> {
+    const zip = new AdmZip(archiveLocation)
+
+    return new Promise((resolve, reject) => {
+        zip.extractAllToAsync(extractedLocation, false, false, (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve()
+            }
+        })
+    })
+}
+
 function extractBinary(url: string, archiveLocation: string, extractedLocation: string, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(extractedLocation)) {
@@ -138,10 +152,9 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
-            const zip = new AdmZip(archiveLocation)
-            
-            zip.extractAllToAsync(extractedLocation, false, false, (err) => {throw err;})
 
+            await promisifiedZipExtraction(archiveLocation, extractedLocation)
+            
             try {
                 await fsPromises.rm(archiveLocation)
             } catch (e) {
