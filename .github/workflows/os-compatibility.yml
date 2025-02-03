@@ -17,29 +17,6 @@ jobs:
         version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '>8.0.40 <9.0.0', '>=9.0.0']
 
     steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        if: ${{ runner.os == 'Linux' }}
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-
-      - name: Free Disk Space (macOS)
-        if: ${{ runner.os == 'macOS' }}
-        working-directory: /Applications
-        run: |
-          echo 'BEFORE CLEANUP:'
-          df -h
-          sudo find . -name Xcode\*.app -delete
-          sudo rm -rf /Users/runner/Library/Android
-          echo 'AFTER CLEANUP:'
-          df -h
-
       - name: Checkout
         uses: actions/checkout@v4
 
