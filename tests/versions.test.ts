@@ -37,8 +37,7 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, proce
                 username: username,
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
-                arch,
-                downloadBinaryOnce: false
+                arch
             }
 
             const CIDBPath = `${dbPath}/${randomUUID()}`
