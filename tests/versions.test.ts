@@ -79,6 +79,8 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, proce
     }
 }
 
+//The test suites will fail if there aren't any tests. Since we're skipping creating tests if the test platform doesn't support the MySQL
+//binary, we need this test here just in case all the MySQL binaries are skipped
 test('dummy test', () => {
     expect(1 + 1).toBe(2)
 })
