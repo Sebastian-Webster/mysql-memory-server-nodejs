@@ -14,7 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, macos-14, macos-15, ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022]
-        version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '>8.0.40 <9.0.0', '>=9.0.0']
+        #There is no 10.0.0 at the time of writing, but since greater than characters are not allowed in GitHub Actions artifacts names, 9.0.1 - 10.0.0 will be used instead of >9.0.0
+        version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '8.0.41 - 9.0.0', '9.0.1 - 10.0.0']
 
     steps:
       - name: Checkout
@@ -57,7 +58,8 @@ jobs:
       fail-fast: false
       matrix:
         version: [40]
-        version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '>8.0.40 <9.0.0', '>=9.0.0']
+        #There is no 10.0.0 at the time of writing, but since greater than characters are not allowed in GitHub Actions artifacts names, 9.0.1 - 10.0.0 will be used instead of >9.0.0
+        version-requirement: ['5.7.19 - 5.7.30', '5.7.31 - 5.7.40', '5.7.41 - 5.7.44', '8.0.0 - 8.0.12', '8.0.13 - 8.0.26', '8.0.27 - 8.0.40', '8.0.41 - 9.0.0', '9.0.1 - 10.0.0']
 
     container: fedora:${{ matrix.version }}
 
