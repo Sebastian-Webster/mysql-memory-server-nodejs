@@ -36,10 +36,6 @@ export type InternalServerOptions = {
     arch: string
 }
 
-export type ExecutorOptions = {
-    logLevel: LOG_LEVEL
-}
-
 export type ExecuteFileReturn = {
     error: ExecFileException | null,
     stdout: string,

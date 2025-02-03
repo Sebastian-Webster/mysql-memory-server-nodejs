@@ -2,18 +2,11 @@ import {expect, test, jest} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { coerce, satisfies } from 'semver';
-import { randomUUID } from 'crypto';
 import { ServerOptions } from '../types';
-import { normalize } from 'path';
 import getBinaryURL from '../src/libraries/Version';
 import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
-import fsPromises from 'fs/promises'
 
 const usernames = ['root', 'dbuser']
-
-const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
-const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
-const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
 
 jest.setTimeout(120_000); //2 minutes
 
@@ -29,8 +22,6 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, proce
 
     for (const username of usernames) {
         test(`running on version ${version} with username ${username}`, async () => {
-            process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
-
             const options: ServerOptions = {
                 version,
                 dbName: 'testingdata',
@@ -38,13 +29,6 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, proce
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
                 arch
-            }
-
-            const CIDBPath = `${dbPath}/${randomUUID()}`
-    
-            if (process.env.useCIDBPath) {
-                process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = CIDBPath
-                process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
             }
     
             const db = await createDB(options)

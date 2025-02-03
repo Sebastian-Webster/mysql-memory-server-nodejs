@@ -18,6 +18,7 @@ class Executor {
     removeExitHandler: () => void;
     version: string;
     versionInstalledOnSystem: boolean;
+    databasePath: string
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -440,7 +441,7 @@ class Executor {
 
         this.logger.log('Writing init file')
 
-        await fsPromises.writeFile(`${getInternalEnvVariable('dbPath')}/init.sql`, initText, {encoding: 'utf8'})
+        await fsPromises.writeFile(`${this.databasePath}/init.sql`, initText, {encoding: 'utf8'})
 
         this.logger.log('Finished writing init file')
     }
@@ -457,7 +458,7 @@ class Executor {
 
             if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
                 try {
-                    fs.rmSync(getInternalEnvVariable('dbPath'), {recursive: true, maxRetries: 50, force: true})
+                    fs.rmSync(this.databasePath, {recursive: true, maxRetries: 50, force: true})
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database directory path:', e)
                 }
@@ -479,7 +480,9 @@ class Executor {
 
         let retries = 0;
 
-        const datadir = normalizePath(`${getInternalEnvVariable('dbPath')}/data`)
+        this.databasePath = normalizePath(`${getInternalEnvVariable('databaseDirectoryPath')}/${randomUUID()}`)
+
+        const datadir = normalizePath(`${this.databasePath}/data`)
 
         do {
             await this.#setupDataDirectories(options, installedMySQLBinary.path, datadir, true);
@@ -491,7 +494,7 @@ class Executor {
 
             try {
                 this.logger.log('Starting MySQL process')
-                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, getInternalEnvVariable('dbPath'), installedMySQLBinary.path)
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, this.databasePath, installedMySQLBinary.path)
                 this.logger.log('Starting process was successful')
                 return resolved
             } catch (e) {

@@ -1,16 +1,17 @@
 import Logger from './libraries/Logger'
 import Executor from "./libraries/Executor"
 import { satisfies, lt } from "semver"
-import { BinaryInfo, ServerOptions } from '../types'
+import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import { downloadBinary } from './libraries/Downloader'
-import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_OPTIONS_GENERATOR } from './constants'
+import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_OPTIONS } from './constants'
+import crypto from 'crypto'
 
 export async function createDB(opts?: ServerOptions) {
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
 
-    const options = DEFAULT_OPTIONS_GENERATOR();
+    const options: InternalServerOptions = {...DEFAULT_OPTIONS}
     
     for (const opt of suppliedOptsKeys) {
         if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {

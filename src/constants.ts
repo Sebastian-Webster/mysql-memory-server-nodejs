@@ -4,7 +4,7 @@ import {normalize as normalizePath} from 'path'
 import { tmpdir } from "os";
 import { valid as validSemver, coerce as coerceSemver } from "semver";
 
-export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
+export const DEFAULT_OPTIONS: InternalServerOptions = {
     version: undefined,
     dbName: 'dbdata',
     logLevel: 'ERROR',
@@ -19,9 +19,9 @@ export const DEFAULT_OPTIONS_GENERATOR: () => InternalServerOptions = () => ({
     downloadRetries: 10,
     initSQLString: '',
     arch: process.arch
-});
+} as const;
 
-export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS_GENERATOR()))
+export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS))
 
 export const LOG_LEVELS = {
     'LOG': 0,
@@ -32,7 +32,7 @@ export const LOG_LEVELS = {
 const internalOptions = {
     deleteDBAfterStopped: 'true',
     //mysqlmsn = MySQL Memory Server Node.js
-    dbPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs/${randomUUID().replace(/-/g, '')}`),
+    databaseDirectoryPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs`),
     binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
     cli: 'false'
 }
