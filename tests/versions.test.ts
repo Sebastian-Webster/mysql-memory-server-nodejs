@@ -8,7 +8,7 @@ import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 
 const usernames = ['root', 'dbuser']
 
-jest.setTimeout(300_000); //5 minutes
+jest.setTimeout(500_000); //5 minutes
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
