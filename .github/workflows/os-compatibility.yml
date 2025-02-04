@@ -33,7 +33,7 @@ jobs:
       - name: Run tests
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
-        run: npm run test:ci
+        run: npm run os-compat:ci
 
       - name: Upload mysqlmsn directory (Windows)
         if: ${{ failure() && runner.os == 'Windows' }}
@@ -85,7 +85,7 @@ jobs:
       - name: Run tests
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
-        run: npm run test:ci
+        run: npm run os-compat:ci
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
