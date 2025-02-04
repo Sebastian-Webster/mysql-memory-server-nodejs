@@ -1,4 +1,4 @@
-import { BinaryInfo } from "../../types";
+import { BinaryInfo, JSRuntimeVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
 import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS } from "../constants";
@@ -107,5 +107,19 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     return {
         version: selectedVersion,
         url: archiveBaseURL + fileLocation
+    }
+}
+
+export function getJSRuntimeVersion(): JSRuntimeVersion {
+    if (process.versions.bun) {
+        return {
+            runtimeName: 'Bun',
+            runtimeVersion: process.versions.bun
+        }
+    }
+
+    return {
+        runtimeName: 'NodeJS',
+        runtimeVersion: process.versions.node
     }
 }

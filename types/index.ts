@@ -85,3 +85,8 @@ export type LinuxEtcOSRelease = {
     ID_LIKE?: string,
     UBUNTU_CODENAME?: string
 }
+
+export type JSRuntimeVersion = {
+    runtimeName: string,
+    runtimeVersion: string
+}
