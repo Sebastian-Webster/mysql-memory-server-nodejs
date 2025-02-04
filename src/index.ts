@@ -5,7 +5,6 @@ import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import { downloadBinary } from './libraries/Downloader'
 import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_OPTIONS } from './constants'
-import crypto from 'crypto'
 
 export async function createDB(opts?: ServerOptions) {
     const suppliedOpts = opts || {};
