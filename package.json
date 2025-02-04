@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "test": "jest --verbose --colors",
-    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors"
+    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors --detectOpenHandles"
   },
   "engines": {
     "node": ">=16.6.0",
