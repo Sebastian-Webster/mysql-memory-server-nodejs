@@ -10,18 +10,6 @@ import { BinaryInfo, InternalServerOptions } from '../../types';
 import { lockFile, waitForLock } from './FileLock';
 import { archiveBaseURL, downloadsBaseURL, getInternalEnvVariable } from '../constants';
 
-function getZipData(entry: AdmZip.IZipEntry): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        entry.getDataAsync((data, err) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(data)
-            }
-        })
-    })
-}
-
 function handleTarExtraction(filepath: string, extractedPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
         execFile(`tar`, ['-xf', filepath, '-C', extractedPath], (error, stdout, stderr) => {
@@ -30,23 +18,6 @@ function handleTarExtraction(filepath: string, extractedPath: string): Promise<v
             }
             resolve()
         })
-    })
-}
-
-export function downloadVersions(): Promise<string> {
-    return new Promise((resolve, reject) => {
-        let json = "";
-
-        https.get("https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/raw/main/versions.json", function(response) {
-            response
-            .on("data", append => json += append )
-            .on("error", e => {
-                reject(e)
-            } )
-            .on("end", ()=>{
-                resolve(json)
-            } );
-        });
     })
 }
 
@@ -117,9 +88,8 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
 }
 
 function promisifiedZipExtraction(archiveLocation: string, extractedLocation: string): Promise<void> {
-    const zip = new AdmZip(archiveLocation)
-
     return new Promise((resolve, reject) => {
+        const zip = new AdmZip(archiveLocation)
         zip.extractAllToAsync(extractedLocation, false, false, (err) => {
             if (err) {
                 reject(err);
@@ -161,11 +131,16 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
                 logger.error('A non-fatal error occurred while removing no longer needed archive file:', e)  
             } finally {
                 await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
-                return resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
+                resolve(normalizePath(`${extractedLocation}/mysql/bin/mysqld.exe`))
             }
-        }
+        } else {
+            try {
+                await handleTarExtraction(archiveLocation, extractedLocation)
+            } catch (e) {
+                logger.error(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${e}`)
+                reject(e)
+            }
 
-        handleTarExtraction(archiveLocation, extractedLocation).then(async () => {
             try {
                 await fsPromises.rm(archiveLocation)
             } catch (e) {
@@ -174,10 +149,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
                 await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`)
                 resolve(`${extractedLocation}/mysql/bin/mysqld`)
             }
-        }).catch(error => {
-            logger.error(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`)
-            reject(error)
-        })
+        }
     })
 }
 
