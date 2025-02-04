@@ -287,7 +287,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             } while (downloadTries <= options.downloadRetries)
 
             try {
-                releaseFunction()
+                await releaseFunction()
             } catch (e) {
                 logger.error('An error occurred while releasing lock after successful binary download. The error was:', e)
             }
