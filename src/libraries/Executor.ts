@@ -480,7 +480,7 @@ class Executor {
 
         let retries = 0;
 
-        this.databasePath = normalizePath(`${getInternalEnvVariable('databaseDirectoryPath')}/${randomUUID()}`)
+        this.databasePath = normalizePath(`${getInternalEnvVariable('databaseDirectoryPath')}/${randomUUID().replaceAll("-", '')}`)
 
         const datadir = normalizePath(`${this.databasePath}/data`)
 
