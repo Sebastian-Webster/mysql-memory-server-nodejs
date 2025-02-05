@@ -116,6 +116,11 @@ class Executor {
             let resolveFunction: () => void;
 
             process.on('close', async (code, signal) => {
+                if (signal) {
+                    this.logger.log('Exiting because of aborted signal.')
+                    return
+                }
+
                 let errorLog: string;
 
                 try {
