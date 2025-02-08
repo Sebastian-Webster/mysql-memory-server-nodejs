@@ -39,19 +39,19 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
         fileStream.on('open', () => {
             const request = https.get(url, {headers: {"user-agent": userAgent}}, (response) => {
                 if (response.statusCode !== 200) {
+                    request.destroy();
+
                     fileStream.end((err) => {
-                        request.end(() => {
-                            if (err) {
-                                logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err)
+                        if (err) {
+                            logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err)
+                        }
+
+                        fs.rm(downloadLocation, {force: true}, (rmError) => {
+                            if (rmError) {
+                                logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', rmError)
                             }
-    
-                            fs.rm(downloadLocation, {force: true}, (rmError) => {
-                                if (rmError) {
-                                    logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', rmError)
-                                }
-    
-                                reject(`Received status code ${response.statusCode} while downloading MySQL binary.`)
-                            })
+
+                            reject(`Received status code ${response.statusCode} while downloading MySQL binary.`)
                         })
                     })
                 } else {
