@@ -130,7 +130,7 @@ class Executor {
                 }
 
                 const portIssue = errorLog.includes("Do you already have another mysqld server running")
-                const xPortIssue = errorLog.includes("X Plugin can't bind to it")
+                const xPortIssue = errorLog.includes("Do you already have another mysqld server running with Mysqlx")
                 this.logger.log('Exiting because of a port issue:', portIssue, '. MySQL X Plugin failed to bind:', xPortIssue)
 
                 if (portIssue || xPortIssue) {
