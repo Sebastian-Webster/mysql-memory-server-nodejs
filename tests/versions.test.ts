@@ -1,36 +1,34 @@
 import {expect, test, jest} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
-import { coerce } from 'semver';
-import { randomUUID } from 'crypto';
+import { coerce, satisfies } from 'semver';
 import { ServerOptions } from '../types';
-import { normalize } from 'path';
+import getBinaryURL from '../src/libraries/Version';
+import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 
-const versions = ['8.0.39', '8.0.40', '8.0.41', '8.1.0', '8.2.0', '8.3.0', '8.4.2', '8.4.3', '8.4.4', '9.0.1', '9.1.0', '9.2.0']
 const usernames = ['root', 'dbuser']
 
-const GitHubActionsTempFolder = process.platform === 'win32' ? 'C:\\Users\\RUNNER~1\\mysqlmsn' : '/tmp/mysqlmsn'
-const dbPath = normalize(GitHubActionsTempFolder + '/dbs')
-const binaryPath = normalize(GitHubActionsTempFolder + '/binaries')
+jest.setTimeout(500_000); //5 minutes
 
-jest.setTimeout(500_000);
+const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
-for (const version of versions) {
+for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, process.env.VERSION_REQUIREMENT || '>0.0.0'))) {
+    try {
+        getBinaryURL(version, arch)
+    } catch (e) {
+        console.warn(`Skipping version ${version} because the version is not supported on this system. The reason given from getBinaryURL was: ${e}`)
+        continue
+    }
+
     for (const username of usernames) {
         test(`running on version ${version} with username ${username}`, async () => {
-            process.env.mysqlmsn_internal_DO_NOT_USE_deleteDBAfterStopped = String(!process.env.useCIDBPath)
-
             const options: ServerOptions = {
                 version,
                 dbName: 'testingdata',
                 username: username,
                 logLevel: 'LOG',
-                initSQLString: 'CREATE DATABASE mytestdb;'
-            }
-    
-            if (process.env.useCIDBPath) {
-                process.env.mysqlmsn_internal_DO_NOT_USE_dbPath = `${dbPath}/${randomUUID()}`
-                process.env.mysqlmsn_internal_DO_NOT_USE_binaryDirectoryPath = binaryPath
+                initSQLString: 'CREATE DATABASE mytestdb;',
+                arch
             }
     
             const db = await createDB(options)
@@ -48,7 +46,13 @@ for (const version of versions) {
             await connection.end();
             await db.stop();
     
-            expect(coerce(mySQLVersion)?.version).toBe(version)
+            expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
         })
     }
 }
+
+//The test suites will fail if there aren't any tests. Since we're skipping creating tests if the test platform doesn't support the MySQL
+//binary, we need this test here just in case all the MySQL binaries are skipped
+test('dummy test', () => {
+    expect(1 + 1).toBe(2)
+})

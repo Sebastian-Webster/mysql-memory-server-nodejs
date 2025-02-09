@@ -18,6 +18,7 @@ class Executor {
     removeExitHandler: () => void;
     version: string;
     versionInstalledOnSystem: boolean;
+    databasePath: string
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -115,6 +116,11 @@ class Executor {
             let resolveFunction: () => void;
 
             process.on('close', async (code, signal) => {
+                if (signal) {
+                    this.logger.log('Exiting because of aborted signal.')
+                    return
+                }
+
                 let errorLog: string;
 
                 try {
@@ -348,7 +354,13 @@ class Executor {
 
                     const libaioPath = await fsPromises.realpath(libaioSymlinkPath)
 
-                    const copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
+                    let copyPath: string;
+
+                    if (lt(this.version, '8.0.18')) {
+                        copyPath = resolvePath(`${binaryFilepath}/../../bin/libaio.so.1`)
+                    } else {
+                        copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
+                    }
 
                     let lockRelease: () => Promise<void>;
 
@@ -425,7 +437,7 @@ class Executor {
         let initText = `CREATE DATABASE ${options.dbName};`;
 
         if (options.username !== 'root') {
-            initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`
+            initText += `\nCREATE USER '${options.username}'@'localhost';\nGRANT ALL ON *.* TO '${options.username}'@'localhost' WITH GRANT OPTION;`
         }
 
         if (options.initSQLString.length > 0) {
@@ -434,7 +446,7 @@ class Executor {
 
         this.logger.log('Writing init file')
 
-        await fsPromises.writeFile(`${getInternalEnvVariable('dbPath')}/init.sql`, initText, {encoding: 'utf8'})
+        await fsPromises.writeFile(`${this.databasePath}/init.sql`, initText, {encoding: 'utf8'})
 
         this.logger.log('Finished writing init file')
     }
@@ -451,7 +463,7 @@ class Executor {
 
             if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
                 try {
-                    fs.rmSync(getInternalEnvVariable('dbPath'), {recursive: true, maxRetries: 50, force: true})
+                    fs.rmSync(this.databasePath, {recursive: true, maxRetries: 50, force: true})
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database directory path:', e)
                 }
@@ -473,7 +485,9 @@ class Executor {
 
         let retries = 0;
 
-        const datadir = normalizePath(`${getInternalEnvVariable('dbPath')}/data`)
+        this.databasePath = normalizePath(`${getInternalEnvVariable('databaseDirectoryPath')}/${randomUUID().replaceAll("-", '')}`)
+
+        const datadir = normalizePath(`${this.databasePath}/data`)
 
         do {
             await this.#setupDataDirectories(options, installedMySQLBinary.path, datadir, true);
@@ -485,7 +499,7 @@ class Executor {
 
             try {
                 this.logger.log('Starting MySQL process')
-                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, getInternalEnvVariable('dbPath'), installedMySQLBinary.path)
+                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, this.databasePath, installedMySQLBinary.path)
                 this.logger.log('Starting process was successful')
                 return resolved
             } catch (e) {

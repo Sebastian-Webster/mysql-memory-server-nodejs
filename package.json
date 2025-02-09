@@ -16,9 +16,9 @@
     "memory database"
   ],
   "scripts": {
-    "test": "jest --testPathIgnorePatterns=/stress-tests/ --verbose --colors",
-    "test:ci": "jest --testPathIgnorePatterns=/stress-tests/ --setupFilesAfterEnv ./ciSetup.js --verbose --colors",
-    "stress": "jest --runTestsByPath stress-tests/stress.test.ts --setupFilesAfterEnv ./ciSetup.js --verbose --colors"
+    "test": "jest --verbose --colors",
+    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors --runTestsByPath tests/concurrency.test.ts",
+    "os-compat:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors --runTestsByPath tests/versions.test.ts"
   },
   "engines": {
     "node": ">=16.6.0",

@@ -36,10 +36,6 @@ export type InternalServerOptions = {
     arch: string
 }
 
-export type ExecutorOptions = {
-    logLevel: LOG_LEVEL
-}
-
 export type ExecuteFileReturn = {
     error: ExecFileException | null,
     stdout: string,
@@ -60,14 +56,6 @@ export type MySQLDB = {
     stop: () => Promise<void>
 }
 
-export type MySQLVersion = {
-    version: string,
-    arch: string,
-    os: string,
-    osKernelVersionsSupported: string,
-    url: string
-}
-
 export type DownloadedMySQLVersion = {
     version: string,
     path: string,
@@ -85,4 +73,20 @@ export type OptionTypeChecks = {
         errorMessage: string,
         definedType: "string" | "boolean" | "number"
     }
+}
+
+export type LinuxEtcOSRelease = {
+    PRETTY_NAME?: string,
+    NAME?: string,
+    VERSION_ID?: string,
+    VERSION?: string,
+    VERSION_CODENAME?: string,
+    ID?: string,
+    ID_LIKE?: string,
+    UBUNTU_CODENAME?: string
+}
+
+export type JSRuntimeVersion = {
+    runtimeName: string,
+    runtimeVersion: string
 }
