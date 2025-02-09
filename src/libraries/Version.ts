@@ -109,17 +109,3 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         url: archiveBaseURL + fileLocation
     }
 }
-
-export function getJSRuntimeVersion(): JSRuntimeVersion {
-    if (process.versions.bun) {
-        return {
-            runtimeName: 'Bun',
-            runtimeVersion: process.versions.bun
-        }
-    }
-
-    return {
-        runtimeName: 'NodeJS',
-        runtimeVersion: process.versions.node
-    }
-}

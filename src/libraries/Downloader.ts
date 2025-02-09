@@ -9,7 +9,6 @@ import { execFile } from 'child_process';
 import { BinaryInfo, InternalServerOptions } from '../../types';
 import { lockFile, waitForLock } from './FileLock';
 import { archiveBaseURL, downloadsBaseURL, getInternalEnvVariable } from '../constants';
-import { getJSRuntimeVersion } from './Version';
 
 function handleTarExtraction(filepath: string, extractedPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -33,11 +32,8 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
 
         let error: Error;
 
-        const JSRuntime = getJSRuntimeVersion()
-        const userAgent = `${JSRuntime.runtimeName}/${JSRuntime.runtimeVersion}`
-
         fileStream.on('open', () => {
-            const request = https.get(url, {headers: {"user-agent": userAgent}}, (response) => {
+            const request = https.get(url, (response) => {
                 if (response.statusCode !== 200) {
                     request.destroy();
 
