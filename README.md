@@ -28,7 +28,7 @@ Requirements for Linux:
 #### Currently supported MySQL versions
 
 - ```mysql-memory-server``` can run MySQL versions 5.7.19 and newer
-- ```mysql-memory-server``` can download MySQL versions 5.7.20 - 9.2.0
+- ```mysql-memory-server``` can download MySQL versions 5.7.19 - 9.2.0
 
 ## Example Usage - Application Code
 
