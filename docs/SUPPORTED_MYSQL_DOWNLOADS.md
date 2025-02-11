@@ -83,6 +83,8 @@ Ubuntu Linux:
 | Ubuntu Version | Required Dependencies |
 |--|--|
 | >=24.04 | ```libaio1t64``` package, ```tar``` package, and ```ldconfig``` command |
-| <=23.10 | ```libaio1``` package, and ```tar``` package |
+| <=23.10 | ```libaio1``` package and ```tar``` package |
+
+Fedora Linux: ```libaio1``` package and ```tar``` package
 
 *Document last updated in v1.9.0*
