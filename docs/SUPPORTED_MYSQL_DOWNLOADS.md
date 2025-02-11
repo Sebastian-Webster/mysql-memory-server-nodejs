@@ -6,10 +6,9 @@
 
 - macOS
 - Windows
-- Ubuntu Linux
-- Fedora Linux
+- Linux
 
-*```mysql-memory-server``` gets tested on Ubuntu 20.04, 22.04, 24.04, Fedora 40, macOS 13, 14, 15, and Windows Server 2019 and 2022. Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.
+*```mysql-memory-server``` gets tested on Ubuntu 20.04, 22.04, 24.04, Fedora 40 and 41, macOS 13, 14, 15, and Windows Server 2019 and 2022. Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.
 
 ## Binaries not available for download
 
@@ -63,8 +62,8 @@ Ubuntu Linux:
 
 | MySQL version | Maximum Ubuntu Version |
 |--|--|
-| >=8.0.4 | No documented maximum version |
-| <= 8.0.3 | Ubuntu 23.10 |
+| >= v8.0.4 | No documented maximum version |
+| <= v8.0.3 | Ubuntu 23.10 |
 
 ## Required Dependencies
 
@@ -74,16 +73,16 @@ Windows:
 
 | MySQL Version | Required Dependencies |
 |--|--|
-| <=v5.7.37 | Microsoft Visual C++ 2013 Redistributable Package |
+| <= v5.7.37 | Microsoft Visual C++ 2013 Redistributable Package |
 | v5.7.38 & v5.7.39 | Microsoft Visual C++ 2013 Redistributable Package AND Microsoft Visual C++ 2019 Redistributable Package|
-| >=v5.7.40 | Microsoft Visual C++ 2019 Redistributable Package |
+| >= v5.7.40 | Microsoft Visual C++ 2019 Redistributable Package |
 
 Ubuntu Linux:
 
 | Ubuntu Version | Required Dependencies |
 |--|--|
-| >=24.04 | ```libaio1t64``` package, ```tar``` package, and ```ldconfig``` command |
-| <=23.10 | ```libaio1``` package and ```tar``` package |
+| >= v24.04 | ```libaio1t64``` package, ```tar``` package, and ```ldconfig``` command |
+| <= v23.10 | ```libaio1``` package and ```tar``` package |
 
 Fedora Linux: ```libaio1``` package and ```tar``` package
 
