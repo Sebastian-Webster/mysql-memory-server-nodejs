@@ -78,4 +78,11 @@ Windows:
 | v5.7.38 & v5.7.39 | Microsoft Visual C++ 2013 Redistributable Package AND Microsoft Visual C++ 2019 Redistributable Package|
 | >=v5.7.40 | Microsoft Visual C++ 2019 Redistributable Package |
 
+Ubuntu Linux:
+
+| Ubuntu Version | Required Dependencies |
+|--|--|
+| >=24.04 | ```libaio1t64``` package, ```tar``` package, and ```ldconfig``` command |
+| <=23.10 | ```libaio1``` package, and ```tar``` package |
+
 *Document last updated in v1.9.0*
