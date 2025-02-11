@@ -6,7 +6,7 @@
 
 - Versions 8.0.29, 8.0.38, 8.4.1, and 9.0.0 are not available for download for any operating systems as MySQL removed them from the CDN due to critical issues.
 
-- Versions 5.7.32 - 5.7.44 are not available for download only on macOS as MySQL stopped supporting macOS Mojave starting from 5.7.32 for the rest of the 5.7.x line.
+- Versions 5.7.32 - 5.7.44 are not available for download only on macOS as MySQL stopped supporting macOS Mojave starting from 5.7.32 for the rest of the 5.7.x line. As a result, those versions are not available for macOS in the MySQL CDN.
 
 #### Native Binary Architectures
 
