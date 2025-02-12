@@ -1,6 +1,6 @@
 # MySQL Memory Server
 
-This package allows you to create ephemeral MySQL databases from JavaScript and/or TypeScript code and also the CLI, great for testing, CI, and learning MySQL. When creating a new database, if the version selected is not installed on the system, the binary is downloaded from MySQL's CDN (cdn.mysql.com)
+This package allows you to create ephemeral MySQL databases from JavaScript and/or TypeScript code and also the CLI, great for testing, CI, and learning MySQL. When creating a new database, if the version selected is not installed on the system, the binary is downloaded from MySQL's CDN (cdn.mysql.com). This package supports Linux, macOS, and Windows.
 
 You can run multiple MySQL databases with this package at the same time. Each database will use a random free port. The databases will automatically shutdown when the JS runtime process exits. A `stop()` method is also provided to stop each database instance.
 
@@ -11,24 +11,13 @@ Download with your package manager of choice. The package name is `mysql-memory-
 #### Requirements
 
 - Node.js >=16.6.0 or Bun >= 1.0.0
-- macOS 13+, Windows, or Linux (This package is only tested on Ubuntu 20.04, 22.04, 24.04, and Fedora 40. Other Linux distributions may or may not work at this time.)
-
-#### Requirements for downloaded MySQL versions
-
-The following requirements only apply if you intend to have `mysql-memory-server` download a version of MySQL to use instead of using an already installed version of MySQL on the system:
-
-Requirements for Windows:
-- `Microsoft Visual C++ 2019 Redistributable Package` needs to be installed
-
-Requirements for Linux:
-- The `libaio1` or `libaio1t64` package needs to be installed
-- If `libaio1` is not available but `libaio1t64` is, the `ldconfig` command needs to be available to run
-- The `tar` package needs to be installed
 
 #### Currently supported MySQL versions
 
 - ```mysql-memory-server``` can run MySQL versions 5.7.19 and newer
 - ```mysql-memory-server``` can download MySQL versions 5.7.19 - 9.2.0
+
+Extra system requirements apply when ```mysql-memory-server``` is downloading MySQL instead of running a version of MySQL that is already installed on the system. To see the requirements and learn more about the supported versions for download, [read the doc](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.9.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md)
 
 ## Example Usage - Application Code
 
