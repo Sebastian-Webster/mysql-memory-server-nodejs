@@ -65,15 +65,19 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
             request.on('error', (err) => {
                 error = err;
                 logger.error(err)
-                request.end(() => {
-                    fileStream.end(() => {
-                        fs.rm(downloadLocation, {force: true}, (rmError) => {
-                            if (rmError) {
-                                logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', rmError)
-                            }
-    
-                            reject(err.message);
-                        })
+                request.destroy();
+                
+                fileStream.end((err) => {
+                    if (err) {
+                        logger.error('An error occurred while closing the fileStream on request error. The error was:', err)
+                    }
+
+                    fs.rm(downloadLocation, {force: true}, (rmError) => {
+                        if (rmError) {
+                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', rmError)
+                        }
+
+                        reject(err.message);
                     })
                 })
             })
@@ -81,15 +85,15 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
             fileStream.on('error', (err) => {
                 error = err;
                 logger.error(err)
-                request.end(() => {
-                    fileStream.end(() => {
-                        fs.rm(downloadLocation, {force: true}, (rmError) => {
-                            if (rmError) {
-                                logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', rmError)
-                            }
-        
-                            reject(err.message)
-                        })
+                request.destroy();
+
+                fileStream.end(() => {
+                    fs.rm(downloadLocation, {force: true}, (rmError) => {
+                        if (rmError) {
+                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', rmError)
+                        }
+    
+                        reject(err.message)
                     })
                 })
             })
