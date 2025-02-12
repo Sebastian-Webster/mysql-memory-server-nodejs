@@ -304,8 +304,8 @@ class Executor {
 
         const {error, stderr} = await this.#executeFile(binaryFilepath, ['--no-defaults', `--datadir=${datadir}`, '--initialize-insecure'])
 
-        if (error) {
-            this.logger.error('An error occurred while initializing database with the ', binary.installedOnSystem ? 'system-installed MySQL binary:' : 'downloaded MySQL binary:', error)
+        if (binary.installedOnSystem && error) {
+            this.logger.error('An error occurred while initializing database with the system-installed MySQL binary:', error)
             throw `An error occurred while initializing the MySQL database: ${error}`
         }
             
