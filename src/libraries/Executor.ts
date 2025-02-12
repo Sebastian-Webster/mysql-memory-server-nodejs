@@ -136,7 +136,9 @@ class Executor {
                 if (portIssue || xPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
+                        this.logger.log('Deleting database path after port issue...')
                         await fsPromises.rm(dbPath, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
+                        this.logger.log('Successfully deleted database after port issue.')
                     } catch (e) {
                         this.logger.error(e)
                         return reject(`MySQL failed to listen on a certain port. To restart MySQL with a different port, the database directory needed to be deleted. An error occurred while deleting the database directory. Aborting. The error was: ${e}`)
