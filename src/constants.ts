@@ -188,6 +188,7 @@ export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
     '8.0.16 - 8.0.20': 'no-glibc-tag',
     '8.0.21 - 9.2.0': 'glibc-tag'
 } as const;
+export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = '>=8.0.33'
 export const MYSQL_LINUX_FILE_EXTENSIONS = {
     '5.7.19 - 8.0.11': 'gz',
     '8.0.12 - 9.2.0': 'xz'
