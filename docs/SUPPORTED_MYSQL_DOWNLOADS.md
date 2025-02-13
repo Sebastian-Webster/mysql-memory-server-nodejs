@@ -8,7 +8,7 @@
 - Windows
 - Linux
 
-*```mysql-memory-server``` gets tested on Ubuntu 22.04 and 24.04, Fedora 40 and 41, macOS 13, 14, and 15, and Windows Server 2019 and 2022. Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.
+*```mysql-memory-server``` gets tested on Ubuntu 22.04 and 24.04, Fedora 40 and 41, macOS 13, 14, and 15, and Windows Server 2019 and 2022. Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.*
 
 ## Binaries not available for download
 
