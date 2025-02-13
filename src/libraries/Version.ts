@@ -1,7 +1,7 @@
 import { BinaryInfo, JSRuntimeVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS } from "../constants";
+import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 } from "../constants";
 import etcOSRelease from "./LinuxOSRelease";
 
 export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
@@ -97,11 +97,12 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const minimalInstallAvailableKey = minimalInstallAvailableKeys.find(range => satisfies(selectedVersion, range))
         const minimalInstallAvailable = MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE[minimalInstallAvailableKey]
 
-        const fileExtensionKeys = Object.keys(MYSQL_LINUX_FILE_EXTENSIONS);
+        const fileExtensionObject = MYSQL_LINUX_FILE_EXTENSIONS[currentArch]
+        const fileExtensionKeys = Object.keys(fileExtensionObject);
         const fileExtensionKey = fileExtensionKeys.find(range => satisfies(selectedVersion, range))
-        const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[fileExtensionKey]
+        const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[currentArch][fileExtensionKey]
 
-        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'arm64'}${minimalInstallAvailable !== 'no' ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
+        fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'aarch64'}${minimalInstallAvailable !== 'no' && (process.arch !== 'arm64' ? true : satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64)) ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
     }
 
     return {
