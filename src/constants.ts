@@ -190,7 +190,13 @@ export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
 } as const;
 export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = '>=8.0.33'
 export const MYSQL_LINUX_FILE_EXTENSIONS = {
-    '5.7.19 - 8.0.11': 'gz',
-    '8.0.12 - 9.2.0': 'xz'
+    x64: {
+        '5.7.19 - 8.0.11': 'gz',
+        '8.0.12 - 9.2.0': 'xz'
+    },
+    arm64: {
+        '8.0.31 - 8.0.32': 'gz',
+        '8.0.33 - 9.2.0': 'xz'
+    }
 } as const;
 export const MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = '8.0.26';
