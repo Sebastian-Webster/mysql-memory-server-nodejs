@@ -37,7 +37,7 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                 if (response.statusCode !== 200) {
                     request.destroy();
 
-                    fileStream.end((err) => {
+                    fileStream.close((err) => {
                         if (err) {
                             logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err)
                         }
@@ -67,9 +67,9 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                 logger.error(err)
                 request.destroy();
                 
-                fileStream.end((err) => {
-                    if (err) {
-                        logger.error('An error occurred while closing the fileStream on request error. The error was:', err)
+                fileStream.close((fsErr) => {
+                    if (fsErr) {
+                        logger.error('An error occurred while closing the fileStream on request error. The error was:', fsErr)
                     }
 
                     fs.rm(downloadLocation, {force: true}, (rmError) => {
@@ -87,7 +87,11 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
                 logger.error(err)
                 request.destroy();
 
-                fileStream.end(() => {
+                fileStream.close((fsErr) => {
+                    if (fsErr) {
+                        logger.error('An error occurred while closing the fileStream on fileStream error. The error was:', fsErr)
+                    }
+
                     fs.rm(downloadLocation, {force: true}, (rmError) => {
                         if (rmError) {
                             logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', rmError)
