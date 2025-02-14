@@ -87,7 +87,8 @@ class Executor {
                 '--innodb-doublewrite=OFF',
                 '--mysqlx=FORCE',
                 `--log-error=${errorLogFile}`,
-                `--user=${os.userInfo().username}`
+                `--user=${os.userInfo().username}`,
+                '--early-plugin-load="mysqlx=mysqlx.so;"'
             ]
 
             //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
@@ -196,16 +197,7 @@ class Executor {
                 if (curr.dev !== 0) {
                     //File exists
                     const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
-                    if (file.includes("X Plugin can't bind to it")) {
-                        //As stated in the MySQL X Plugin documentation at https://dev.mysql.com/doc/refman/8.4/en/x-plugin-options-system-variables.html#sysvar_mysqlx_bind_address
-                        //when the MySQL X Plugin fails to bind to an address, it does not prevent the MySQL server startup because MySQL X is not a mandatory plugin.
-                        //It doesn't seem like there is a way to prevent server startup when that happens. The workaround to that is to shutdown the MySQL server ourselves when the X plugin
-                        //cannot bind to an address. If there is a way to prevent server startup when binding fails, this workaround can be removed.
-                        const killed = await this.#killProcess(process)
-                        if (!killed) {
-                            reject('Failed to kill MySQL process to retry listening on a free port.')
-                        }
-                    } else if (file.includes('ready for connections. Version:') || file.includes('Server starts handling incoming connections')) {
+                    if (file.includes('ready for connections. Version:') || file.includes('Server starts handling incoming connections')) {
                         fs.unwatchFile(errorLogFile)
                         resolve({
                             port,
