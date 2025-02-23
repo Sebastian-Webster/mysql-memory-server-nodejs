@@ -201,7 +201,7 @@ class Executor {
                 if (curr.dev !== 0) {
                     //File exists
                     const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
-                    if (file.includes('ready for connections') || file.includes('Server starts handling incoming connections')) {
+                    if (file.includes(': ready for connections') || file.includes('Server starts handling incoming connections')) {
                         fs.unwatchFile(errorLogFile)
 
                         this.killedFromPortIssue = file.includes("Do you already have another mysqld server running")
