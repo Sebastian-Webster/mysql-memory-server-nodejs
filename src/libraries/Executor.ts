@@ -20,6 +20,7 @@ class Executor {
     version: string;
     versionInstalledOnSystem: boolean;
     databasePath: string
+    killedFromPortIssue: boolean;
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -75,6 +76,7 @@ class Executor {
 
             const mysqlArguments = [
                 '--no-defaults',
+                '--mysqlx=FORCE',
                 `--port=${port}`,
                 `--datadir=${datadir}`,
                 `--mysqlx-port=${mySQLXPort}`,
@@ -85,7 +87,6 @@ class Executor {
                 `--init-file=${dbPath}/init.sql`,
                 '--bind-address=127.0.0.1',
                 '--innodb-doublewrite=OFF',
-                '--mysqlx=FORCE',
                 `--log-error=${errorLogFile}`,
                 `--user=${os.userInfo().username}`
             ]
@@ -106,7 +107,7 @@ class Executor {
                 } else {
                     throw 'Could not install MySQL X as the path to the plugin cannot be found.'
                 }
-                mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--plugin-load-add=mysqlx=mysqlx.${pluginExtension}`)   
+                mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--early-plugin-load=mysqlx=mysqlx.${pluginExtension};`)
             }
 
             const process = spawn(binaryFilepath, mysqlArguments, {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
@@ -130,11 +131,15 @@ class Executor {
                     errorLog = `ERROR WHILE READING LOG: ${e}`
                 }
 
-                const portIssue = errorLog.includes("Do you already have another mysqld server running")
-                const xPortIssue = errorLog.includes("Do you already have another mysqld server running with Mysqlx")
-                this.logger.log('Exiting because of a port issue:', portIssue, '. MySQL X Plugin failed to bind:', xPortIssue)
+                if (!this.killedFromPortIssue) {
+                    //A check is done after the error log file says that the server is ready for connections.
+                    //When MySQL X cannot bind to a port, the server still says it is ready for connections so killedFromPortIssue gets set to true
+                    //This if statement will be ran if the server did not encounter a port issue or if the MySQL server could not bind to its port
+                    this.killedFromPortIssue = errorLog.includes("Do you already have another mysqld server running")
+                    this.logger.log('Did a port issue occur between server start and server close:', this.killedFromPortIssue)
+                }
 
-                if (portIssue || xPortIssue) {
+                if (this.killedFromPortIssue) {
                     this.logger.log('Error log when exiting for port in use error:', errorLog)
                     try {
                         this.logger.log('Deleting database path after port issue...')
@@ -196,17 +201,20 @@ class Executor {
                 if (curr.dev !== 0) {
                     //File exists
                     const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
-                    if (file.includes("X Plugin can't bind to it")) {
-                        //As stated in the MySQL X Plugin documentation at https://dev.mysql.com/doc/refman/8.4/en/x-plugin-options-system-variables.html#sysvar_mysqlx_bind_address
-                        //when the MySQL X Plugin fails to bind to an address, it does not prevent the MySQL server startup because MySQL X is not a mandatory plugin.
-                        //It doesn't seem like there is a way to prevent server startup when that happens. The workaround to that is to shutdown the MySQL server ourselves when the X plugin
-                        //cannot bind to an address. If there is a way to prevent server startup when binding fails, this workaround can be removed.
-                        const killed = await this.#killProcess(process)
-                        if (!killed) {
-                            reject('Failed to kill MySQL process to retry listening on a free port.')
-                        }
-                    } else if (file.includes('ready for connections. Version:') || file.includes('Server starts handling incoming connections')) {
+                    if (file.includes('ready for connections') || file.includes('Server starts handling incoming connections')) {
                         fs.unwatchFile(errorLogFile)
+
+                        this.killedFromPortIssue = file.includes("Do you already have another mysqld server running")
+                        this.logger.log('Did a port issue occur after watching errorLogFile:', this.killedFromPortIssue)
+                        if (this.killedFromPortIssue) {
+                            const killed = await this.#killProcess(process)
+                            if (!killed) {
+                                return reject('Failed to kill process after port error.')
+                            }
+                            return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
+                        }
+
+
                         resolve({
                             port,
                             xPort: mySQLXPort,
@@ -227,7 +235,7 @@ class Executor {
                                     const killed = await this.#killProcess(process)
                                     
                                     if (!killed) {
-                                       reject()
+                                       reject('Failed to kill process.')
                                     }
                                 })
                             }
