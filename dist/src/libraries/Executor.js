@@ -37,7 +37,10 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_deleteDatabaseDirectory, _Executor_returnBinaryPathToDelete, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_returnBinaryPathToDelete, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const semver_1 = require("semver");
@@ -50,6 +53,7 @@ const FileLock_1 = require("./FileLock");
 const signal_exit_1 = require("signal-exit");
 const crypto_1 = require("crypto");
 const constants_1 = require("../constants");
+const LinuxOSRelease_1 = __importDefault(require("./LinuxOSRelease"));
 class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
@@ -125,7 +129,7 @@ class Executor {
             this.DBDestroySignal.abort();
             if ((0, constants_1.getInternalEnvVariable)('deleteDBAfterStopped') === 'true') {
                 try {
-                    fs.rmSync((0, constants_1.getInternalEnvVariable)('dbPath'), { recursive: true, maxRetries: 50, force: true });
+                    fs.rmSync(this.databasePath, { recursive: true, maxRetries: 50, force: true });
                 }
                 catch (e) {
                     this.logger.error('An error occurred while deleting database directory path:', e);
@@ -145,16 +149,17 @@ class Executor {
             }
         });
         let retries = 0;
-        const datadir = (0, path_1.normalize)(`${(0, constants_1.getInternalEnvVariable)('dbPath')}/data`);
+        this.databasePath = (0, path_1.normalize)(`${(0, constants_1.getInternalEnvVariable)('databaseDirectoryPath')}/${(0, crypto_1.randomUUID)().replaceAll("-", '')}`);
+        const datadir = (0, path_1.normalize)(`${this.databasePath}/data`);
         do {
-            await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, installedMySQLBinary.path, datadir, true);
+            await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, installedMySQLBinary, datadir, true);
             this.logger.log('Setting up directories was successful');
             const port = options.port || (0, Port_1.GenerateRandomPort)();
             const mySQLXPort = options.xPort || (0, Port_1.GenerateRandomPort)();
             this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries);
             try {
                 this.logger.log('Starting MySQL process');
-                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, (0, constants_1.getInternalEnvVariable)('dbPath'), installedMySQLBinary.path);
+                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, this.databasePath, installedMySQLBinary.path);
                 this.logger.log('Starting process was successful');
                 return resolved;
             }
@@ -196,28 +201,6 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         killed = process.kill();
     }
     return killed;
-}, _Executor_deleteDatabaseDirectory = async function _Executor_deleteDatabaseDirectory(path) {
-    let retries = 0;
-    //Maximum wait of 10 seconds | 500ms * 20 retries = 10,000ms = 10 seconds
-    const waitTime = 500;
-    const maxRetries = 20;
-    //Since the database processes are killed instantly (SIGKILL) sometimes the database file handles may still be open
-    //This would cause an EBUSY error. Retrying the deletions for 10 seconds should give the OS enough time to close
-    //the file handles.
-    while (retries <= maxRetries) {
-        try {
-            await fsPromises.rm(path, { recursive: true, force: true });
-            return;
-        }
-        catch (e) {
-            if (retries === maxRetries) {
-                throw e;
-            }
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-            retries++;
-            this.logger.log('DB data directory deletion failed. Now on retry', retries);
-        }
-    }
 }, _Executor_returnBinaryPathToDelete = function _Executor_returnBinaryPathToDelete(binaryFilepath, options) {
     if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
         const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/');
@@ -235,12 +218,51 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         await fsPromises.rm(logFile, { force: true });
         const socket = os.platform() === 'win32' ? `MySQL-${(0, crypto_1.randomUUID)()}` : `${dbPath}/m.sock`;
         const xSocket = os.platform() === 'win32' ? `MySQLX-${(0, crypto_1.randomUUID)()}` : `${dbPath}/x.sock`;
-        const process = (0, child_process_1.spawn)(binaryFilepath, ['--no-defaults', `--port=${port}`, `--datadir=${datadir}`, `--mysqlx-port=${mySQLXPort}`, `--mysqlx-socket=${xSocket}`, `--socket=${socket}`, `--general-log-file=${logFile}`, '--general-log=1', `--init-file=${dbPath}/init.sql`, '--bind-address=127.0.0.1', '--innodb-doublewrite=OFF', '--mysqlx=FORCE', `--log-error=${errorLogFile}`, `--user=${os.userInfo().username}`], { signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL' });
+        const mysqlArguments = [
+            '--no-defaults',
+            '--mysqlx=FORCE',
+            `--port=${port}`,
+            `--datadir=${datadir}`,
+            `--mysqlx-port=${mySQLXPort}`,
+            `--mysqlx-socket=${xSocket}`,
+            `--socket=${socket}`,
+            `--general-log-file=${logFile}`,
+            '--general-log=1',
+            `--init-file=${dbPath}/init.sql`,
+            '--bind-address=127.0.0.1',
+            '--innodb-doublewrite=OFF',
+            `--log-error=${errorLogFile}`,
+            `--user=${os.userInfo().username}`
+        ];
+        //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
+        //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
+        //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
+        if ((0, semver_1.lt)(this.version, '8.0.11') && (0, semver_1.gte)(this.version, '5.7.19')) {
+            const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
+            let pluginPath;
+            const firstPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/plugin`);
+            const secondPath = '/usr/lib/mysql/plugin';
+            if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
+                pluginPath = firstPath;
+            }
+            else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
+                pluginPath = secondPath;
+            }
+            else {
+                throw 'Could not install MySQL X as the path to the plugin cannot be found.';
+            }
+            mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--early-plugin-load=mysqlx=mysqlx.${pluginExtension};`);
+        }
+        const process = (0, child_process_1.spawn)(binaryFilepath, mysqlArguments, { signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL' });
         //resolveFunction is the function that will be called to resolve the promise that stops the database.
         //If resolveFunction is not undefined, the database has received a kill signal and data cleanup procedures should run.
         //Once ran, resolveFunction will be called.
         let resolveFunction;
         process.on('close', async (code, signal) => {
+            if (signal) {
+                this.logger.log('Exiting because of aborted signal.');
+                return;
+            }
             let errorLog;
             try {
                 errorLog = await fsPromises.readFile(errorLogFile, { encoding: 'utf-8' });
@@ -248,13 +270,19 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             catch (e) {
                 errorLog = `ERROR WHILE READING LOG: ${e}`;
             }
-            const portIssue = errorLog.includes("Do you already have another mysqld server running");
-            const xPortIssue = errorLog.includes("X Plugin can't bind to it");
-            this.logger.log('Exiting because of a port issue:', portIssue, '. MySQL X Plugin failed to bind:', xPortIssue);
-            if (portIssue || xPortIssue) {
+            if (!this.killedFromPortIssue) {
+                //A check is done after the error log file says that the server is ready for connections.
+                //When MySQL X cannot bind to a port, the server still says it is ready for connections so killedFromPortIssue gets set to true
+                //This if statement will be ran if the server did not encounter a port issue or if the MySQL server could not bind to its port
+                this.killedFromPortIssue = errorLog.includes("Do you already have another mysqld server running");
+                this.logger.log('Did a port issue occur between server start and server close:', this.killedFromPortIssue);
+            }
+            if (this.killedFromPortIssue) {
                 this.logger.log('Error log when exiting for port in use error:', errorLog);
                 try {
-                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, (0, constants_1.getInternalEnvVariable)('dbPath'));
+                    this.logger.log('Deleting database path after port issue...');
+                    await fsPromises.rm(dbPath, { recursive: true, force: true, maxRetries: 50, retryDelay: 100 });
+                    this.logger.log('Successfully deleted database after port issue.');
                 }
                 catch (e) {
                     this.logger.error(e);
@@ -264,7 +292,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             }
             try {
                 if ((0, constants_1.getInternalEnvVariable)('deleteDBAfterStopped') === 'true') {
-                    await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, dbPath);
+                    await fsPromises.rm(dbPath, { recursive: true, force: true, maxRetries: 50, retryDelay: 100 });
                 }
             }
             catch (e) {
@@ -311,18 +339,17 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             if (curr.dev !== 0) {
                 //File exists
                 const file = await fsPromises.readFile(errorLogFile, { encoding: 'utf8' });
-                if (file.includes("X Plugin can't bind to it")) {
-                    //As stated in the MySQL X Plugin documentation at https://dev.mysql.com/doc/refman/8.4/en/x-plugin-options-system-variables.html#sysvar_mysqlx_bind_address
-                    //when the MySQL X Plugin fails to bind to an address, it does not prevent the MySQL server startup because MySQL X is not a mandatory plugin.
-                    //It doesn't seem like there is a way to prevent server startup when that happens. The workaround to that is to shutdown the MySQL server ourselves when the X plugin
-                    //cannot bind to an address. If there is a way to prevent server startup when binding fails, this workaround can be removed.
-                    const killed = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_killProcess).call(this, process);
-                    if (!killed) {
-                        reject('Failed to kill MySQL process to retry listening on a free port.');
-                    }
-                }
-                else if (file.includes('ready for connections. Version:')) {
+                if (file.includes(': ready for connections') || file.includes('Server starts handling incoming connections')) {
                     fs.unwatchFile(errorLogFile);
+                    this.killedFromPortIssue = file.includes("Do you already have another mysqld server running");
+                    this.logger.log('Did a port issue occur after watching errorLogFile:', this.killedFromPortIssue);
+                    if (this.killedFromPortIssue) {
+                        const killed = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_killProcess).call(this, process);
+                        if (!killed) {
+                            return reject('Failed to kill process after port error.');
+                        }
+                        return; //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
+                    }
                     resolve({
                         port,
                         xPort: mySQLXPort,
@@ -340,7 +367,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                                 this.removeExitHandler();
                                 const killed = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_killProcess).call(this, process);
                                 if (!killed) {
-                                    reject();
+                                    reject('Failed to kill process.');
                                 }
                             });
                         }
@@ -349,59 +376,53 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             }
         });
     });
-}, _Executor_setupDataDirectories = async function _Executor_setupDataDirectories(options, binaryFilepath, datadir, retry) {
+}, _Executor_setupDataDirectories = async function _Executor_setupDataDirectories(options, binary, datadir, retry) {
+    const binaryFilepath = binary.path;
     this.logger.log('Created data directory for database at:', datadir);
     await fsPromises.mkdir(datadir, { recursive: true });
-    let stderr;
-    if (binaryFilepath === 'mysqld') {
-        const { error, stderr: output } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'mysqld', ['--no-defaults', `--datadir=${datadir}`, '--initialize-insecure']);
-        stderr = output;
-        if (error) {
-            this.logger.error('An error occurred while initializing database with system-installed MySQL:', error);
-            throw 'An error occurred while initializing database with system-installed MySQL. Please check the console for more information.';
-        }
+    const { error, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, binaryFilepath, ['--no-defaults', `--datadir=${datadir}`, '--initialize-insecure']);
+    if (binary.installedOnSystem && error) {
+        this.logger.error('An error occurred while initializing database with the system-installed MySQL binary:', error);
+        throw `An error occurred while initializing the MySQL database: ${error}`;
     }
-    else {
-        let result;
-        try {
-            result = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, `${binaryFilepath}`, [`--no-defaults`, `--datadir=${datadir}`, `--initialize-insecure`]);
-        }
-        catch (e) {
-            this.logger.error('Error occurred from executeFile:', e);
-            throw e;
-        }
-        stderr = result === null || result === void 0 ? void 0 : result.stderr;
-    }
-    if (stderr && !stderr.includes('InnoDB initialization has ended')) {
+    if (stderr && !stderr.includes('is created with an empty password')) {
         if (process.platform === 'win32' && stderr.includes('Command failed')) {
             this.logger.error(stderr);
             throw 'The mysqld command failed to run. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. MySQL 5.7.40 and newer requires Microsoft Visual C++ Redistributable Package 2019 to be installed. Check the MySQL docs for Microsoft Visual C++ requirements for other MySQL versions. If you are sure you have this installed, check the error message in the console for more details.';
         }
         if (process.platform === 'linux' && stderr.includes('libaio.so')) {
-            if (binaryFilepath === 'mysqld') {
-                throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html';
-            }
             if (retry === false) {
                 this.logger.error('An error occurred while initializing database:', stderr);
                 throw 'Tried to copy libaio into lib folder and MySQL is still failing to initialize. Please check the console for more information.';
             }
-            if (binaryFilepath.slice(-16) === 'mysql/bin/mysqld') {
+            if (binary.installedOnSystem) {
+                throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html';
+            }
+            // If the below code is running, the version of MySQL that is trying to be executed was downloaded from the CDN by this package and libaio has not yet been attempted to be copied
+            if (LinuxOSRelease_1.default.NAME === 'Ubuntu' && LinuxOSRelease_1.default.VERSION_ID >= '24.04') {
                 const { error: lderror, stdout, stderr: ldstderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'ldconfig', ['-p']);
                 if (lderror || ldstderr) {
                     this.logger.error('The following libaio error occurred:', stderr);
                     this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr);
-                    throw 'The ldconfig command failed to run. This command was ran to find libaio because libaio could not be found on the system. libaio is needed for MySQL to run. Do you have ldconfig and libaio installed? Learn more about libaio at Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html';
+                    throw 'The ldconfig command failed to run. This command was ran to find libaio1t64 because libaio1t64 could not be found on the system. libaio1t64 is needed for MySQL to run. Do you have ldconfig and libaio1t64 installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html';
                 }
                 const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'));
                 if (!libaioFound.length) {
                     this.logger.error('Error from launching MySQL:', stderr);
-                    throw 'An error occurred while launching MySQL. The most likely cause is that libaio1 and libaio1t64 could not be found. Either libaio1 or libaio1t64 must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html. Check error in console for more information.';
+                    this.logger.error('Could not find libaio1t64 in this list:', libaioFound);
+                    throw 'An error occurred while launching MySQL because libaio1t64 is not installed on your system. Please install libaio1t64 and then use mysql-memory-server again. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html. Check error in console for more information.';
                 }
                 const libaioEntry = libaioFound[0];
                 const libaioPathIndex = libaioEntry.indexOf('=>');
                 const libaioSymlinkPath = libaioEntry.slice(libaioPathIndex + 3);
                 const libaioPath = await fsPromises.realpath(libaioSymlinkPath);
-                const copyPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/private/libaio.so.1`);
+                let copyPath;
+                if ((0, semver_1.lt)(this.version, '8.0.18')) {
+                    copyPath = (0, path_1.resolve)(`${binaryFilepath}/../../bin/libaio.so.1`);
+                }
+                else {
+                    copyPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/private/libaio.so.1`);
+                }
                 let lockRelease;
                 while (true) {
                     try {
@@ -455,30 +476,28 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                         if (copyError) {
                             throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.';
                         }
-                        //Retry setting up directory now that libaio has been copied
-                        this.logger.log('Retrying directory setup');
-                        await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_deleteDatabaseDirectory).call(this, datadir);
-                        await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binaryFilepath, datadir, false);
-                        return;
                     }
                 }
+                //Retry setting up directory now that libaio has been copied
+                this.logger.log('Retrying directory setup');
+                await fsPromises.rm(datadir, { recursive: true, force: true, maxRetries: 50, retryDelay: 100 });
+                await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binary, datadir, false);
+                return;
             }
-            else {
-                throw 'Cannot recognize file structure for the MySQL binary folder. This was caused by not being able to find libaio. Try installing libaio. Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html';
-            }
+            throw 'You do not have libaio1 installed. Please install the libaio1 package for the downloaded MySQL binary to run. Learn more here: https://dev.mysql.com/doc/refman/en/binary-installation.html';
         }
         throw stderr;
     }
     this.logger.log('Creating init text');
     let initText = `CREATE DATABASE ${options.dbName};`;
     if (options.username !== 'root') {
-        initText += `\nRENAME USER 'root'@'localhost' TO '${options.username}'@'localhost';`;
+        initText += `\nCREATE USER '${options.username}'@'localhost';\nGRANT ALL ON *.* TO '${options.username}'@'localhost' WITH GRANT OPTION;`;
     }
     if (options.initSQLString.length > 0) {
         initText += `\n${options.initSQLString}`;
     }
     this.logger.log('Writing init file');
-    await fsPromises.writeFile(`${(0, constants_1.getInternalEnvVariable)('dbPath')}/init.sql`, initText, { encoding: 'utf8' });
+    await fsPromises.writeFile(`${this.databasePath}/init.sql`, initText, { encoding: 'utf8' });
     this.logger.log('Finished writing init file');
 };
 exports.default = Executor;

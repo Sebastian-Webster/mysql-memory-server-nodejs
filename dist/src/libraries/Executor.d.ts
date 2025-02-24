@@ -7,6 +7,8 @@ declare class Executor {
     removeExitHandler: () => void;
     version: string;
     versionInstalledOnSystem: boolean;
+    databasePath: string;
+    killedFromPortIssue: boolean;
     constructor(logger: Logger);
     getMySQLVersion(preferredVersion?: string): Promise<DownloadedMySQLVersion | null>;
     startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB>;

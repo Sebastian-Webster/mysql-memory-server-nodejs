@@ -36,7 +36,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadVersions = downloadVersions;
 exports.downloadBinary = downloadBinary;
 const https = __importStar(require("https"));
 const fs = __importStar(require("fs"));
@@ -47,18 +46,6 @@ const crypto_1 = require("crypto");
 const child_process_1 = require("child_process");
 const FileLock_1 = require("./FileLock");
 const constants_1 = require("../constants");
-function getZipData(entry) {
-    return new Promise((resolve, reject) => {
-        entry.getDataAsync((data, err) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve(data);
-            }
-        });
-    });
-}
 function handleTarExtraction(filepath, extractedPath) {
     return new Promise((resolve, reject) => {
         (0, child_process_1.execFile)(`tar`, ['-xf', filepath, '-C', extractedPath], (error, stdout, stderr) => {
@@ -66,21 +53,6 @@ function handleTarExtraction(filepath, extractedPath) {
                 return reject(error || stderr);
             }
             resolve();
-        });
-    });
-}
-function downloadVersions() {
-    return new Promise((resolve, reject) => {
-        let json = "";
-        https.get("https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/raw/main/versions.json", function (response) {
-            response
-                .on("data", append => json += append)
-                .on("error", e => {
-                reject(e);
-            })
-                .on("end", () => {
-                resolve(json);
-            });
         });
     });
 }
@@ -95,15 +67,15 @@ function downloadFromCDN(url, downloadLocation, logger) {
         fileStream.on('open', () => {
             const request = https.get(url, (response) => {
                 if (response.statusCode !== 200) {
+                    request.destroy();
                     fileStream.close((err) => {
                         if (err) {
                             logger.error('An error occurred while closing the fileStream for non-200 status code. The error was:', err);
                         }
-                        fs.unlink(downloadLocation, (unlinkErr) => {
-                            if (unlinkErr) {
-                                logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', err);
+                        fs.rm(downloadLocation, { force: true }, (rmError) => {
+                            if (rmError) {
+                                logger.error('An error occurred while deleting downloadLocation after non-200 status code download attempt. The error was:', rmError);
                             }
-                            logger.error('Received status code:', response.statusCode, 'while downloading MySQL binary.');
                             reject(`Received status code ${response.statusCode} while downloading MySQL binary.`);
                         });
                     });
@@ -111,36 +83,59 @@ function downloadFromCDN(url, downloadLocation, logger) {
                 else {
                     response.pipe(fileStream);
                     fileStream.on('finish', () => {
-                        if (!error) {
-                            resolve();
-                        }
+                        request.end(() => {
+                            if (!error) {
+                                resolve();
+                            }
+                        });
                     });
                 }
             });
             request.on('error', (err) => {
                 error = err;
                 logger.error(err);
-                fileStream.end(() => {
-                    fs.unlink(downloadLocation, (unlinkError) => {
-                        if (unlinkError) {
-                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', unlinkError);
+                request.destroy();
+                fileStream.close((fsErr) => {
+                    if (fsErr) {
+                        logger.error('An error occurred while closing the fileStream on request error. The error was:', fsErr);
+                    }
+                    fs.rm(downloadLocation, { force: true }, (rmError) => {
+                        if (rmError) {
+                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the MySQL server binary download. The error was:', rmError);
+                        }
+                        reject(err.message);
+                    });
+                });
+            });
+            fileStream.on('error', (err) => {
+                error = err;
+                logger.error(err);
+                request.destroy();
+                fileStream.close((fsErr) => {
+                    if (fsErr) {
+                        logger.error('An error occurred while closing the fileStream on fileStream error. The error was:', fsErr);
+                    }
+                    fs.rm(downloadLocation, { force: true }, (rmError) => {
+                        if (rmError) {
+                            logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', rmError);
                         }
                         reject(err.message);
                     });
                 });
             });
         });
-        fileStream.on('error', (err) => {
-            error = err;
-            logger.error(err);
-            fileStream.end(() => {
-                fs.unlink(downloadLocation, (unlinkError) => {
-                    if (unlinkError) {
-                        logger.error('An error occurred while deleting downloadLocation after an error occurred with the fileStream. The error was:', unlinkError);
-                    }
-                    reject(err.message);
-                });
-            });
+    });
+}
+function promisifiedZipExtraction(archiveLocation, extractedLocation) {
+    return new Promise((resolve, reject) => {
+        const zip = new adm_zip_1.default(archiveLocation);
+        zip.extractAllToAsync(extractedLocation, false, false, (err) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve();
+            }
         });
     });
 }
@@ -158,52 +153,64 @@ function extractBinary(url, archiveLocation, extractedLocation, logger) {
             return reject(`Folder name is undefined for url: ${url}`);
         }
         const folderName = mySQLFolderName.replace(`.${fileExtension}`, '');
+        let extractionError = undefined;
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
-            const zip = new adm_zip_1.default(archiveLocation);
-            const entries = zip.getEntries();
-            for (const entry of entries) {
-                if (entry.entryName.indexOf('..') === -1) {
-                    if (entry.isDirectory) {
-                        if (entry.name === folderName) {
-                            await fsPromises.mkdir(`${extractedLocation}/mysql`, { recursive: true });
-                        }
-                        else {
-                            await fsPromises.mkdir(`${extractedLocation}/${entry.entryName}`, { recursive: true });
-                        }
-                    }
-                    else {
-                        const data = await getZipData(entry);
-                        await fsPromises.writeFile(`${extractedLocation}/${entry.entryName}`, data);
-                    }
+            try {
+                await promisifiedZipExtraction(archiveLocation, extractedLocation);
+            }
+            catch (e) {
+                extractionError = e;
+                logger.log('An error occurred while extracting the ZIP file. The error was:', e);
+            }
+            finally {
+                try {
+                    await fsPromises.rm(archiveLocation);
+                }
+                catch (e) {
+                    logger.error('A non-fatal error occurred while deleting archive location. The error was:', e);
                 }
             }
+            if (extractionError) {
+                return reject(extractionError);
+            }
             try {
-                await fsPromises.rm(archiveLocation);
+                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
             }
             catch (e) {
-                logger.error('A non-fatal error occurred while removing no longer needed archive file:', e);
+                logger.error('An error occurred while moving MySQL binary into correct folder (mysql folder). The error was:', e);
+                return reject(e);
             }
-            finally {
-                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
-                return resolve((0, path_1.normalize)(`${extractedLocation}/mysql/bin/mysqld.exe`));
-            }
+            resolve((0, path_1.normalize)(`${extractedLocation}/mysql/bin/mysqld.exe`));
         }
-        handleTarExtraction(archiveLocation, extractedLocation).then(async () => {
+        else {
             try {
-                await fsPromises.rm(archiveLocation);
+                await handleTarExtraction(archiveLocation, extractedLocation);
             }
             catch (e) {
-                logger.error('A non-fatal error occurred while removing no longer needed archive file:', e);
+                extractionError = e;
+                logger.error('An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was:', e);
             }
             finally {
-                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
-                resolve(`${extractedLocation}/mysql/bin/mysqld`);
+                try {
+                    await fsPromises.rm(archiveLocation);
+                }
+                catch (e) {
+                    logger.error('A non-fatal error occurred while deleting archive location. The error was:', e);
+                }
             }
-        }).catch(error => {
-            logger.error(`An error occurred while extracting the tar file. Please make sure tar is installed and there is enough storage space for the extraction. The error was: ${error}`);
-            reject(error);
-        });
+            if (extractionError) {
+                return reject(extractionError);
+            }
+            try {
+                await fsPromises.rename(`${extractedLocation}/${folderName}`, `${extractedLocation}/mysql`);
+            }
+            catch (e) {
+                logger.error('An error occurred while moving MySQL binary into correct folder (mysql folder). The error was:', e);
+                return reject(e);
+            }
+            resolve(`${extractedLocation}/mysql/bin/mysqld`);
+        }
     });
 }
 function downloadBinary(binaryInfo, options, logger) {
@@ -245,11 +252,16 @@ function downloadBinary(binaryInfo, options, logger) {
             }
             //The code below only runs if the lock has been acquired by us
             let downloadTries = 0;
+            let useDownloadsURL = false;
             do {
                 try {
                     downloadTries++;
-                    await downloadFromCDN(url, archivePath, logger);
-                    await extractBinary(url, archivePath, extractedPath, logger);
+                    const downloadURL = useDownloadsURL ? url.replace(constants_1.archiveBaseURL, constants_1.downloadsBaseURL) : url;
+                    logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`);
+                    await downloadFromCDN(downloadURL, archivePath, logger);
+                    logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`);
+                    await extractBinary(downloadURL, archivePath, extractedPath, logger);
+                    logger.log(`Finished extraction for version ${version}`);
                     break;
                 }
                 catch (e) {
@@ -263,6 +275,24 @@ function downloadBinary(binaryInfo, options, logger) {
                     catch (e) {
                         logger.error('An error occurred while deleting extractedPath and/or archivePath:', e);
                     }
+                    if (e?.includes?.('status code 404')) {
+                        if (!useDownloadsURL) {
+                            //Retry with downloads URL
+                            downloadTries--;
+                            useDownloadsURL = true;
+                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`);
+                            continue;
+                        }
+                        else {
+                            try {
+                                await releaseFunction();
+                            }
+                            catch (e) {
+                                logger.error('An error occurred while releasing lock after receiving a 404 error on both downloads and archives URLs. The error was:', e);
+                            }
+                            return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`);
+                        }
+                    }
                     if (downloadTries > options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit
                         try {
@@ -275,12 +305,12 @@ function downloadBinary(binaryInfo, options, logger) {
                         return reject(e);
                     }
                     else {
-                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e);
+                        logger.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e);
                     }
                 }
             } while (downloadTries <= options.downloadRetries);
             try {
-                releaseFunction();
+                await releaseFunction();
             }
             catch (e) {
                 logger.error('An error occurred while releasing lock after successful binary download. The error was:', e);
@@ -289,6 +319,7 @@ function downloadBinary(binaryInfo, options, logger) {
         }
         else {
             let downloadTries = 0;
+            let useDownloadsURL = false;
             do {
                 const uuid = (0, crypto_1.randomUUID)();
                 const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`;
@@ -296,8 +327,12 @@ function downloadBinary(binaryInfo, options, logger) {
                 const extractedPath = `${dirpath}/${uuid}`;
                 try {
                     downloadTries++;
-                    await downloadFromCDN(url, zipFilepath, logger);
-                    const binaryPath = await extractBinary(url, zipFilepath, extractedPath, logger);
+                    const downloadURL = useDownloadsURL ? url.replace(constants_1.archiveBaseURL, constants_1.downloadsBaseURL) : url;
+                    logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`);
+                    await downloadFromCDN(downloadURL, zipFilepath, logger);
+                    logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`);
+                    const binaryPath = await extractBinary(downloadURL, zipFilepath, extractedPath, logger);
+                    logger.log(`Finished extraction for version ${version}`);
                     return resolve(binaryPath);
                 }
                 catch (e) {
@@ -310,6 +345,18 @@ function downloadBinary(binaryInfo, options, logger) {
                     }
                     catch (e) {
                         logger.error('An error occurred while deleting extractedPath and/or archivePath:', e);
+                    }
+                    if (e?.includes?.('status code 404')) {
+                        if (!useDownloadsURL) {
+                            //Retry with downloads URL
+                            downloadTries--;
+                            useDownloadsURL = true;
+                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`);
+                            continue;
+                        }
+                        else {
+                            return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`);
+                        }
                     }
                     if (downloadTries > options.downloadRetries) {
                         //Only reject if we have met the downloadRetries limit

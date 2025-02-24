@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.waitForLock = waitForLock;
 exports.lockFile = lockFile;
 const promises_1 = __importDefault(require("fs/promises"));
-const mtimeUpdateIntervalTime = 2000;
-const mtimeLimit = 10000;
+const mtimeUpdateIntervalTime = 2_000;
+const mtimeLimit = 10_000;
 async function waitForLock(path, options) {
     const lockPath = `${path}.lock`;
     let retries = 0;
