@@ -182,7 +182,7 @@ Default: ""
 
 Description: A string with MySQL queries to run before the database starts to accept connections. This option can be used for things like initialising tables without having to first connect to the database to do that. The queries in the string get executed after ```mysql-memory-server```'s queries run. Uses the ```--init-file``` MySQL server option under the hood. Learn more at the [--init-file MySQL Documentation](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_init_file)
 
-The internal queries that are ran before the queries in ```initSQLString``` are renaming the user from ```root``` to the username specified in the ```username``` option if it's set, and creating a database with the name from the ```dbName``` option.
+The internal queries that are ran before the queries in ```initSQLString``` are creating the MySQL user with ```options.username``` username if the option's value is not ```root```, and creating a database with the ```options.dbName``` name.
 
 - `arch: "arm64" | "x64"`
 
