@@ -180,8 +180,8 @@ export const MYSQL_MACOS_VERSIONS_IN_FILENAME = {
 } as const;
 export const MYSQL_LINUX_GLIBC_VERSIONS = {
     '5.7.19 - 8.0.20': '2.12',
-    '8.0.21 - 8.0.41 | 8.1.0 - 8.4.4 | 9.0.1 - 9.2.0': '2.17',
-    '8.0.42 | 8.4.5 | 9.3.0': '2.28'
+    '8.0.21 - 8.0.41 || 8.1.0 - 8.4.4 || 9.0.1 - 9.2.0': '2.17',
+    '8.0.42 || 8.4.5 || 9.3.0': '2.28'
 } as const;
 export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
     '5.7.19 - 8.0.15': 'no',
