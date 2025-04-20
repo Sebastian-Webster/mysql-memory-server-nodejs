@@ -179,9 +179,19 @@ export const MYSQL_MACOS_VERSIONS_IN_FILENAME = {
     '8.0.41 - 8.0.42 || 8.4.4 - 8.4.5 || 9.2.0 - 9.3.0': 'macos15'
 } as const;
 export const MYSQL_LINUX_GLIBC_VERSIONS = {
-    '5.7.19 - 8.0.20': '2.12',
-    '8.0.21 - 8.0.41 || 8.1.0 - 8.4.4 || 9.0.1 - 9.2.0': '2.17',
-    '8.0.42 || 8.4.5 || 9.3.0': '2.28'
+    //8.0.42, 8.4.5, and 9.3.0 with glibc 2.28 does NOT have a minimal install version for x64 but it DOES have arm64 support.
+    //8.0.42, 8.4.5, and 9.3.0 with glibc 2.17 DOES have a minimal install version for x64 but does NOT have arm64 support.
+    //The new versions having these differences between the glibc versions has led to the glibc versions being different depending on CPU architecture for this package.
+    //Neither glibc versions for the above MySQL versions have an arm64 minimal install.
+    x64: {
+        '5.7.19 - 8.0.20': '2.12',
+        '8.0.21 - 9.3.0': '2.17'
+    },
+    arm64: {
+        '5.7.19 - 8.0.20': '2.12',
+        '8.0.21 - 8.0.41 || 8.1.0 - 8.4.4 || 9.0.1 - 9.2.0': '2.17',
+        '8.0.42 || 8.4.5 || 9.3.0': '2.28'
+    }
 } as const;
 export const MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
     '5.7.19 - 8.0.15': 'no',
