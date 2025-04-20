@@ -250,7 +250,16 @@ class Executor {
         return new Promise(async (resolve, reject) => {
             if (process.platform === 'win32') {
                 try {
-                    const dirs = await fsPromises.readdir(`${process.env.PROGRAMFILES}\\MySQL`)
+                    let dirs: String[];
+                    try {
+                        dirs = await fsPromises.readdir(`${process.env.PROGRAMFILES}\\MySQL`)
+                    } catch (e) {
+                        if (e?.code === 'ENOENT') {
+                            return resolve(null)
+                        } else {
+                            throw e
+                        }
+                    }
                     const servers = dirs.filter(dirname => dirname.includes('MySQL Server'))
 
                     if (servers.length === 0) {
