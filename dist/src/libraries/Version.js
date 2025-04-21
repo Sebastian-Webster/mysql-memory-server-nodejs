@@ -111,9 +111,10 @@ function getBinaryURL(versionToGet = "x", currentArch) {
         fileLocation = `${(0, semver_1.major)(selectedVersion)}.${(0, semver_1.minor)(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${constants_1.MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`;
     }
     else if (currentOS === 'linux') {
-        const glibcVersionKeys = Object.keys(constants_1.MYSQL_LINUX_GLIBC_VERSIONS);
+        const glibcObject = constants_1.MYSQL_LINUX_GLIBC_VERSIONS[currentArch];
+        const glibcVersionKeys = Object.keys(glibcObject);
         const glibcVersionKey = glibcVersionKeys.find(range => (0, semver_1.satisfies)(selectedVersion, range));
-        const glibcVersion = constants_1.MYSQL_LINUX_GLIBC_VERSIONS[glibcVersionKey];
+        const glibcVersion = glibcObject[glibcVersionKey];
         const minimalInstallAvailableKeys = Object.keys(constants_1.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE);
         const minimalInstallAvailableKey = minimalInstallAvailableKeys.find(range => (0, semver_1.satisfies)(selectedVersion, range));
         const minimalInstallAvailable = constants_1.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE[minimalInstallAvailableKey];
