@@ -354,7 +354,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         //Only reject if we have met the downloadRetries limit
                         return reject(e)
                     } else {
-                        console.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
+                        logger.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
                     }
                 }
             } while (downloadTries <= options.downloadRetries)
