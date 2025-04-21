@@ -198,7 +198,7 @@ class Executor {
             })
 
             fs.watchFile(errorLogFile, async (curr) => {
-                if (curr.dev !== 0) {
+                if (curr.isFile()) {
                     //File exists
                     const file = await fsPromises.readFile(errorLogFile, {encoding: 'utf8'})
                     if (file.includes(': ready for connections') || file.includes('Server starts handling incoming connections')) {
