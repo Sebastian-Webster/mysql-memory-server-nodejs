@@ -102,11 +102,11 @@ Description: Version of MySQL to use for the database. Uses semver for getting t
 
 If left undefined:
 - If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <5.7.19), an error will be thrown unless `ignoreUnsupportedSystemVersion` is set to `true`.
-- If the system does not have MySQL installed, the latest version of MySQL in the `versions.json` file in this package will be downloaded.
+- If the system does not have MySQL installed, the latest version of MySQL that [this package supports downloading](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.10.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md) will be downloaded.
 
 If defined:
 - If the version is older than 5.7.19, an error will be thrown as this package does not currently support those versions of MySQL.
-- If the desired version of MySQL is installed on the system, the installed version will be used. Otherwise the selected version will be downloaded from the MySQL CDN as long as it can be found in the `versions.json` file. If it cannot be found in that file, an error will be thrown.
+- If the desired version of MySQL is already installed on the system, the installed version will be used. Otherwise the selected version will be downloaded as long as this package [supports downloading it](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.10.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md). If this package does not support downloading the selected version, or your system does not [meet the requirements](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.10.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md) for that version to be ran, an error will be thrown.
 
 - `dbName: string`
 
