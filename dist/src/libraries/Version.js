@@ -44,7 +44,7 @@ const LinuxOSRelease_1 = __importDefault(require("./LinuxOSRelease"));
 function getBinaryURL(versionToGet = "x", currentArch) {
     let selectedVersions = constants_1.DOWNLOADABLE_MYSQL_VERSIONS.filter(version => (0, semver_1.satisfies)(version, versionToGet));
     if (selectedVersions.length === 0) {
-        throw `mysql-memory-server does not support downloading a version of MySQL that fits the following version requirement: ${versionToGet}. This package only supports downloads of MySQL for MySQL >= ${constants_1.DOWNLOADABLE_MYSQL_VERSIONS[0]} <= ${constants_1.DOWNLOADABLE_MYSQL_VERSIONS.at(-1)}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`;
+        throw `mysql-memory-server does not support downloading a version of MySQL that fits the following version requirement: ${versionToGet}. This package only supports downloads of MySQL for MySQL >= ${constants_1.DOWNLOADABLE_MYSQL_VERSIONS[0]} <= ${constants_1.DOWNLOADABLE_MYSQL_VERSIONS[constants_1.DOWNLOADABLE_MYSQL_VERSIONS.length - 1]}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`;
     }
     const currentOS = os.platform();
     const OSVersionSupport = constants_1.MYSQL_MIN_OS_SUPPORT[currentOS];

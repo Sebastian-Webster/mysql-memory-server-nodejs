@@ -148,7 +148,8 @@ function extractBinary(url, archiveLocation, extractedLocation, logger) {
         const lastDashIndex = url.lastIndexOf('-');
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.');
         await fsPromises.mkdir(extractedLocation, { recursive: true });
-        const mySQLFolderName = url.split('/').at(-1);
+        const splitURL = url.split('/');
+        const mySQLFolderName = splitURL[splitURL.length - 1];
         if (!mySQLFolderName) {
             return reject(`Folder name is undefined for url: ${url}`);
         }
