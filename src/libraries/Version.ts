@@ -8,7 +8,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
-        throw `mysql-memory-server does not support downloading a version of MySQL that fits the following version requirement: ${versionToGet}. This package only supports downloads of MySQL for MySQL >= ${DOWNLOADABLE_MYSQL_VERSIONS[0]} <= ${DOWNLOADABLE_MYSQL_VERSIONS.at(-1)}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`
+        throw `mysql-memory-server does not support downloading a version of MySQL that fits the following version requirement: ${versionToGet}. This package only supports downloads of MySQL for MySQL >= ${DOWNLOADABLE_MYSQL_VERSIONS[0]} <= ${DOWNLOADABLE_MYSQL_VERSIONS[DOWNLOADABLE_MYSQL_VERSIONS.length - 1]}. Please check for typos, choose a different version of MySQL to use, or make an issue or pull request on GitHub if you belive this is a bug.`
     }
 
     const currentOS = os.platform();

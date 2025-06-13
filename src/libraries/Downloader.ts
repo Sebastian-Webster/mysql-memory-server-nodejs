@@ -130,7 +130,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
         await fsPromises.mkdir(extractedLocation, {recursive: true})
 
-        const mySQLFolderName = url.split('/').at(-1)
+        const splitURL = url.split('/')
+        const mySQLFolderName = splitURL[splitURL.length - 1]
         if (!mySQLFolderName) {
             return reject(`Folder name is undefined for url: ${url}`)
         }
