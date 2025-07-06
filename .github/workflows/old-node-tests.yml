@@ -1,4 +1,4 @@
-name: Node.js Compatibility
+name: Old Node Tests
 
 on:
   push:
