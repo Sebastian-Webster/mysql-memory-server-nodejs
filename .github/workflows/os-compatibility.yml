@@ -116,7 +116,7 @@ jobs:
         run: apk add libaio libstdc++
 
       - name: Checkout
-        uses: git clone https://github.com/${{ github.repository }}
+        run: git clone https://github.com/${{ github.repository }}
 
       - name: Install packages
         run: npm ci
