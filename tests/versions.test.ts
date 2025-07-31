@@ -5,12 +5,15 @@ import { coerce, satisfies } from 'semver';
 import { ServerOptions } from '../types';
 import getBinaryURL from '../src/libraries/Version';
 import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
+import etcOSRelease from '../src/libraries/LinuxOSRelease';
 
 const usernames = ['root', 'dbuser']
 
 jest.setTimeout(500_000); //5 minutes
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
+
+console.log('Platform:', process.platform, '| etcOSRelease:', etcOSRelease)
 
 for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, process.env.VERSION_REQUIREMENT || '>0.0.0'))) {
     try {
