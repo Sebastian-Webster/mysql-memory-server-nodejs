@@ -199,7 +199,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
-        const {url, version} = binaryInfo;
+        const {url, version, hostedByOracle} = binaryInfo;
         const dirpath = getInternalEnvVariable('binaryDirectoryPath')
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
@@ -270,7 +270,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     }
 
                     if (e?.includes?.('status code 404')) {
-                        if (!useDownloadsURL) {
+                        if (!useDownloadsURL && hostedByOracle) {
                             //Retry with downloads URL
                             downloadTries--;
                             useDownloadsURL = true;
@@ -340,7 +340,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     }
 
                     if (e?.includes?.('status code 404')) {
-                        if (!useDownloadsURL) {
+                        if (!useDownloadsURL && hostedByOracle) {
                             //Retry with downloads URL
                             downloadTries--;
                             useDownloadsURL = true;

@@ -64,7 +64,8 @@ export type DownloadedMySQLVersion = {
 
 export type BinaryInfo = {
     url: string,
-    version: string
+    version: string,
+    hostedByOracle: boolean
 }
 
 export type OptionTypeChecks = {

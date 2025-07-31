@@ -59,17 +59,28 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         throw `Your operating system is too out of date to run a version of MySQL that fits the following requirement: ${versionToGet}. The oldest version for your operating system that you would need to get a version that satisfies the version requirement is ${minVersion} but your current operating system is ${coercedOSRelease.version}. Please try changing your MySQL version requirement, updating your OS to a newer version, or if you believe this is a bug, please report this on GitHub.`
     }
 
-    if (process.platform === 'linux' && etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
-        //Since Ubuntu >= 24.04 uses libaio1t64 instead of libaio, this package has to copy libaio1t64 into a folder that MySQL looks in for dynamically linked libraries with the filename "libaio.so.1".
-        //I have not been able to find a suitable folder for libaio1t64 to be copied into for MySQL < 8.0.4, so here we are filtering all versions lower than 8.0.4 since they fail to launch in Ubuntu 24.04.
-        //If there is a suitable filepath for libaio1t64 to be copied into for MySQL < 8.0.4 then this check can be removed and these older MySQL versions can run on Ubuntu.
-        //Pull requests are welcome for adding >= Ubuntu 24.04 support for MySQL < 8.0.4.
-        //A way to get MySQL running on Ubuntu >= 24.04 is to symlink libaio1t64 to the location libaio would be. It is not suitable for this package to be doing that automatically, so instead this package has been copying libaio1t64 into the MySQL binary folder.
-        selectedVersions = selectedVersions.filter(v => !lt(v, '8.0.4'))
-    }
+    const isOnAlpineLinux = process.platform === 'linux' && etcOSRelease.NAME === 'Alpine Linux'
 
-    if (selectedVersions.length === 0) {
-        throw `You are running a version of Ubuntu that is too modern to run any MySQL versions with this package that match the following version requirement: ${versionToGet}. Please choose a newer version of MySQL to use, or if you believe this is a bug please report this on GitHub.`
+    if (process.platform === 'linux') {
+        if (etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
+            //Since Ubuntu >= 24.04 uses libaio1t64 instead of libaio, this package has to copy libaio1t64 into a folder that MySQL looks in for dynamically linked libraries with the filename "libaio.so.1".
+            //I have not been able to find a suitable folder for libaio1t64 to be copied into for MySQL < 8.0.4, so here we are filtering all versions lower than 8.0.4 since they fail to launch in Ubuntu 24.04.
+            //If there is a suitable filepath for libaio1t64 to be copied into for MySQL < 8.0.4 then this check can be removed and these older MySQL versions can run on Ubuntu.
+            //Pull requests are welcome for adding >= Ubuntu 24.04 support for MySQL < 8.0.4.
+            //A way to get MySQL running on Ubuntu >= 24.04 is to symlink libaio1t64 to the location libaio would be. It is not suitable for this package to be doing that automatically, so instead this package has been copying libaio1t64 into the MySQL binary folder.
+            selectedVersions = selectedVersions.filter(v => !lt(v, '8.0.4'))
+
+            if (selectedVersions.length === 0) {
+                throw `You are running a version of Ubuntu that is too modern to run any MySQL versions with this package that match the following version requirement: ${versionToGet}. Please choose a newer version of MySQL to use, or if you believe this is a bug please report this on GitHub.`
+            }
+        } else if (isOnAlpineLinux) {
+            //https://github.com/Sebastian-Webster/mysql-server-musl-binaries only has support for v8.4.x and 9.x binaries
+            selectedVersions = selectedVersions.filter(v => satisfies(v, '8.4.x') || satisfies(v, '9.x'))
+            
+            if (selectedVersions.length === 0) {
+                throw 'mysql-memory-server has detected you are running this package on Alpine Linux. The source for MySQL with musl libc only provides binaries for MySQL 8.4.x and 9.x and as such only those versions can be used with this package. Please use 8.4.x or 9.x.'
+            }
+        }
     }
 
     //Sorts versions in descending order
@@ -88,6 +99,8 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const MySQLmacOSVersionNameKeys = Object.keys(MYSQL_MACOS_VERSIONS_IN_FILENAME);
         const macOSVersionNameKey = MySQLmacOSVersionNameKeys.find(range => satisfies(selectedVersion, range))
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
+    } else if (isOnAlpineLinux) {
+        fileLocation = `https://github.com/Sebastian-Webster/mysql-server-musl-binaries/releases/download/current/mysql-musl-${selectedVersion}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
     } else if (currentOS === 'linux') {
         const glibcObject = MYSQL_LINUX_GLIBC_VERSIONS[currentArch];
         const glibcVersionKeys = Object.keys(glibcObject);
@@ -104,10 +117,13 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[currentArch][fileExtensionKey]
 
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'aarch64'}${minimalInstallAvailable !== 'no' && (process.arch !== 'arm64' ? true : satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64)) ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
+    } else {
+        throw 'You are running this package on an unsupported OS. Please use either Windows, macOS, or a Linux-based OS.'
     }
 
     return {
         version: selectedVersion,
-        url: archiveBaseURL + fileLocation
+        url: isOnAlpineLinux ? fileLocation : (archiveBaseURL + fileLocation),
+        hostedByOracle: !isOnAlpineLinux // Only the Alpine Linux binaries are not hosted on the MySQL CDN.
     }
 }
