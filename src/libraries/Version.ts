@@ -59,7 +59,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         throw `Your operating system is too out of date to run a version of MySQL that fits the following requirement: ${versionToGet}. The oldest version for your operating system that you would need to get a version that satisfies the version requirement is ${minVersion} but your current operating system is ${coercedOSRelease.version}. Please try changing your MySQL version requirement, updating your OS to a newer version, or if you believe this is a bug, please report this on GitHub.`
     }
 
-    const isOnAlpineLinux = process.platform === 'linux' && etcOSRelease.NAME === 'Alpine Linux'
+    const isOnAlpineLinux = process.platform === 'linux' && etcOSRelease.ID === 'alpine'
 
     if (process.platform === 'linux') {
         if (etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
