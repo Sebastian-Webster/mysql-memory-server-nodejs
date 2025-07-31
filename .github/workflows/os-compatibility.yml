@@ -116,15 +116,17 @@ jobs:
         run: apk add libaio libstdc++
 
       - name: Checkout
-        run: git clone https://github.com/${{ github.repository }}
+        run: git clone https://github.com/${{ github.repository }} mysqlmsn
 
       - name: Install packages
+        working-directory: mysqlmsn
         run: npm ci
 
       - name: Print available storage space
         run: df -h
 
       - name: Run tests
+        working-directory: mysqlmsn
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
         run: npm run os-compat:ci
