@@ -116,7 +116,7 @@ jobs:
         run: apk add libaio libstdc++
 
       - name: Checkout
-        run: git clone https://github.com/${{ github.repository }} --branch ${{ github.ref }} --single-branch --depth 1 mysqlmsn
+        run: git clone https://github.com/${{ github.repository }} --branch ${{ github.ref_name }} --single-branch --depth 1 mysqlmsn
 
       - name: Install packages
         working-directory: mysqlmsn
