@@ -109,17 +109,14 @@ jobs:
     container: alpine:3.22
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Install required libraries for test setup
+        run: apk add git nodejs npm
 
-      - name: Setup node LTS
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          check-latest: true
-
-      - name: Install required libraries
+      - name: Install required libraries for MySQL on alpine
         run: apk add libaio libstdc++
+
+      - name: Checkout
+        uses: git clone https://github.com/${{ github.repository }}
 
       - name: Install packages
         run: npm ci
@@ -131,11 +128,3 @@ jobs:
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
         run: npm run os-compat:ci
-
-      - name: Upload mysqlmsn directory
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: docker-alpine-${{ matrix.version-requirement }}-${{ matrix.ubuntu-version}}
-          path: /tmp/mysqlmsn
-          compression-level: 0
