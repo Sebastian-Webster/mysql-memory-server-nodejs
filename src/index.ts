@@ -5,6 +5,7 @@ import { BinaryInfo, InternalServerOptions, ServerOptions } from '../types'
 import getBinaryURL from './libraries/Version'
 import { downloadBinary } from './libraries/Downloader'
 import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_OPTIONS } from './constants'
+import etcOSRelease from './libraries/LinuxOSRelease'
 
 export async function createDB(opts?: ServerOptions) {
     const suppliedOpts = opts || {};
@@ -39,6 +40,10 @@ export async function createDB(opts?: ServerOptions) {
 
     if (throwUnsupportedError) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`
+    }
+
+    if (process.platform === 'linux') {
+        logger.log('etcOSRelease:', etcOSRelease)
     }
 
     logger.log('Version currently installed:', version)
