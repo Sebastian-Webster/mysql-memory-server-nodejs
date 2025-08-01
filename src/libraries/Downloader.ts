@@ -30,7 +30,7 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
             if (statusCode !== 302) {
                 request.destroy();
 
-                reject(`Received status code ${statusCode} while getting redirect URL for binary download.`)
+                reject(`Received status code ${statusCode} while getting redirect URL for binary download. Used URL: ${url}`)
                 return
             }
 
