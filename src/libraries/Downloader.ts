@@ -46,6 +46,8 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
             request.destroy();
             reject(err.message)
         })
+
+        console.log('Request:', request.req)
     })
 }
 
