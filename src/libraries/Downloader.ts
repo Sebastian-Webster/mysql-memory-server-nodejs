@@ -27,9 +27,6 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
             console.log('Headers:', response.headers)
             const statusCode = response.statusCode
             const location = response.headers.location
-            let data = ''
-            response.on('data', d => data += d)
-            response.on('end', () => console.log('Data:', data))
 
             if (statusCode !== 302) {
                 request.destroy();
@@ -39,10 +36,12 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
             }
 
             if (typeof location === 'string' && location.length > 0) {
+                request.destroy()
                 resolve(location)
                 return
             }
 
+            request.destroy()
             reject(`Received incorrect URL information. Expected a non-empty string. Received: ${JSON.stringify(location)}`)
         })
 
