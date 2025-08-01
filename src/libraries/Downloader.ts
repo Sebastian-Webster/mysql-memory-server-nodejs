@@ -21,6 +21,34 @@ function handleTarExtraction(filepath: string, extractedPath: string): Promise<v
     })
 }
 
+function getFileDownloadURLRedirect(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const request = https.get(url, response => {
+            const statusCode = response.statusCode
+            const location = response.headers.location
+
+            if (statusCode !== 302) {
+                request.destroy();
+
+                reject(`Received status code ${statusCode} while getting redirect URL for binary download.`)
+                return
+            }
+
+            if (typeof location === 'string' && location.length > 0) {
+                resolve(location)
+                return
+            }
+
+            reject(`Received incorrect URL information. Expected a non-empty string. Received: ${JSON.stringify(location)}`)
+        })
+
+        request.on('error', (err) => {
+            request.destroy();
+            reject(err.message)
+        })
+    })
+}
+
 function downloadFromCDN(url: string, downloadLocation: string, logger: Logger): Promise<void> {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(downloadLocation)) {
@@ -245,13 +273,58 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             //The code below only runs if the lock has been acquired by us
 
+            let retryURL = false;
+            let downloadURL = '';
+
+            if (hostedByOracle) {
+                do {
+                    try {
+                        downloadURL = await getFileDownloadURLRedirect(retryURL ? url.replace(archiveBaseURL, downloadsBaseURL) : url)
+                    } catch (error) {
+                        if (retryURL) {
+                            try {
+                                await releaseFunction()
+                            } catch (e) {
+                                logger.error('An error occurred while releasing lock after receiving an error on both downloads and archives URLs. The error was:', error)
+                            }
+
+                            return reject(`Both URLs for MySQL version ${binaryInfo.version} failed to give status code 302. Aborting download. Error: ${error}`)
+                        }
+
+                        if (error?.includes?.('status code 404')) {
+                            retryURL = true;
+                            logger.log('Retrying with downloads URL as received status code 404')
+                            continue
+                        }
+
+                        try {
+                            await releaseFunction()
+                        } catch (e) {
+                            logger.error('An error occurred while releasing lock after not received status code 302 or 404 for hostedByOracle binary. The error was:', error)
+                        }
+
+                        return reject(`Did not receive status code 302 or 404 for MySQL binary download URL. The error was: ${error}`)
+                    }
+                } while (retryURL)
+            } else {
+                try {
+                    downloadURL = await getFileDownloadURLRedirect(url)
+                } catch (error) {
+                    try {
+                        await releaseFunction()
+                    } catch (e) {
+                        logger.error('An error occurred while releasing lock after not getting URL redirect for bimary download from GitHub. The error was:', e)
+                    }
+
+                    return reject(`Did not get URL redirect for binary download from GitHub. The error was: ${error}`)
+                }
+            }
+
             let downloadTries = 0;
-            let useDownloadsURL = false;
 
             do {
                 try {
                     downloadTries++;
-                    const downloadURL = useDownloadsURL ? url.replace(archiveBaseURL, downloadsBaseURL) : url
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
                     await downloadFromCDN(downloadURL, archivePath, logger)
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
@@ -270,21 +343,13 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     }
 
                     if (e?.includes?.('status code 404')) {
-                        if (!useDownloadsURL && hostedByOracle) {
-                            //Retry with downloads URL
-                            downloadTries--;
-                            useDownloadsURL = true;
-                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`)
-                            continue;
-                        } else {
-                            try {
-                                await releaseFunction()
-                            } catch (e) {
-                                logger.error('An error occurred while releasing lock after receiving a 404 error on both downloads and archives URLs. The error was:', e)
-                            }
-
-                            return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`)
+                        try {
+                            await releaseFunction()
+                        } catch (e) {
+                            logger.error('An error occurred while releasing lock after receiving a 404 error on download. The error was:', e)
                         }
+
+                        return reject(`Binary download for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`)
                     }
 
                     if (downloadTries > options.downloadRetries) {
@@ -311,7 +376,34 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             return resolve(binaryPath)
         } else {
             let downloadTries = 0;
-            let useDownloadsURL = false;
+            let retryURL = false;
+            let downloadURL = '';
+
+            if (hostedByOracle) {
+                do {
+                    try {
+                        downloadURL = await getFileDownloadURLRedirect(retryURL ? url.replace(archiveBaseURL, downloadsBaseURL) : url)
+                    } catch (error) {
+                        if (retryURL) {
+                            return reject(`Both URLs for MySQL version ${binaryInfo.version} failed to give status code 302. Aborting download. Error: ${error}`)
+                        }
+
+                        if (error?.includes?.('status code 404')) {
+                            retryURL = true;
+                            logger.log('Retrying with downloads URL as received status code 404')
+                            continue
+                        }
+
+                        return reject(`Did not receive status code 302 or 404 for MySQL binary download URL. The error was: ${error}`)
+                    }
+                } while (retryURL)
+            } else {
+                try {
+                    downloadURL = await getFileDownloadURLRedirect(url)
+                } catch (error) {
+                    return reject(`Did not get URL redirect for binary download from GitHub. The error was: ${error}`)
+                }
+            }
 
             do {
                 const uuid = randomUUID()
@@ -321,7 +413,6 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                 try {
                     downloadTries++
-                    const downloadURL = useDownloadsURL ? url.replace(archiveBaseURL, downloadsBaseURL) : url
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
                     await downloadFromCDN(downloadURL, zipFilepath, logger)
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
@@ -340,15 +431,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     }
 
                     if (e?.includes?.('status code 404')) {
-                        if (!useDownloadsURL && hostedByOracle) {
-                            //Retry with downloads URL
-                            downloadTries--;
-                            useDownloadsURL = true;
-                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`)
-                            continue;
-                        } else {
-                            return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`)
-                        }
+                        return reject(`Binary download for MySQL version ${version} returned status code 404. Aborting download.`)
                     }
 
                     if (downloadTries > options.downloadRetries) {
