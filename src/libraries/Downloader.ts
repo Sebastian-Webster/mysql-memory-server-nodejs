@@ -146,7 +146,7 @@ function promisifiedZipExtraction(archiveLocation: string, extractedLocation: st
     })
 }
 
-function extractBinary(url: string, archiveLocation: string, extractedLocation: string, logger: Logger): Promise<string> {
+function extractBinary(url: string, archiveLocation: string, extractedLocation: string, binaryInfo: BinaryInfo, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(extractedLocation)) {
             logger.warn('Removing item at extractedLocation:', extractedLocation, 'so the MySQL binary can be stored there. This is probably because a previous download/extraction failed.')
@@ -158,12 +158,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
         await fsPromises.mkdir(extractedLocation, {recursive: true})
 
-        const splitURL = url.split('/')
-        const mySQLFolderName = splitURL[splitURL.length - 1]
-        if (!mySQLFolderName) {
-            return reject(`Folder name is undefined for url: ${url}`)
-        }
-        const folderName = mySQLFolderName.replace(`.${fileExtension}`, '')
+        const folderName = `mysql-${binaryInfo.version}`
         
         let extractionError: any = undefined;
 
@@ -328,7 +323,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
                     await downloadFromCDN(downloadURL, archivePath, logger)
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
-                    await extractBinary(downloadURL, archivePath, extractedPath, logger)
+                    await extractBinary(downloadURL, archivePath, extractedPath, binaryInfo, logger)
                     logger.log(`Finished extraction for version ${version}`)
                     break
                 } catch (e) {
@@ -416,7 +411,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
                     await downloadFromCDN(downloadURL, zipFilepath, logger)
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
-                    const binaryPath = await extractBinary(downloadURL, zipFilepath, extractedPath, logger)
+                    const binaryPath = await extractBinary(downloadURL, zipFilepath, extractedPath, binaryInfo, logger)
                     logger.log(`Finished extraction for version ${version}`)
                     return resolve(binaryPath)
                 } catch (e) {
