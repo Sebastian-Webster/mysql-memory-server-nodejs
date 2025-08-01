@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 import { execFile } from 'child_process';
 import { BinaryInfo, InternalServerOptions } from '../../types';
 import { lockFile, waitForLock } from './FileLock';
-import { archiveBaseURL, downloadsBaseURL, getInternalEnvVariable } from '../constants';
+import { getInternalEnvVariable } from '../constants';
 
 function handleTarExtraction(filepath: string, extractedPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -268,51 +268,18 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             //The code below only runs if the lock has been acquired by us
 
-            let retryURL = false;
             let downloadURL = '';
 
-            if (hostedByOracle) {
-                do {
-                    try {
-                        downloadURL = await getFileDownloadURLRedirect(retryURL ? url.replace(archiveBaseURL, downloadsBaseURL) : url)
-                    } catch (error) {
-                        if (retryURL) {
-                            try {
-                                await releaseFunction()
-                            } catch (e) {
-                                logger.error('An error occurred while releasing lock after receiving an error on both downloads and archives URLs. The error was:', error)
-                            }
-
-                            return reject(`Both URLs for MySQL version ${binaryInfo.version} failed to give status code 302. Aborting download. Error: ${error}`)
-                        }
-
-                        if (error?.includes?.('status code 404')) {
-                            retryURL = true;
-                            logger.log('Retrying with downloads URL as received status code 404')
-                            continue
-                        }
-
-                        try {
-                            await releaseFunction()
-                        } catch (e) {
-                            logger.error('An error occurred while releasing lock after not received status code 302 or 404 for hostedByOracle binary. The error was:', error)
-                        }
-
-                        return reject(`Did not receive status code 302 or 404 for MySQL binary download URL. The error was: ${error}`)
-                    }
-                } while (retryURL)
-            } else {
+            try {
+                downloadURL = await getFileDownloadURLRedirect(url)
+            } catch (error) {
                 try {
-                    downloadURL = await getFileDownloadURLRedirect(url)
-                } catch (error) {
-                    try {
-                        await releaseFunction()
-                    } catch (e) {
-                        logger.error('An error occurred while releasing lock after not getting URL redirect for bimary download from GitHub. The error was:', e)
-                    }
-
-                    return reject(`Did not get URL redirect for binary download from GitHub. The error was: ${error}`)
+                    await releaseFunction()
+                } catch (e) {
+                    logger.error('An error occurred while releasing lock after not received status code 302 for binary. The error was:', error)
                 }
+
+                return reject(`Did not receive status code 302 for MySQL binary download URL. The error was: ${error}`)
             }
 
             let downloadTries = 0;
@@ -371,33 +338,12 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             return resolve(binaryPath)
         } else {
             let downloadTries = 0;
-            let retryURL = false;
             let downloadURL = '';
 
-            if (hostedByOracle) {
-                do {
-                    try {
-                        downloadURL = await getFileDownloadURLRedirect(retryURL ? url.replace(archiveBaseURL, downloadsBaseURL) : url)
-                    } catch (error) {
-                        if (retryURL) {
-                            return reject(`Both URLs for MySQL version ${binaryInfo.version} failed to give status code 302. Aborting download. Error: ${error}`)
-                        }
-
-                        if (error?.includes?.('status code 404')) {
-                            retryURL = true;
-                            logger.log('Retrying with downloads URL as received status code 404')
-                            continue
-                        }
-
-                        return reject(`Did not receive status code 302 or 404 for MySQL binary download URL. The error was: ${error}`)
-                    }
-                } while (retryURL)
-            } else {
-                try {
-                    downloadURL = await getFileDownloadURLRedirect(url)
-                } catch (error) {
-                    return reject(`Did not get URL redirect for binary download from GitHub. The error was: ${error}`)
-                }
+            try {
+                downloadURL = await getFileDownloadURLRedirect(url)
+            } catch (error) {
+                return reject(`Did not receive status code 302 for MySQL binary download URL. The error was: ${error}`)
             }
 
             do {

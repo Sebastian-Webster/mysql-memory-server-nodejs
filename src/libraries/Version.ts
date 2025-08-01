@@ -1,7 +1,7 @@
 import { BinaryInfo, JSRuntimeVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { archiveBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 } from "../constants";
+import { MySQLCDNDownloadsBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 } from "../constants";
 import etcOSRelease from "./LinuxOSRelease";
 
 export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
@@ -123,7 +123,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
 
     return {
         version: selectedVersion,
-        url: isOnAlpineLinux ? fileLocation : (archiveBaseURL + fileLocation),
+        url: isOnAlpineLinux ? fileLocation : (MySQLCDNDownloadsBaseURL + fileLocation),
         hostedByOracle: !isOnAlpineLinux // Only the Alpine Linux binaries are not hosted on the MySQL CDN.
     }
 }
