@@ -1,3 +1,6 @@
+import { randomInt } from "crypto"
+
 export function GenerateRandomPort() {
-    return Math.floor(Math.random() * (65535 - 1024) + 1025)
+    //Min is inclusive and max is exclusive. Inclusive range would be 1025 - 65535
+    return randomInt(1025, 65536)
 }
