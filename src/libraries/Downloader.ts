@@ -23,7 +23,7 @@ function handleTarExtraction(filepath: string, extractedPath: string): Promise<v
 
 function getFileDownloadURLRedirect(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        const request = https.get(url, {headers: {"user-agent": 'mysql-memory-server-js'}}, response => {
+        const request = https.get(url, response => {
             console.log('Headers:', response.headers)
             const statusCode = response.statusCode
             const location = response.headers.location
@@ -33,6 +33,8 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
                 console.log('Response ended')
                 console.log('Data:', data)
             })
+
+            console.log(request.getHeaders())
 
             if (statusCode !== 302) {
                 request.destroy();
