@@ -34,7 +34,7 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
                 console.log('Data:', data)
             })
 
-            console.log(request.getHeaders())
+            console.log('Request headers:', request.getHeaders())
 
             if (statusCode !== 302) {
                 request.destroy();
