@@ -180,7 +180,18 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
         await fsPromises.mkdir(extractedLocation, {recursive: true})
 
-        const folderName = `mysql-${binaryInfo.version}`
+        let folderName = ''
+
+        if (binaryInfo.hostedByOracle) {
+            const splitURL = url.split('/')
+            const mySQLFolderName = splitURL[splitURL.length - 1]
+            if (!mySQLFolderName) {
+                return reject(`Folder name is undefined for url: ${url}`)
+            }
+            folderName = mySQLFolderName.replace(`.${fileExtension}`, '')
+        } else {
+            folderName = `mysql-${binaryInfo.version}`
+        }
         
         let extractionError: any = undefined;
 
