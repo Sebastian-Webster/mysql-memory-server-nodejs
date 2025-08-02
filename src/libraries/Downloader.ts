@@ -35,17 +35,8 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
 
     return new Promise((resolve, reject) => {
         const request = https.get(url, options, response => {
-            console.log('Headers:', response.headers)
             const statusCode = response.statusCode
             const location = response.headers.location
-            let data = ''
-            response.on('data', d => data += d)
-            response.on('end', () => {
-                console.log('Response ended')
-                console.log('Data:', data)
-            })
-
-            console.log('Request headers:', request.getHeaders())
 
             if (statusCode !== 302) {
                 request.destroy();
