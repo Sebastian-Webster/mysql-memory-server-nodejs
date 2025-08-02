@@ -24,7 +24,9 @@ function handleTarExtraction(filepath: string, extractedPath: string): Promise<v
 function getFileDownloadURLRedirect(url: string): Promise<string> {
     const options: https.RequestOptions = {
         headers: {
-            'accept': '*/*'
+            'accept': '*/*',
+            'connection': 'keep-alive',
+            "user-agent": 'mysql-memory-server-js'
         }
     }
 
