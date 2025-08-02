@@ -22,8 +22,14 @@ function handleTarExtraction(filepath: string, extractedPath: string): Promise<v
 }
 
 function getFileDownloadURLRedirect(url: string): Promise<string> {
+    const options: https.RequestOptions = {
+        headers: {
+            'accept': '*/*'
+        }
+    }
+
     return new Promise((resolve, reject) => {
-        const request = https.get(url, response => {
+        const request = https.get(url, options, response => {
             console.log('Headers:', response.headers)
             const statusCode = response.statusCode
             const location = response.headers.location
