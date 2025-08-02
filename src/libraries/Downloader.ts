@@ -26,7 +26,8 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
         headers: {
             'accept': '*/*',
             'connection': 'keep-alive',
-            "user-agent": 'mysql-memory-server-js-net/1.0.0'
+            "user-agent": 'mysql-memory-server-js-net/1.0.0',
+            "hello": "hello"
         }
     }
 
