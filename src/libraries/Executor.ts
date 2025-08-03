@@ -232,7 +232,8 @@ class Executor {
                             username: options.username,
                             mysql: {
                                 version: this.version,
-                                versionIsInstalledOnSystem: this.versionInstalledOnSystem
+                                versionIsInstalledOnSystem: this.versionInstalledOnSystem,
+                                xPluginIsEnabled: xStartedSuccessfully
                             },
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
