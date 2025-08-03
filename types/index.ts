@@ -2,6 +2,8 @@ import { ExecFileException } from "child_process"
 
 export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR'
 
+export type PluginActivationState = 'OFF' | 'ON' | 'FORCE' | 'FORCE_PLUS_PERMANENT'
+
 export type ServerOptions = {
     version?: string | undefined,
     dbName?: string | undefined,
@@ -16,7 +18,8 @@ export type ServerOptions = {
     xPort?: number | undefined,
     downloadRetries?: number | undefined,
     initSQLString?: string | undefined,
-    arch?: "arm64" | "x64" | undefined
+    arch?: "arm64" | "x64" | undefined,
+    xEnabled?: PluginActivationState | undefined
 }
 
 export type InternalServerOptions = {
@@ -33,7 +36,8 @@ export type InternalServerOptions = {
     xPort: number,
     downloadRetries: number,
     initSQLString: string,
-    arch: string
+    arch: string,
+    xEnabled: PluginActivationState
 }
 
 export type ExecuteFileReturn = {
@@ -44,9 +48,9 @@ export type ExecuteFileReturn = {
 
 export type MySQLDB = {
     port: number,
-    xPort: number,
+    xPort: number | undefined,
     socket: string,
-    xSocket: string,
+    xSocket: string | undefined,
     dbName: string,
     username: string,
     mysql: {

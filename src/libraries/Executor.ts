@@ -63,10 +63,13 @@ class Executor {
         return null
     }
 
-    #startMySQLProcess(options: InternalServerOptions, port: number, mySQLXPort: number, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
+    #startMySQLProcess(options: InternalServerOptions, datadir: string, dbPath: string, binaryFilepath: string): Promise<MySQLDB> {
         const errors: string[] = []
         const logFile = `${dbPath}/log.log`
         const errorLogFile = `${datadir}/errorlog.err`
+
+        const port = options.port || GenerateRandomPort()
+        const mySQLXPort = options.xPort || GenerateRandomPort();
 
         return new Promise(async (resolve, reject) => {
             await fsPromises.rm(logFile, {force: true})
@@ -76,11 +79,8 @@ class Executor {
 
             const mysqlArguments = [
                 '--no-defaults',
-                '--mysqlx=FORCE',
                 `--port=${port}`,
                 `--datadir=${datadir}`,
-                `--mysqlx-port=${mySQLXPort}`,
-                `--mysqlx-socket=${xSocket}`,
                 `--socket=${socket}`,
                 `--general-log-file=${logFile}`,
                 '--general-log=1',
@@ -91,23 +91,29 @@ class Executor {
                 `--user=${os.userInfo().username}`
             ]
 
-            //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
-            //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
-            //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
-            if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
-                const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
-                let pluginPath: string;
-                const firstPath = resolvePath(`${binaryFilepath}/../../lib/plugin`)
-                const secondPath = '/usr/lib/mysql/plugin'
+            if (options.xEnabled !== 'OFF') {
+                mysqlArguments.push(`--mysqlx=${options.xEnabled}`)
+                mysqlArguments.push(`--mysqlx-port=${mySQLXPort}`)
+                mysqlArguments.push(`--mysqlx-socket=${xSocket}`)
 
-                if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
-                    pluginPath = firstPath
-                } else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
-                    pluginPath = secondPath
-                } else {
-                    throw 'Could not install MySQL X as the path to the plugin cannot be found.'
+                //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
+                //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
+                //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
+                if (lt(this.version, '8.0.11') && gte(this.version, '5.7.19')) {
+                    const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
+                    let pluginPath: string;
+                    const firstPath = resolvePath(`${binaryFilepath}/../../lib/plugin`)
+                    const secondPath = '/usr/lib/mysql/plugin'
+
+                    if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
+                        pluginPath = firstPath
+                    } else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
+                        pluginPath = secondPath
+                    } else {
+                        throw 'Could not install MySQL X as the path to the plugin cannot be found.'
+                    }
+                    mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--early-plugin-load=mysqlx=mysqlx.${pluginExtension};`)
                 }
-                mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--early-plugin-load=mysqlx=mysqlx.${pluginExtension};`)
             }
 
             const process = spawn(binaryFilepath, mysqlArguments, {signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL'})
@@ -504,13 +510,9 @@ class Executor {
             await this.#setupDataDirectories(options, installedMySQLBinary, datadir, true);
             this.logger.log('Setting up directories was successful')
 
-            const port = options.port || GenerateRandomPort()
-            const mySQLXPort = options.xPort || GenerateRandomPort();
-            this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries)
-
             try {
                 this.logger.log('Starting MySQL process')
-                const resolved = await this.#startMySQLProcess(options, port, mySQLXPort, datadir, this.databasePath, installedMySQLBinary.path)
+                const resolved = await this.#startMySQLProcess(options, datadir, this.databasePath, installedMySQLBinary.path)
                 this.logger.log('Starting process was successful')
                 return resolved
             } catch (e) {
@@ -521,7 +523,7 @@ class Executor {
                 }
                 retries++
                 if (retries <= options.portRetries) {
-                    this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`)
+                    this.logger.warn(`Tried a port that is already in use. Now retrying... ${retries}/${options.portRetries} possible retries.`)
                 } else {
                     throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`
                 }
