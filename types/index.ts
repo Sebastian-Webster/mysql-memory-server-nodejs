@@ -2,7 +2,7 @@ import { ExecFileException } from "child_process"
 
 export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR'
 
-export type PluginActivationState = 'OFF' | 'ON' | 'FORCE' | 'FORCE_PLUS_PERMANENT'
+export type PluginActivationState = 'OFF' | 'ON' | 'FORCE'
 
 export type ServerOptions = {
     version?: string | undefined,

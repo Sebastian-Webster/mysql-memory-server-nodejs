@@ -79,6 +79,7 @@ class Executor {
 
             const mysqlArguments = [
                 '--no-defaults',
+                `--mysqlx=${options.xEnabled}`,
                 `--port=${port}`,
                 `--datadir=${datadir}`,
                 `--socket=${socket}`,
@@ -92,7 +93,6 @@ class Executor {
             ]
 
             if (options.xEnabled !== 'OFF') {
-                mysqlArguments.push(`--mysqlx=${options.xEnabled}`)
                 mysqlArguments.push(`--mysqlx-port=${mySQLXPort}`)
                 mysqlArguments.push(`--mysqlx-socket=${xSocket}`)
 
@@ -220,12 +220,14 @@ class Executor {
                             return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                         }
 
+                        const xStartedSuccessfully = file.includes('X Plugin ready for connections')
+
 
                         resolve({
                             port,
-                            xPort: mySQLXPort,
+                            xPort: xStartedSuccessfully ? mySQLXPort : undefined,
                             socket,
-                            xSocket,
+                            xSocket: xStartedSuccessfully ? xSocket : undefined,
                             dbName: options.dbName,
                             username: options.username,
                             mysql: {
