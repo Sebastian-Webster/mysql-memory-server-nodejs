@@ -222,12 +222,17 @@ class Executor {
 
                         const xStartedSuccessfully = file.includes('X Plugin ready for connections')
 
+                        if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
+                            this.logger.error('Error file:', file)
+                            this.logger.error('MySQL X failed to start successfully and xEnabled is set to "FORCE". Error log is above this message. If this is happening continually and you can start the database without the X Plugin, you can set options.xEnabled to "ON" or "OFF" instead of "FORCE".')
+                            return reject('X Plugin failed to start and options.xEnabled is set to "FORCE".')
+                        }
 
-                        resolve({
+                        const result: MySQLDB = {
                             port,
-                            xPort: xStartedSuccessfully ? mySQLXPort : undefined,
+                            xPort: xStartedSuccessfully ? mySQLXPort : -1,
                             socket,
-                            xSocket: xStartedSuccessfully ? xSocket : undefined,
+                            xSocket: xStartedSuccessfully ? xSocket : '',
                             dbName: options.dbName,
                             username: options.username,
                             mysql: {
@@ -248,7 +253,9 @@ class Executor {
                                     }
                                 })
                             }
-                        })
+                        }
+
+                        resolve(result)
                     }
                 }
             })

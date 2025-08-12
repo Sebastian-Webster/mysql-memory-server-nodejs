@@ -48,9 +48,9 @@ export type ExecuteFileReturn = {
 
 export type MySQLDB = {
     port: number,
-    xPort: number | undefined,
+    xPort: number,
     socket: string,
-    xSocket: string | undefined,
+    xSocket: string,
     dbName: string,
     username: string,
     mysql: {
