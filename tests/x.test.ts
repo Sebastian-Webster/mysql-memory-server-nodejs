@@ -29,8 +29,8 @@ test(`MySQL X is off when disabling it`, async () => {
     await db.stop();
 
     expect(mysqlXDisabled).toBe(true)
-    expect(db.xPort).toBe(undefined)
-    expect(db.xSocket).toBe(undefined)
+    expect(db.xPort).toBe(-1)
+    expect(db.xSocket).toBe('')
 })
 
 test(`MySQL X is on when enabling it`, async () => {
