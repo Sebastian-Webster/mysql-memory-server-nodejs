@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "test": "jest --verbose --colors",
-    "test:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors --runTestsByPath tests/ci",
+    "test:ci": "jest tests/ci --setupFilesAfterEnv ./ciSetup.js --verbose --colors",
     "os-compat:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors --runTestsByPath tests/versions.test.ts"
   },
   "engines": {
