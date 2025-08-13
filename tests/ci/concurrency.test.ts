@@ -1,5 +1,5 @@
 import {expect, test, jest} from '@jest/globals'
-import { createDB } from '../src/index'
+import { createDB } from '../../src/index'
 import sql from 'mysql2/promise'
 
 jest.setTimeout(500_000);
