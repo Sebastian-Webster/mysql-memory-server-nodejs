@@ -220,11 +220,15 @@ class Executor {
                             return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                         }
 
-                        const xStartedSuccessfully = file.includes('X Plugin ready for connections')
+                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'")
 
                         if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
                             this.logger.error('Error file:', file)
                             this.logger.error('MySQL X failed to start successfully and xEnabled is set to "FORCE". Error log is above this message. If this is happening continually and you can start the database without the X Plugin, you can set options.xEnabled to "ON" or "OFF" instead of "FORCE".')
+                            const killed = await this.#killProcess(process)
+                            if (!killed) {
+                                this.logger.error('Failed to kill MySQL process after MySQL X failing to initialise.')
+                            }
                             return reject('X Plugin failed to start and options.xEnabled is set to "FORCE".')
                         }
 
