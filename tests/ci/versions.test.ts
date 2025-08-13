@@ -1,10 +1,10 @@
 import {expect, test, jest} from '@jest/globals'
-import { createDB } from '../src/index'
+import { createDB } from '../../src/index'
 import sql from 'mysql2/promise'
 import { coerce, satisfies } from 'semver';
-import { ServerOptions } from '../types';
-import getBinaryURL from '../src/libraries/Version';
-import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
+import { ServerOptions } from '../../types';
+import getBinaryURL from '../../src/libraries/Version';
+import { DOWNLOADABLE_MYSQL_VERSIONS } from '../../src/constants';
 
 const usernames = ['root', 'dbuser']
 
