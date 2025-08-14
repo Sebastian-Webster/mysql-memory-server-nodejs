@@ -27,9 +27,10 @@ function getFileDownloadURLRedirect(url: string): Promise<string> {
             'accept': '*/*',
             'connection': 'keep-alive',
             "user-agent": 'mysql-memory-server-js-net/1.0.0',
-            // Not too sure why, but the request fails without the below header
-            // For the request to work, this hello header is required
-            "hello": "hello"
+            // Not too sure why, but the request fails without dummy headers
+            // For the request to work, these headers have been added
+            "hello": "hello",
+            "world": "world"
         }
     }
 
