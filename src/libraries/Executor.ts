@@ -118,6 +118,11 @@ class Executor {
             let resolveFunction: () => void;
 
             process.on('close', async (code, signal) => {
+                // Prevent open file watches when MySQL has been exited
+                // The file watch is only stopped if MySQL starts successfully
+                // This unwatch will prevent the watch from watching when the process has stopped.
+                fs.unwatchFile(errorLogFile)
+
                 if (signal) {
                     this.logger.log('Exiting because of aborted signal.')
                     return
