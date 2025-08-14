@@ -19,6 +19,7 @@ class Executor {
     removeExitHandler: () => void;
     version: string;
     versionInstalledOnSystem: boolean;
+    versionSupportsMySQLX: boolean;
     databasePath: string
     killedFromPortIssue: boolean;
 
@@ -79,7 +80,6 @@ class Executor {
 
             const mysqlArguments = [
                 '--no-defaults',
-                `--mysqlx=${options.xEnabled}`,
                 `--port=${port}`,
                 `--datadir=${datadir}`,
                 `--socket=${socket}`,
@@ -91,6 +91,10 @@ class Executor {
                 `--log-error=${errorLogFile}`,
                 `--user=${os.userInfo().username}`
             ]
+
+            if (this.versionSupportsMySQLX) {
+                mysqlArguments.push(`--mysqlx=${options.xEnabled}`)
+            }
 
             if (options.xEnabled !== 'OFF') {
                 mysqlArguments.push(`--mysqlx-port=${mySQLXPort}`)
@@ -497,6 +501,7 @@ class Executor {
 
         this.version = installedMySQLBinary.version
         this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem
+        this.versionSupportsMySQLX = installedMySQLBinary.xPluginSupported
         this.removeExitHandler = onExit(() => {
             if (getInternalEnvVariable('cli') === 'true') {
                 console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...')
