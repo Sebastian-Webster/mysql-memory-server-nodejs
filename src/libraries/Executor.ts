@@ -95,7 +95,6 @@ class Executor {
             if (options.xEnabled !== 'OFF') {
                 mysqlArguments.push(`--mysqlx-port=${mySQLXPort}`)
                 mysqlArguments.push(`--mysqlx-socket=${xSocket}`)
-                mysqlArguments.push(`--mysqlx-bind-address=127.0.0.1`)
 
                 //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
                 //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
