@@ -1,14 +1,16 @@
 import {expect, test, jest} from '@jest/globals'
-import { createDB } from '../src/index'
+import { createDB } from '../../src/index'
 import sql from 'mysql2/promise'
 
 jest.setTimeout(500_000);
 
 const databaseCount = 3;
 
+const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
+
 test(`concurrency with ${databaseCount} simulataneous database creations`, async () => {
    const dbs = await Promise.all(
-        Array.from(new Array(databaseCount)).map(() => createDB({logLevel: 'LOG'}))
+        Array.from(new Array(databaseCount)).map(() => createDB({logLevel: 'LOG', arch}))
     )
 
     for (const db of dbs) {
