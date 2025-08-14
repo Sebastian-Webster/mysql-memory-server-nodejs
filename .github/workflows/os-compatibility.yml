@@ -129,4 +129,5 @@ jobs:
         working-directory: mysqlmsn
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
+          X_ON_WITHOUT_FORCE: true
         run: npm run os-compat:ci
