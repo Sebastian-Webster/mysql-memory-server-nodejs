@@ -86,3 +86,24 @@ test(`MySQL X is on when force enabling it`, async () => {
     expect(db.xPort).toBeLessThanOrEqual(65535)
     expect(typeof db.xSocket).toBe('string')
 })
+
+test('DB creation throws when MySQL fails to initialise and X is force enabled', async () => {
+    const options: ServerOptions = {
+        arch,
+        logLevel: 'LOG',
+        port: 3306,
+        xPort: 3306,
+        xEnabled: 'FORCE',
+        initSQLString: 'SELECT 2+2;'
+    }
+
+    let thrown: string | boolean = false;
+
+    try {
+        await createDB(options)
+    } catch (e) {
+        thrown = e
+    }
+
+    expect(thrown).toBe('The port has been retried 10 times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.')
+})
