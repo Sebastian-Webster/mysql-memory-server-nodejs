@@ -64,13 +64,15 @@ export type MySQLDB = {
 export type DownloadedMySQLVersion = {
     version: string,
     path: string,
-    installedOnSystem: boolean
+    installedOnSystem: boolean,
+    xPluginSupported: boolean
 }
 
 export type BinaryInfo = {
     url: string,
     version: string,
-    hostedByOracle: boolean
+    hostedByOracle: boolean,
+    xPluginSupported: boolean
 }
 
 export type OptionTypeChecks = {

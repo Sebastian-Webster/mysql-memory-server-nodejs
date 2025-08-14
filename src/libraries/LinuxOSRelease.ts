@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { LinuxEtcOSRelease } from '../../types'
 
-const releaseDetails = {}
+const releaseDetails: LinuxEtcOSRelease = {}
 
 if (process.platform === 'linux') {
     const file = fs.readFileSync('/etc/os-release', 'utf8')
@@ -14,4 +14,6 @@ if (process.platform === 'linux') {
     }
 }
 
-export default releaseDetails as LinuxEtcOSRelease;
+export const isOnAlpineLinux = process.platform === 'linux' && releaseDetails?.ID === 'alpine'
+
+export default releaseDetails;

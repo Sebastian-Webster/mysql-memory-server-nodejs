@@ -2,7 +2,7 @@ import { BinaryInfo, JSRuntimeVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
 import { MySQLCDNDownloadsBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 } from "../constants";
-import etcOSRelease from "./LinuxOSRelease";
+import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
 
 export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
@@ -59,8 +59,6 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         throw `Your operating system is too out of date to run a version of MySQL that fits the following requirement: ${versionToGet}. The oldest version for your operating system that you would need to get a version that satisfies the version requirement is ${minVersion} but your current operating system is ${coercedOSRelease.version}. Please try changing your MySQL version requirement, updating your OS to a newer version, or if you believe this is a bug, please report this on GitHub.`
     }
 
-    const isOnAlpineLinux = process.platform === 'linux' && etcOSRelease.ID === 'alpine'
-
     if (process.platform === 'linux') {
         if (etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
             //Since Ubuntu >= 24.04 uses libaio1t64 instead of libaio, this package has to copy libaio1t64 into a folder that MySQL looks in for dynamically linked libraries with the filename "libaio.so.1".
@@ -92,6 +90,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     const isDMR = satisfies(selectedVersion, DMR_MYSQL_VERSIONS)
     
     let fileLocation: string = ''
+    let xPluginSupported = true;
 
     if (currentOS === 'win32') {
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
@@ -101,6 +100,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
     } else if (isOnAlpineLinux) {
         fileLocation = `https://github.com/Sebastian-Webster/mysql-server-musl-binaries/releases/download/current/mysql-musl-${selectedVersion}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
+        xPluginSupported = false
     } else if (currentOS === 'linux') {
         const glibcObject = MYSQL_LINUX_GLIBC_VERSIONS[currentArch];
         const glibcVersionKeys = Object.keys(glibcObject);
@@ -124,6 +124,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     return {
         version: selectedVersion,
         url: isOnAlpineLinux ? fileLocation : (MySQLCDNDownloadsBaseURL + fileLocation),
-        hostedByOracle: !isOnAlpineLinux // Only the Alpine Linux binaries are not hosted on the MySQL CDN.
+        hostedByOracle: !isOnAlpineLinux, // Only the Alpine Linux binaries are not hosted on the MySQL CDN.
+        xPluginSupported
     }
 }
