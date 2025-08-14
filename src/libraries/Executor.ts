@@ -220,7 +220,7 @@ class Executor {
                             return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                         }
 
-                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'") || (lte(this.version, '8.0.12') && gte(this.version, '8.0.4') && !file.search(/\[ERROR\].*Plugin mysqlx reported/m))
+                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'") || (lte(this.version, '8.0.12') && gte(this.version, '8.0.4') && file.search(/\[ERROR\].*Plugin mysqlx reported/m) === -1)
 
                         if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
                             this.logger.error('Error file:', file)
