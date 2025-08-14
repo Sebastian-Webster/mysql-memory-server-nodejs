@@ -17,7 +17,8 @@ export const DEFAULT_OPTIONS: InternalServerOptions = {
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
-    arch: process.arch
+    arch: process.arch,
+    xEnabled: 'FORCE'
 } as const;
 
 export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS))
@@ -41,6 +42,7 @@ export function getInternalEnvVariable(envVar: keyof typeof internalOptions): st
 }
 
 const allowedArches = ['x64', 'arm64']
+const pluginActivationStates = ['OFF', 'ON', 'FORCE']
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(coerceSemver(opt)) !== null,
@@ -111,6 +113,11 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
         check: (opt: any) => opt === undefined || allowedArches.includes(opt),
         errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
         definedType: 'string'
+    },
+    xEnabled: {
+        check: (opt: any) => opt === undefined || pluginActivationStates.includes(opt),
+        errorMessage: `xEnabled must be either undefined or one of the following: ${pluginActivationStates.join(', ')}`,
+        definedType: 'boolean'
     }
 } as const;
 
