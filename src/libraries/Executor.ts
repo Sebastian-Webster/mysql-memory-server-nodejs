@@ -1,5 +1,5 @@
 import { ChildProcess, execFile, spawn } from "child_process"
-import {coerce, gte, lt, satisfies} from 'semver';
+import {coerce, gte, lt, lte, satisfies} from 'semver';
 import * as os from 'os'
 import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
@@ -220,7 +220,7 @@ class Executor {
                             return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                         }
 
-                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'")
+                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'") || (lte(this.version, '8.0.12') && gte(this.version, '8.0.4') && !file.search(/\[ERROR\].*Plugin mysqlx reported/m))
 
                         if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
                             this.logger.error('Error file:', file)
