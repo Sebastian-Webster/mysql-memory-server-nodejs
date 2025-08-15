@@ -29,7 +29,7 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, proce
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
                 arch,
-                xEnabled: process.env.X_ON_WITHOUT_FORCE === 'true' ? 'ON' : 'FORCE'
+                xEnabled: process.env.X_OFF === 'true' ? 'OFF' : 'FORCE'
             }
     
             const db = await createDB(options)
