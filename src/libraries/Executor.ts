@@ -233,7 +233,7 @@ class Executor {
 
                         if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
                             this.logger.error('Error file:', file)
-                            this.logger.error('MySQL X failed to start successfully and xEnabled is set to "FORCE". Error log is above this message. If this is happening continually and you can start the database without the X Plugin, you can set options.xEnabled to "ON" or "OFF" instead of "FORCE".')
+                            this.logger.error('MySQL X failed to start successfully and xEnabled is set to "FORCE". Error log is above this message. If this is happening continually and you can start the database without the X Plugin, you can set options.xEnabled to "OFF" instead of "FORCE".')
                             const killed = await this.#killProcess(process)
                             if (!killed) {
                                 this.logger.error('Failed to kill MySQL process after MySQL X failing to initialise.')

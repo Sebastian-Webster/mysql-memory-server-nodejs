@@ -42,7 +42,7 @@ export function getInternalEnvVariable(envVar: keyof typeof internalOptions): st
 }
 
 const allowedArches = ['x64', 'arm64']
-const pluginActivationStates = ['OFF', 'ON', 'FORCE']
+const pluginActivationStates = ['OFF', 'FORCE']
 export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     version: {
         check: (opt: any) => opt === undefined || typeof opt === 'string' && validSemver(coerceSemver(opt)) !== null,
