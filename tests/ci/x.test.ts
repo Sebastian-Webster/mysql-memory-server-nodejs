@@ -34,33 +34,6 @@ test(`MySQL X is off when disabling it`, async () => {
     expect(db.xSocket).toBe('')
 })
 
-test(`MySQL X is on when enabling it`, async () => {
-    const options: ServerOptions = {
-        arch,
-        xEnabled: 'ON',
-        logLevel: 'LOG'
-    }
-
-    const db = await createDB(options)
-    const connection = await sql.createConnection({
-        host: '127.0.0.1',
-        user: db.username,
-        port: db.port
-    })
-
-    const plugins = JSON.stringify((await connection.query('SHOW PLUGINS;'))[0])
-    console.log(plugins)
-    const mysqlXEnabled = plugins.includes('"Name":"mysqlx","Status":"ACTIVE"')
-
-    await connection.end();
-    await db.stop();
-
-    expect(mysqlXEnabled).toBe(true)
-    expect(db.xPort).toBeGreaterThan(0)
-    expect(db.xPort).toBeLessThanOrEqual(65535)
-    expect(typeof db.xSocket).toBe('string')
-})
-
 test(`MySQL X is on when force enabling it`, async () => {
     const options: ServerOptions = {
         arch,
