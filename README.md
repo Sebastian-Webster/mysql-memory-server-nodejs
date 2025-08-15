@@ -78,7 +78,7 @@ npx mysql-memory-server@latest --version 8.4.x
 - `port: number`
 The port that the MySQL database is listening on
 - `xPort: number`
-The port that MySQLX is listening on. If MySQL X is turned off, or ```options.xEnabled``` is set to "ON" and the X Plugin fails to initialise, this value will be -1.
+The port that MySQLX is listening on. If ```options.xEnabled``` is set to "OFF", this value will be -1.
 - `dbName: string`
 The database that was created on database initialization
 - `username: string`
@@ -86,9 +86,9 @@ The name of the user to use to login to the database
 - `socket: string`
 If on Windows, this is the name of the named pipe that MySQL is listening on. If not on Windows, this is the path to the socket that MySQL is listening on.
 - `xSocket: string`
-If on Windows, this is the name of the named pipe that the MySQL X Plugin is listening on. If not on Windows, this is the path that the MySQL X Plugin is listening on. If MySQL X is turned off, or ```options.xEnabled``` is set to "ON" and the X Plugin fails to initialise, this value will be an empty string.
+If on Windows, this is the name of the named pipe that the MySQL X Plugin is listening on. If not on Windows, this is the path that the MySQL X Plugin is listening on. If ```options.xEnabled``` is set to "OFF", this value will be an empty string.
 - `mysql: {version: string, versionIsInstalledOnSystem: boolean, xPluginIsEnabled: boolean}`
-An object with three properties. ```version``` is the version of MySQL used to create the database. ```versionIsInstalledOnSystem``` will be true if the MySQL version used is already installed on the system and false if the version had to be downloaded from MySQL's CDN. ```xPluginIsEnabled``` will be true if ```options.xEnabled``` is set to "FORCE", will be false if ```options.xEnabled``` is set to "OFF", and if ```options.xEnabled``` is set to "ON", this value will be true if the plugin initialised successfully, otherwise this value will be false.
+An object with three properties. ```version``` is the version of MySQL used to create the database. ```versionIsInstalledOnSystem``` will be true if the MySQL version used is already installed on the system and false if the version had to be downloaded from MySQL's CDN. ```xPluginIsEnabled``` will be true if ```options.xEnabled``` is set to "FORCE", and will be false if ```options.xEnabled``` is set to "OFF".
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
@@ -190,8 +190,8 @@ Default: process.arch
 
 Description: The MySQL binary architecture to execute. MySQL does not offer server builds for Windows on ARM, so to get this package working on Windows on ARM, set the arch option to "x64" and Windows will emulate MySQL.
 
-- `xEnabled: "OFF" | "ON" | "FORCE"`
+- `xEnabled: "OFF" | "FORCE"`
 
 Default: "FORCE"
 
-Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "ON", the MySQL X Plugin will try to initialise, but if the initialisation process fails, the MySQL Server will continue the startup process with the plugin disabled. If set to "FORCE", the MySQL Server will not start up without a successful initialisation of the plugin. With this option set to "FORCE", the server will either start up with the plugin enabled, or the server will fail to start up.
+Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will not start up without a successful initialisation of the plugin, meaning that it's guaranteed the server will start up with MySQL X enabled. If the MySQL X initialisation fails, the server will not start up.
