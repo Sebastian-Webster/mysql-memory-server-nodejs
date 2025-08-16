@@ -123,7 +123,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
 
     return {
         version: selectedVersion,
-        url: isOnAlpineLinux ? fileLocation : (MySQLCDNDownloadsBaseURL + fileLocation),
+        url: fileLocation,
         hostedByOracle: !isOnAlpineLinux, // Only the Alpine Linux binaries are not hosted on the MySQL CDN.
         xPluginSupported
     }
