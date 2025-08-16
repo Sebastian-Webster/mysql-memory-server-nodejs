@@ -194,4 +194,4 @@ Description: The MySQL binary architecture to execute. MySQL does not offer serv
 
 Default: "FORCE"
 
-Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will not start up without a successful initialisation of the plugin, meaning that it's guaranteed the server will start up with MySQL X enabled. If the MySQL X initialisation fails, the server will not start up.
+Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will either start up with the MySQL X Plugin guaranteed to have successfully initialised, or if initialisation fails, the server will fail to start up.
