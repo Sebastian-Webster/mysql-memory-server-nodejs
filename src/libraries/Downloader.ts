@@ -293,29 +293,15 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
             //The code below only runs if the lock has been acquired by us
 
-            let downloadURL = '';
-
-            try {
-                downloadURL = await getFileDownloadURLRedirect(url)
-            } catch (error) {
-                try {
-                    await releaseFunction()
-                } catch (e) {
-                    logger.error('An error occurred while releasing lock after not received status code 302 for binary. The error was:', error)
-                }
-
-                return reject(`Did not receive status code 302 for MySQL binary download URL. The error was: ${error}`)
-            }
-
             let downloadTries = 0;
 
             do {
                 try {
                     downloadTries++;
-                    logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
-                    await downloadFromCDN(downloadURL, archivePath, logger)
-                    logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
-                    await extractBinary(downloadURL, archivePath, extractedPath, binaryInfo, logger)
+                    logger.log(`Starting download for MySQL version ${version} from ${url}.`)
+                    await downloadFromCDN(url, archivePath, logger)
+                    logger.log(`Finished downloading MySQL version ${version} from ${url}. Now starting binary extraction.`)
+                    await extractBinary(url, archivePath, extractedPath, binaryInfo, logger)
                     logger.log(`Finished extraction for version ${version}`)
                     break
                 } catch (e) {
@@ -363,13 +349,6 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             return resolve(binaryPath)
         } else {
             let downloadTries = 0;
-            let downloadURL = '';
-
-            try {
-                downloadURL = await getFileDownloadURLRedirect(url)
-            } catch (error) {
-                return reject(`Did not receive status code 302 for MySQL binary download URL. The error was: ${error}`)
-            }
 
             do {
                 const uuid = randomUUID()
@@ -379,10 +358,10 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                 try {
                     downloadTries++
-                    logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
-                    await downloadFromCDN(downloadURL, zipFilepath, logger)
-                    logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
-                    const binaryPath = await extractBinary(downloadURL, zipFilepath, extractedPath, binaryInfo, logger)
+                    logger.log(`Starting download for MySQL version ${version} from ${url}.`)
+                    await downloadFromCDN(url, zipFilepath, logger)
+                    logger.log(`Finished downloading MySQL version ${version} from ${url}. Now starting binary extraction.`)
+                    const binaryPath = await extractBinary(url, zipFilepath, extractedPath, binaryInfo, logger)
                     logger.log(`Finished extraction for version ${version}`)
                     return resolve(binaryPath)
                 } catch (e) {
