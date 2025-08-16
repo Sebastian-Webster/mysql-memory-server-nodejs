@@ -313,7 +313,7 @@ class Executor {
                         if (version === null) {
                             return reject('Could not get MySQL version')
                         } else {
-                            versions.push({version: version.version, path, installedOnSystem: true, xPluginSupported: gte(this.version, '5.7.19')})
+                            versions.push({version: version.version, path, installedOnSystem: true, xPluginSupported: gte(version, '5.7.19')})
                         }
                     }
 
@@ -338,7 +338,7 @@ class Executor {
                     if (version === null) {
                         reject('Could not get installed MySQL version')
                     } else {
-                        resolve({version: version.version, path: 'mysqld', installedOnSystem: true, xPluginSupported: gte(this.version, '5.7.19')})
+                        resolve({version: version.version, path: 'mysqld', installedOnSystem: true, xPluginSupported: gte(version, '5.7.19')})
                     }
                 }
             }
