@@ -18,7 +18,7 @@
   "scripts": {
     "test": "jest --verbose --colors",
     "test:ci": "jest tests/ci --setupFilesAfterEnv ./ciSetup.js --verbose --colors",
-    "os-compat:ci": "jest --setupFilesAfterEnv ./ciSetup.js --verbose --colors --runTestsByPath tests/versions.test.ts"
+    "os-compat:ci": "jest tests/versions.test.ts --setupFilesAfterEnv ./ciSetup.js --verbose --colors"
   },
   "engines": {
     "node": ">=16.6.0",
