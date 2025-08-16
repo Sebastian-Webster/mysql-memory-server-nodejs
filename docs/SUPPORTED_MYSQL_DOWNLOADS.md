@@ -8,13 +8,17 @@
 - Windows
 - Linux
 
-*```mysql-memory-server``` gets tested on Ubuntu 22.04 (x64 and arm64) and 24.04 (x64 and arm64), Fedora 41 (x64 and arm64) and 42 (x64 and arm64), macOS 13 (x64), 14 (arm64), and 15 (arm64), Windows 11 (arm64), and Windows Server 2022 (x64) and 2025 (x64). Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.*
+*```mysql-memory-server``` gets tested on Ubuntu 22.04 (x64 and arm64) and 24.04 (x64 and arm64), Fedora 41 (x64 and arm64) and 42 (x64 and arm64), Alpine 3.22 (x64 and arm64), macOS 13 (x64), 14 (arm64), and 15 (arm64), Windows 11 (arm64), and Windows Server 2022 (x64) and 2025 (x64). Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.*
 
 ## Binaries not available for download
 
 - Versions 8.0.29, 8.0.38, 8.4.1, and 9.0.0 are not available for download for any operating systems as MySQL removed them from the CDN due to critical issues.
 
 - Versions 5.7.32 - 5.7.44 are not available for download only for macOS systems as MySQL stopped supporting macOS Mojave starting from 5.7.32 for the rest of the 5.7.x line. As a result, those versions are not available for macOS in the MySQL CDN.
+
+## Alpine Linux Limitations
+
+Only MySQL versions 8.4.x and 9.x can be downloaded and ran with this package on Alpine Linux. The binaries for Alpine Linux are sourced from [Sebastian-Webster/mysql-server-musl-binaries](https://github.com/Sebastian-Webster/mysql-server-musl-binaries) on GitHub as Oracle does not support MySQL on musl-based Linux distributions. That repository only has support for MySQL 8.4.x and 9.x. If you discover any issues with MySQL (and not this package) when you are running this on Alpine Linux, please report the issue on that repository and not the ```mysql-memory-server``` one. The MySQL X Plugin is also not available when running on Alpine Linux due to compilation errors for musl.
 
 ## Native Binary Architectures
 
@@ -56,7 +60,7 @@ Windows - No documented maximum version
 
 macOS - No documented maximum version
 
-Fedora Linux - No documented maximum version
+Fedora & Alpine Linux - No documented maximum version
 
 Ubuntu Linux:
 
@@ -86,4 +90,6 @@ Ubuntu Linux:
 
 Fedora Linux: ```libaio1``` package and ```tar``` package
 
-*Document last updated in v1.11.0*
+Alpine Linux: ```libstdc++``` package and ```libaio``` package
+
+*Document last updated in v1.12.0*
