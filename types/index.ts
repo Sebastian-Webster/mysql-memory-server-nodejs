@@ -55,8 +55,7 @@ export type MySQLDB = {
     username: string,
     mysql: {
         version: string,
-        versionIsInstalledOnSystem: boolean,
-        xPluginIsEnabled: boolean
+        versionIsInstalledOnSystem: boolean
     },
     stop: () => Promise<void>
 }

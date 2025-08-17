@@ -229,29 +229,16 @@ class Executor {
                             return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                         }
 
-                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'") || (lte(this.version, '8.0.12') && gte(this.version, '8.0.4') && file.search(/\[ERROR\].*Plugin mysqlx reported/m) === -1)
-
-                        if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
-                            this.logger.error('Error file:', file)
-                            this.logger.error('MySQL X failed to start successfully and xEnabled is set to "FORCE". Error log is above this message. If this is happening continually and you can start the database without the X Plugin, you can set options.xEnabled to "OFF" instead of "FORCE".')
-                            const killed = await this.#killProcess(process)
-                            if (!killed) {
-                                this.logger.error('Failed to kill MySQL process after MySQL X failing to initialise.')
-                            }
-                            return reject('X Plugin failed to start and options.xEnabled is set to "FORCE".')
-                        }
-
                         const result: MySQLDB = {
                             port,
-                            xPort: xStartedSuccessfully ? mySQLXPort : -1,
+                            xPort: options.xEnabled === 'FORCE' ? mySQLXPort : -1,
                             socket,
-                            xSocket: xStartedSuccessfully ? xSocket : '',
+                            xSocket: options.xEnabled === 'FORCE' ? xSocket : '',
                             dbName: options.dbName,
                             username: options.username,
                             mysql: {
                                 version: this.version,
-                                versionIsInstalledOnSystem: this.versionInstalledOnSystem,
-                                xPluginIsEnabled: xStartedSuccessfully
+                                versionIsInstalledOnSystem: this.versionInstalledOnSystem
                             },
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
