@@ -7,6 +7,7 @@ declare class Executor {
     removeExitHandler: () => void;
     version: string;
     versionInstalledOnSystem: boolean;
+    versionSupportsMySQLX: boolean;
     databasePath: string;
     killedFromPortIssue: boolean;
     constructor(logger: Logger);

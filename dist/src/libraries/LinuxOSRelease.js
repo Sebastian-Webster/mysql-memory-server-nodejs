@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isOnAlpineLinux = void 0;
 const fs_1 = __importDefault(require("fs"));
 const releaseDetails = {};
 if (process.platform === 'linux') {
@@ -15,4 +16,5 @@ if (process.platform === 'linux') {
         }
     }
 }
+exports.isOnAlpineLinux = process.platform === 'linux' && releaseDetails?.ID === 'alpine';
 exports.default = releaseDetails;

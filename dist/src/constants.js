@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = exports.MYSQL_LINUX_FILE_EXTENSIONS = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = exports.MYSQL_LINUX_GLIBC_VERSIONS = exports.MYSQL_MACOS_VERSIONS_IN_FILENAME = exports.RC_MYSQL_VERSIONS = exports.DMR_MYSQL_VERSIONS = exports.MYSQL_MIN_OS_SUPPORT = exports.MYSQL_ARCH_SUPPORT = exports.DOWNLOADABLE_MYSQL_VERSIONS = exports.archiveBaseURL = exports.downloadsBaseURL = exports.MIN_SUPPORTED_MYSQL = exports.OPTION_TYPE_CHECKS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS = void 0;
+exports.MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = exports.MYSQL_LINUX_FILE_EXTENSIONS = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = exports.MYSQL_LINUX_GLIBC_VERSIONS = exports.MYSQL_MACOS_VERSIONS_IN_FILENAME = exports.RC_MYSQL_VERSIONS = exports.DMR_MYSQL_VERSIONS = exports.MYSQL_MIN_OS_SUPPORT = exports.MYSQL_ARCH_SUPPORT = exports.DOWNLOADABLE_MYSQL_VERSIONS = exports.MySQLCDNArchivesBaseURL = exports.MySQLCDNDownloadsBaseURL = exports.MIN_SUPPORTED_MYSQL = exports.OPTION_TYPE_CHECKS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS = void 0;
 exports.getInternalEnvVariable = getInternalEnvVariable;
 const path_1 = require("path");
 const os_1 = require("os");
@@ -19,7 +19,8 @@ exports.DEFAULT_OPTIONS = {
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
-    arch: process.arch
+    arch: process.arch,
+    xEnabled: 'FORCE'
 };
 exports.DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(exports.DEFAULT_OPTIONS));
 exports.LOG_LEVELS = {
@@ -38,6 +39,7 @@ function getInternalEnvVariable(envVar) {
     return process.env['mysqlmsn_internal_DO_NOT_USE_' + envVar] || internalOptions[envVar];
 }
 const allowedArches = ['x64', 'arm64'];
+const pluginActivationStates = ['OFF', 'FORCE'];
 exports.OPTION_TYPE_CHECKS = {
     version: {
         check: (opt) => opt === undefined || typeof opt === 'string' && (0, semver_1.valid)((0, semver_1.coerce)(opt)) !== null,
@@ -108,11 +110,16 @@ exports.OPTION_TYPE_CHECKS = {
         check: (opt) => opt === undefined || allowedArches.includes(opt),
         errorMessage: `Option arch must be either of the following: ${allowedArches.join(', ')}`,
         definedType: 'string'
+    },
+    xEnabled: {
+        check: (opt) => opt === undefined || pluginActivationStates.includes(opt),
+        errorMessage: `xEnabled must be either undefined or one of the following: ${pluginActivationStates.join(', ')}`,
+        definedType: 'boolean'
     }
 };
 exports.MIN_SUPPORTED_MYSQL = '5.7.19';
-exports.downloadsBaseURL = 'https://cdn.mysql.com//Downloads/MySQL-';
-exports.archiveBaseURL = 'https://cdn.mysql.com/archives/mysql-';
+exports.MySQLCDNDownloadsBaseURL = 'https://cdn.mysql.com//Downloads/MySQL-';
+exports.MySQLCDNArchivesBaseURL = 'https://cdn.mysql.com/archives/mysql-';
 // Versions 8.0.29, 8.0.38, 8.4.1, and 9.0.0 have been purposefully left out of this list as MySQL has removed them from the CDN due to critical issues.
 exports.DOWNLOADABLE_MYSQL_VERSIONS = [
     '5.7.19', '5.7.20', '5.7.21', '5.7.22', '5.7.23', '5.7.24', '5.7.25', '5.7.26', '5.7.27', '5.7.28', '5.7.29', '5.7.30', '5.7.31', '5.7.32', '5.7.33', '5.7.34', '5.7.35', '5.7.36', '5.7.37', '5.7.38', '5.7.39', '5.7.40', '5.7.41', '5.7.42', '5.7.43', '5.7.44',

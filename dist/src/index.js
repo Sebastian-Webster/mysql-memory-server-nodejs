@@ -10,6 +10,7 @@ const semver_1 = require("semver");
 const Version_1 = __importDefault(require("./libraries/Version"));
 const Downloader_1 = require("./libraries/Downloader");
 const constants_1 = require("./constants");
+const LinuxOSRelease_1 = __importDefault(require("./libraries/LinuxOSRelease"));
 async function createDB(opts) {
     const suppliedOpts = opts || {};
     const suppliedOptsKeys = Object.keys(suppliedOpts);
@@ -34,7 +35,7 @@ async function createDB(opts) {
     if (throwUnsupportedError) {
         throw `A version of MySQL is installed on your system that is not supported by this package. If you want to download a MySQL binary instead of getting this error, please set the option "ignoreUnsupportedSystemVersion" to true.`;
     }
-    logger.log('Version currently installed:', version);
+    logger.log('Version currently installed:', version, 'Platform:', process.platform, 'etcOSRelease:', LinuxOSRelease_1.default);
     if (version === null || (options.version && !(0, semver_1.satisfies)(version.version, options.version)) || unsupportedMySQLIsInstalled) {
         let binaryInfo;
         let binaryFilepath;
@@ -47,7 +48,7 @@ async function createDB(opts) {
             throw `Failed to download binary. The error was: "${error}"`;
         }
         logger.log('Running downloaded binary');
-        return await executor.startMySQL(options, { path: binaryFilepath, version: binaryInfo.version, installedOnSystem: false });
+        return await executor.startMySQL(options, { path: binaryFilepath, version: binaryInfo.version, installedOnSystem: false, xPluginSupported: binaryInfo.xPluginSupported });
     }
     else {
         logger.log(version);

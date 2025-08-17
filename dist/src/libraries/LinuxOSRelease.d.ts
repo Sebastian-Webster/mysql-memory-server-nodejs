@@ -1,3 +1,4 @@
 import { LinuxEtcOSRelease } from '../../types';
-declare const _default: LinuxEtcOSRelease;
-export default _default;
+declare const releaseDetails: LinuxEtcOSRelease;
+export declare const isOnAlpineLinux: boolean;
+export default releaseDetails;

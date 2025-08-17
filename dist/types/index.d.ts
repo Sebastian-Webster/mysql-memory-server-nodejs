@@ -1,5 +1,6 @@
 import { ExecFileException } from "child_process";
 export type LOG_LEVEL = 'LOG' | 'WARN' | 'ERROR';
+export type PluginActivationState = 'OFF' | 'FORCE';
 export type ServerOptions = {
     version?: string | undefined;
     dbName?: string | undefined;
@@ -15,6 +16,7 @@ export type ServerOptions = {
     downloadRetries?: number | undefined;
     initSQLString?: string | undefined;
     arch?: "arm64" | "x64" | undefined;
+    xEnabled?: PluginActivationState | undefined;
 };
 export type InternalServerOptions = {
     version?: string | undefined;
@@ -31,6 +33,7 @@ export type InternalServerOptions = {
     downloadRetries: number;
     initSQLString: string;
     arch: string;
+    xEnabled: PluginActivationState;
 };
 export type ExecuteFileReturn = {
     error: ExecFileException | null;
@@ -54,11 +57,13 @@ export type DownloadedMySQLVersion = {
     version: string;
     path: string;
     installedOnSystem: boolean;
+    xPluginSupported: boolean;
 };
 export type BinaryInfo = {
     url: string;
     version: string;
     hostedByOracle: boolean;
+    xPluginSupported: boolean;
 };
 export type OptionTypeChecks = {
     [key in keyof Required<ServerOptions>]: {

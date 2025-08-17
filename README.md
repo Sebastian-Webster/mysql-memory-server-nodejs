@@ -17,7 +17,7 @@ Download with your package manager of choice. The package name is `mysql-memory-
 - ```mysql-memory-server``` can run MySQL versions 5.7.19 and newer (if the version is already installed on your system)
 - ```mysql-memory-server``` can download and run MySQL versions (inclusive) 5.7.19 - 5.7.44, 8.0.0 - 8.0.43, 8.1.0 - 8.4.6, and 9.0.1 - 9.4.0 (if the version is not already installed on your system)
 
-Extra system requirements apply when ```mysql-memory-server``` is downloading MySQL instead of running a version of MySQL that is already installed on the system. To see the requirements and learn more about the supported versions for download, [read the doc](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.11.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md)
+Extra system requirements apply when ```mysql-memory-server``` is downloading MySQL instead of running a version of MySQL that is already installed on the system. To see the requirements and learn more about the supported versions for download, [read the doc](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md)
 
 ## Example Usage - Application Code
 
@@ -102,11 +102,11 @@ Description: Version of MySQL to use for the database. Uses semver for getting t
 
 If left undefined:
 - If the system has MySQL installed, the system-installed version will be used. If the installed version is not supported by this package (currently <5.7.19), an error will be thrown unless `ignoreUnsupportedSystemVersion` is set to `true`.
-- If the system does not have MySQL installed, the latest version of MySQL that [this package supports downloading](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.11.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md) will be downloaded.
+- If the system does not have MySQL installed, the latest version of MySQL that [this package supports downloading](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md) will be downloaded.
 
 If defined:
 - If the version is older than 5.7.19, an error will be thrown as this package does not currently support those versions of MySQL.
-- If the desired version of MySQL is already installed on the system, the installed version will be used. Otherwise the selected version will be downloaded as long as this package [supports downloading it](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.11.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md). If this package does not support downloading the selected version, or your system does not [meet the requirements](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.11.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md) for that version to be ran, an error will be thrown.
+- If the desired version of MySQL is already installed on the system, the installed version will be used. Otherwise the selected version will be downloaded as long as this package [supports downloading it](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md). If this package does not support downloading the selected version, or your system does not [meet the requirements](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md) for that version to be ran, an error will be thrown.
 
 - `dbName: string`
 

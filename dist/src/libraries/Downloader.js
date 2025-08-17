@@ -56,6 +56,36 @@ function handleTarExtraction(filepath, extractedPath) {
         });
     });
 }
+function getFileDownloadURLRedirect(url) {
+    const options = {
+        headers: {
+            'accept': '*/*',
+            'connection': 'keep-alive'
+        }
+    };
+    return new Promise((resolve, reject) => {
+        const request = https.get(url, options, response => {
+            const statusCode = response.statusCode;
+            const location = response.headers.location;
+            if (statusCode !== 302) {
+                request.destroy();
+                reject(`Received status code ${statusCode} while getting redirect URL for binary download. Used URL: ${url}`);
+                return;
+            }
+            if (typeof location === 'string' && location.length > 0) {
+                request.destroy();
+                resolve(location);
+                return;
+            }
+            request.destroy();
+            reject(`Received incorrect URL information. Expected a non-empty string. Received: ${JSON.stringify(location)}`);
+        });
+        request.on('error', (err) => {
+            request.destroy();
+            reject(err.message);
+        });
+    });
+}
 function downloadFromCDN(url, downloadLocation, logger) {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(downloadLocation)) {
@@ -139,7 +169,7 @@ function promisifiedZipExtraction(archiveLocation, extractedLocation) {
         });
     });
 }
-function extractBinary(url, archiveLocation, extractedLocation, logger) {
+function extractBinary(url, archiveLocation, extractedLocation, binaryInfo, logger) {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(extractedLocation)) {
             logger.warn('Removing item at extractedLocation:', extractedLocation, 'so the MySQL binary can be stored there. This is probably because a previous download/extraction failed.');
@@ -148,12 +178,18 @@ function extractBinary(url, archiveLocation, extractedLocation, logger) {
         const lastDashIndex = url.lastIndexOf('-');
         const fileExtension = url.slice(lastDashIndex).split('.').splice(1).join('.');
         await fsPromises.mkdir(extractedLocation, { recursive: true });
-        const splitURL = url.split('/');
-        const mySQLFolderName = splitURL[splitURL.length - 1];
-        if (!mySQLFolderName) {
-            return reject(`Folder name is undefined for url: ${url}`);
+        let folderName = '';
+        if (binaryInfo.hostedByOracle) {
+            const splitURL = url.split('/');
+            const mySQLFolderName = splitURL[splitURL.length - 1];
+            if (!mySQLFolderName) {
+                return reject(`Folder name is undefined for url: ${url}`);
+            }
+            folderName = mySQLFolderName.replace(`.${fileExtension}`, '');
         }
-        const folderName = mySQLFolderName.replace(`.${fileExtension}`, '');
+        else {
+            folderName = `mysql-${binaryInfo.version}`;
+        }
         let extractionError = undefined;
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
@@ -255,13 +291,13 @@ function downloadBinary(binaryInfo, options, logger) {
             let downloadTries = 0;
             let useDownloadsURL = false;
             do {
+                const downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? constants_1.MySQLCDNDownloadsBaseURL : constants_1.MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url);
                 try {
                     downloadTries++;
-                    const downloadURL = useDownloadsURL ? url.replace(constants_1.archiveBaseURL, constants_1.downloadsBaseURL) : url;
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`);
                     await downloadFromCDN(downloadURL, archivePath, logger);
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`);
-                    await extractBinary(downloadURL, archivePath, extractedPath, logger);
+                    await extractBinary(downloadURL, archivePath, extractedPath, binaryInfo, logger);
                     logger.log(`Finished extraction for version ${version}`);
                     break;
                 }
@@ -276,12 +312,12 @@ function downloadBinary(binaryInfo, options, logger) {
                     catch (e) {
                         logger.error('An error occurred while deleting extractedPath and/or archivePath:', e);
                     }
-                    if (e?.includes?.('status code 404')) {
-                        if (!useDownloadsURL) {
-                            //Retry with downloads URL
-                            downloadTries--;
+                    // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
+                    // then retry with the Downloads URL. Otherwise, reject.
+                    if (e?.includes('status code 404')) {
+                        if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
-                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`);
+                            downloadTries--;
                             continue;
                         }
                         else {
@@ -289,9 +325,11 @@ function downloadBinary(binaryInfo, options, logger) {
                                 await releaseFunction();
                             }
                             catch (e) {
-                                logger.error('An error occurred while releasing lock after receiving a 404 error on both downloads and archives URLs. The error was:', e);
+                                logger.error('An error occurred while releasing lock after receiving a 404 error on download. The error was:', e);
                             }
-                            return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`);
+                            finally {
+                                return reject(`Binary download for MySQL version ${binaryInfo.version} returned status code 404 at URL ${downloadURL}. Aborting download.`);
+                            }
                         }
                     }
                     if (downloadTries > options.downloadRetries) {
@@ -322,17 +360,17 @@ function downloadBinary(binaryInfo, options, logger) {
             let downloadTries = 0;
             let useDownloadsURL = false;
             do {
+                const downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? constants_1.MySQLCDNDownloadsBaseURL : constants_1.MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url);
                 const uuid = (0, crypto_1.randomUUID)();
                 const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`;
                 logger.log('Binary filepath:', zipFilepath);
                 const extractedPath = `${dirpath}/${uuid}`;
                 try {
                     downloadTries++;
-                    const downloadURL = useDownloadsURL ? url.replace(constants_1.archiveBaseURL, constants_1.downloadsBaseURL) : url;
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`);
                     await downloadFromCDN(downloadURL, zipFilepath, logger);
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`);
-                    const binaryPath = await extractBinary(downloadURL, zipFilepath, extractedPath, logger);
+                    const binaryPath = await extractBinary(downloadURL, zipFilepath, extractedPath, binaryInfo, logger);
                     logger.log(`Finished extraction for version ${version}`);
                     return resolve(binaryPath);
                 }
@@ -347,16 +385,16 @@ function downloadBinary(binaryInfo, options, logger) {
                     catch (e) {
                         logger.error('An error occurred while deleting extractedPath and/or archivePath:', e);
                     }
-                    if (e?.includes?.('status code 404')) {
-                        if (!useDownloadsURL) {
-                            //Retry with downloads URL
-                            downloadTries--;
+                    // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
+                    // then retry with the Downloads URL. Otherwise, reject.
+                    if (e?.includes('status code 404')) {
+                        if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
-                            logger.log(`Encountered error 404 when using archives URL for version ${version}. Now retrying with the downloads URL.`);
+                            downloadTries--;
                             continue;
                         }
                         else {
-                            return reject(`Both URLs for MySQL version ${binaryInfo.version} returned status code 404. Aborting download.`);
+                            return reject(`Binary download for MySQL version ${binaryInfo.version} returned status code 404 at URL ${downloadURL}. Aborting download.`);
                         }
                     }
                     if (downloadTries > options.downloadRetries) {

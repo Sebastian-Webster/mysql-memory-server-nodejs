@@ -37,9 +37,6 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_returnBinaryPathToDelete, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
@@ -53,7 +50,7 @@ const FileLock_1 = require("./FileLock");
 const signal_exit_1 = require("signal-exit");
 const crypto_1 = require("crypto");
 const constants_1 = require("../constants");
-const LinuxOSRelease_1 = __importDefault(require("./LinuxOSRelease"));
+const LinuxOSRelease_1 = __importStar(require("./LinuxOSRelease"));
 class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
@@ -94,7 +91,7 @@ class Executor {
                             return reject('Could not get MySQL version');
                         }
                         else {
-                            versions.push({ version: version.version, path, installedOnSystem: true });
+                            versions.push({ version: version.version, path, installedOnSystem: true, xPluginSupported: (0, semver_1.gte)(version, '5.7.19') });
                         }
                     }
                     if (preferredVersion) {
@@ -124,15 +121,22 @@ class Executor {
                         reject('Could not get installed MySQL version');
                     }
                     else {
-                        resolve({ version: version.version, path: 'mysqld', installedOnSystem: true });
+                        resolve({ version: version.version, path: 'mysqld', installedOnSystem: true, xPluginSupported: (0, semver_1.gte)(version, '5.7.19') });
                     }
                 }
             }
         });
     }
     async startMySQL(options, installedMySQLBinary) {
+        if (installedMySQLBinary.xPluginSupported === false && options.xEnabled === 'FORCE') {
+            if (LinuxOSRelease_1.isOnAlpineLinux) {
+                throw "options.xEnabled is set to 'FORCE'. You are running this package on Alpine Linux. The MySQL binaries for Alpine Linux do not support the MySQL X Plugin. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF' and that will remove this error message. If you must have MySQL X enabled for each database creation, please use a different OS to run this package.";
+            }
+            throw "options.xEnabled is set to 'FORCE'. The version of MySQL you are using does not support MySQL X. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF'. Otherwise, if MySQL X is required, please use a different version of MySQL that supports the X plugin.";
+        }
         this.version = installedMySQLBinary.version;
         this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem;
+        this.versionSupportsMySQLX = installedMySQLBinary.xPluginSupported;
         this.removeExitHandler = (0, signal_exit_1.onExit)(() => {
             if ((0, constants_1.getInternalEnvVariable)('cli') === 'true') {
                 console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...');
@@ -165,12 +169,9 @@ class Executor {
         do {
             await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, installedMySQLBinary, datadir, true);
             this.logger.log('Setting up directories was successful');
-            const port = options.port || (0, Port_1.GenerateRandomPort)();
-            const mySQLXPort = options.xPort || (0, Port_1.GenerateRandomPort)();
-            this.logger.log('Using port:', port, 'and MySQLX port:', mySQLXPort, 'on retry:', retries);
             try {
                 this.logger.log('Starting MySQL process');
-                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, port, mySQLXPort, datadir, this.databasePath, installedMySQLBinary.path);
+                const resolved = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_startMySQLProcess).call(this, options, datadir, this.databasePath, installedMySQLBinary.path);
                 this.logger.log('Starting process was successful');
                 return resolved;
             }
@@ -182,7 +183,7 @@ class Executor {
                 }
                 retries++;
                 if (retries <= options.portRetries) {
-                    this.logger.warn(`One or both of these ports are already in use: ${port} or ${mySQLXPort}. Now retrying... ${retries}/${options.portRetries} possible retries.`);
+                    this.logger.warn(`Tried a port that is already in use. Now retrying... ${retries}/${options.portRetries} possible retries.`);
                 }
                 else {
                     throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`;
@@ -221,21 +222,20 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         return splitPath.join('/');
     }
     return null;
-}, _Executor_startMySQLProcess = function _Executor_startMySQLProcess(options, port, mySQLXPort, datadir, dbPath, binaryFilepath) {
+}, _Executor_startMySQLProcess = function _Executor_startMySQLProcess(options, datadir, dbPath, binaryFilepath) {
     const errors = [];
     const logFile = `${dbPath}/log.log`;
     const errorLogFile = `${datadir}/errorlog.err`;
+    const port = options.port || (0, Port_1.GenerateRandomPort)();
+    const mySQLXPort = options.xPort || (0, Port_1.GenerateRandomPort)();
     return new Promise(async (resolve, reject) => {
         await fsPromises.rm(logFile, { force: true });
         const socket = os.platform() === 'win32' ? `MySQL-${(0, crypto_1.randomUUID)()}` : `${dbPath}/m.sock`;
         const xSocket = os.platform() === 'win32' ? `MySQLX-${(0, crypto_1.randomUUID)()}` : `${dbPath}/x.sock`;
         const mysqlArguments = [
             '--no-defaults',
-            '--mysqlx=FORCE',
             `--port=${port}`,
             `--datadir=${datadir}`,
-            `--mysqlx-port=${mySQLXPort}`,
-            `--mysqlx-socket=${xSocket}`,
             `--socket=${socket}`,
             `--general-log-file=${logFile}`,
             '--general-log=1',
@@ -245,24 +245,31 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             `--log-error=${errorLogFile}`,
             `--user=${os.userInfo().username}`
         ];
-        //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
-        //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
-        //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
-        if ((0, semver_1.lt)(this.version, '8.0.11') && (0, semver_1.gte)(this.version, '5.7.19')) {
-            const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
-            let pluginPath;
-            const firstPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/plugin`);
-            const secondPath = '/usr/lib/mysql/plugin';
-            if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
-                pluginPath = firstPath;
+        if (this.versionSupportsMySQLX) {
+            mysqlArguments.push(`--mysqlx=${options.xEnabled}`);
+        }
+        if (options.xEnabled !== 'OFF') {
+            mysqlArguments.push(`--mysqlx-port=${mySQLXPort}`);
+            mysqlArguments.push(`--mysqlx-socket=${xSocket}`);
+            //<8.0.11 does not have MySQL X turned on by default so we will be installing the X Plugin in this if statement.
+            //MySQL 5.7.12 introduced the X plugin, but according to https://dev.mysql.com/doc/refman/5.7/en/document-store-setting-up.html, the database needs to be initialised with version 5.7.19.
+            //If the MySQL version is >=5.7.19 & <8.0.11 then install the X Plugin
+            if ((0, semver_1.lt)(this.version, '8.0.11') && (0, semver_1.gte)(this.version, '5.7.19')) {
+                const pluginExtension = os.platform() === 'win32' ? 'dll' : 'so';
+                let pluginPath;
+                const firstPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/plugin`);
+                const secondPath = '/usr/lib/mysql/plugin';
+                if (fs.existsSync(`${firstPath}/mysqlx.${pluginExtension}`)) {
+                    pluginPath = firstPath;
+                }
+                else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
+                    pluginPath = secondPath;
+                }
+                else {
+                    throw 'Could not install MySQL X as the path to the plugin cannot be found.';
+                }
+                mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--early-plugin-load=mysqlx=mysqlx.${pluginExtension};`);
             }
-            else if (os.platform() === 'linux' && fs.existsSync(`${secondPath}/mysqlx.so`)) {
-                pluginPath = secondPath;
-            }
-            else {
-                throw 'Could not install MySQL X as the path to the plugin cannot be found.';
-            }
-            mysqlArguments.splice(1, 0, `--plugin-dir=${pluginPath}`, `--early-plugin-load=mysqlx=mysqlx.${pluginExtension};`);
         }
         const process = (0, child_process_1.spawn)(binaryFilepath, mysqlArguments, { signal: this.DBDestroySignal.signal, killSignal: 'SIGKILL' });
         //resolveFunction is the function that will be called to resolve the promise that stops the database.
@@ -270,6 +277,10 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         //Once ran, resolveFunction will be called.
         let resolveFunction;
         process.on('close', async (code, signal) => {
+            // Prevent open file watches when MySQL has been exited
+            // The file watch is only stopped if MySQL starts successfully
+            // This unwatch will prevent the watch from watching when the process has stopped.
+            fs.unwatchFile(errorLogFile);
             if (signal) {
                 this.logger.log('Exiting because of aborted signal.');
                 return;
@@ -361,11 +372,11 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                         }
                         return; //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                     }
-                    resolve({
+                    const result = {
                         port,
-                        xPort: mySQLXPort,
+                        xPort: options.xEnabled === 'FORCE' ? mySQLXPort : -1,
                         socket,
-                        xSocket,
+                        xSocket: options.xEnabled === 'FORCE' ? xSocket : '',
                         dbName: options.dbName,
                         username: options.username,
                         mysql: {
@@ -382,7 +393,8 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                                 }
                             });
                         }
-                    });
+                    };
+                    resolve(result);
                 }
             }
         });
