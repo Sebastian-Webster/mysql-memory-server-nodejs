@@ -481,9 +481,9 @@ class Executor {
     async startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB> {
         if (installedMySQLBinary.xPluginSupported === false && options.xEnabled === 'FORCE') {
             if (isOnAlpineLinux) {
-                throw "options.xEnabled is set to 'FORCE'. You are running this package on Alpine Linux. The MySQL binaries for Alpine Linux do not support the MySQL X Plugin. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF' and that will remove this error message. Otherwise, if you want MySQL X to be enabled only if it is supported (like if you run this package on a different OS), then please set options.xEnabled to 'ON'. If you must have MySQL X enabled for each database creation, please use a different OS to run this package."
+                throw "options.xEnabled is set to 'FORCE'. You are running this package on Alpine Linux. The MySQL binaries for Alpine Linux do not support the MySQL X Plugin. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF' and that will remove this error message. If you must have MySQL X enabled for each database creation, please use a different OS to run this package."
             }
-            throw "options.xEnabled is set to 'FORCE'. The version of MySQL you are using does not support MySQL X. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF'. If you only want MySQL X to be used when supported, set options.xEnabled to 'ON'. Otherwise, if MySQL X is required, please use a different version of MySQL that supports the X plugin."
+            throw "options.xEnabled is set to 'FORCE'. The version of MySQL you are using does not support MySQL X. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF'. Otherwise, if MySQL X is required, please use a different version of MySQL that supports the X plugin."
         }
 
         this.version = installedMySQLBinary.version
