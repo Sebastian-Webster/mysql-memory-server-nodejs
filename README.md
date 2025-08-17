@@ -15,7 +15,7 @@ Download with your package manager of choice. The package name is `mysql-memory-
 #### Currently supported MySQL versions
 
 - ```mysql-memory-server``` can run MySQL versions 5.7.19 and newer (if the version is already installed on your system)
-- ```mysql-memory-server``` can download and run MySQL versions 5.7.19 - 5.7.44, 8.0.0 - 8.0.43, 8.1.0 - 8.4.6, and 9.0.1 - 9.4.0 (if the version is not already installed on your system - all version numbers are inclusive)
+- ```mysql-memory-server``` can download and run MySQL versions (inclusive) 5.7.19 - 5.7.44, 8.0.0 - 8.0.43, 8.1.0 - 8.4.6, and 9.0.1 - 9.4.0 (if the version is not already installed on your system)
 
 Extra system requirements apply when ```mysql-memory-server``` is downloading MySQL instead of running a version of MySQL that is already installed on the system. To see the requirements and learn more about the supported versions for download, [read the doc](https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.11.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md)
 
