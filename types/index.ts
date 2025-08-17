@@ -55,8 +55,7 @@ export type MySQLDB = {
     username: string,
     mysql: {
         version: string,
-        versionIsInstalledOnSystem: boolean,
-        xPluginIsEnabled: boolean
+        versionIsInstalledOnSystem: boolean
     },
     stop: () => Promise<void>
 }
@@ -64,12 +63,15 @@ export type MySQLDB = {
 export type DownloadedMySQLVersion = {
     version: string,
     path: string,
-    installedOnSystem: boolean
+    installedOnSystem: boolean,
+    xPluginSupported: boolean
 }
 
 export type BinaryInfo = {
     url: string,
-    version: string
+    version: string,
+    hostedByOracle: boolean,
+    xPluginSupported: boolean
 }
 
 export type OptionTypeChecks = {

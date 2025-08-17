@@ -92,6 +92,42 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: docker-fedora-${{ matrix.version }}-${{ matrix.version-requirement }}
+          name: docker-fedora-${{ matrix.version }}-${{ matrix.version-requirement }}-${{ matrix.ubuntu-version}}
           path: /tmp/mysqlmsn
           compression-level: 0
+
+  alpine-docker:
+    runs-on: ubuntu-${{ matrix.ubuntu-version}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        #There is no 10.0.0 at the time of writing, but since greater than characters are not allowed in GitHub Actions artifacts names, 9.0.1 - 10.0.0 will be used instead of >9.0.0
+        version-requirement: [ '8.4.0 - 9.0.0', '9.0.1 - 10.0.0']
+        ubuntu-version: [24.04, 24.04-arm]
+
+    container: alpine:3.22
+
+    steps:
+      - name: Install required libraries for test setup
+        run: apk add git nodejs npm
+
+      - name: Install required libraries for MySQL on alpine
+        run: apk add libaio libstdc++
+
+      - name: Checkout
+        run: git clone https://github.com/${{ github.repository }} --branch ${{ github.head_ref || github.ref_name }} --single-branch --depth 1 mysqlmsn
+
+      - name: Install packages
+        working-directory: mysqlmsn
+        run: npm ci
+
+      - name: Print available storage space
+        run: df -h
+
+      - name: Run tests
+        working-directory: mysqlmsn
+        env:
+          VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
+          X_OFF: true
+        run: npm run os-compat:ci

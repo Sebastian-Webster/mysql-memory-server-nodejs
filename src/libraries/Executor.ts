@@ -11,7 +11,7 @@ import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
 import { randomUUID } from "crypto";
 import { getInternalEnvVariable } from "../constants";
-import etcOSRelease from "./LinuxOSRelease";
+import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
 
 class Executor {
     logger: Logger;
@@ -19,6 +19,7 @@ class Executor {
     removeExitHandler: () => void;
     version: string;
     versionInstalledOnSystem: boolean;
+    versionSupportsMySQLX: boolean;
     databasePath: string
     killedFromPortIssue: boolean;
 
@@ -79,7 +80,6 @@ class Executor {
 
             const mysqlArguments = [
                 '--no-defaults',
-                `--mysqlx=${options.xEnabled}`,
                 `--port=${port}`,
                 `--datadir=${datadir}`,
                 `--socket=${socket}`,
@@ -91,6 +91,10 @@ class Executor {
                 `--log-error=${errorLogFile}`,
                 `--user=${os.userInfo().username}`
             ]
+
+            if (this.versionSupportsMySQLX) {
+                mysqlArguments.push(`--mysqlx=${options.xEnabled}`)
+            }
 
             if (options.xEnabled !== 'OFF') {
                 mysqlArguments.push(`--mysqlx-port=${mySQLXPort}`)
@@ -225,29 +229,16 @@ class Executor {
                             return //Promise rejection will be handled in the process.on('close') section because this.killedFromPortIssue is being set to true
                         }
 
-                        const xStartedSuccessfully = file.includes('X Plugin ready for connections') || file.includes("mysqlx reported: 'Server starts handling incoming connections'") || (lte(this.version, '8.0.12') && gte(this.version, '8.0.4') && file.search(/\[ERROR\].*Plugin mysqlx reported/m) === -1)
-
-                        if (options.xEnabled === 'FORCE' && !xStartedSuccessfully) {
-                            this.logger.error('Error file:', file)
-                            this.logger.error('MySQL X failed to start successfully and xEnabled is set to "FORCE". Error log is above this message. If this is happening continually and you can start the database without the X Plugin, you can set options.xEnabled to "OFF" instead of "FORCE".')
-                            const killed = await this.#killProcess(process)
-                            if (!killed) {
-                                this.logger.error('Failed to kill MySQL process after MySQL X failing to initialise.')
-                            }
-                            return reject('X Plugin failed to start and options.xEnabled is set to "FORCE".')
-                        }
-
                         const result: MySQLDB = {
                             port,
-                            xPort: xStartedSuccessfully ? mySQLXPort : -1,
+                            xPort: options.xEnabled === 'FORCE' ? mySQLXPort : -1,
                             socket,
-                            xSocket: xStartedSuccessfully ? xSocket : '',
+                            xSocket: options.xEnabled === 'FORCE' ? xSocket : '',
                             dbName: options.dbName,
                             username: options.username,
                             mysql: {
                                 version: this.version,
-                                versionIsInstalledOnSystem: this.versionInstalledOnSystem,
-                                xPluginIsEnabled: xStartedSuccessfully
+                                versionIsInstalledOnSystem: this.versionInstalledOnSystem
                             },
                             stop: () => {
                                 return new Promise(async (resolve, reject) => {
@@ -309,7 +300,7 @@ class Executor {
                         if (version === null) {
                             return reject('Could not get MySQL version')
                         } else {
-                            versions.push({version: version.version, path, installedOnSystem: true})
+                            versions.push({version: version.version, path, installedOnSystem: true, xPluginSupported: gte(version, '5.7.19')})
                         }
                     }
 
@@ -334,7 +325,7 @@ class Executor {
                     if (version === null) {
                         reject('Could not get installed MySQL version')
                     } else {
-                        resolve({version: version.version, path: 'mysqld', installedOnSystem: true})
+                        resolve({version: version.version, path: 'mysqld', installedOnSystem: true, xPluginSupported: gte(version, '5.7.19')})
                     }
                 }
             }
@@ -488,8 +479,16 @@ class Executor {
     }
 
     async startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB> {
+        if (installedMySQLBinary.xPluginSupported === false && options.xEnabled === 'FORCE') {
+            if (isOnAlpineLinux) {
+                throw "options.xEnabled is set to 'FORCE'. You are running this package on Alpine Linux. The MySQL binaries for Alpine Linux do not support the MySQL X Plugin. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF' and that will remove this error message. If you must have MySQL X enabled for each database creation, please use a different OS to run this package."
+            }
+            throw "options.xEnabled is set to 'FORCE'. The version of MySQL you are using does not support MySQL X. If you don't want to use the MySQL X Plugin, please set options.xEnabled to 'OFF'. Otherwise, if MySQL X is required, please use a different version of MySQL that supports the X plugin."
+        }
+
         this.version = installedMySQLBinary.version
         this.versionInstalledOnSystem = installedMySQLBinary.installedOnSystem
+        this.versionSupportsMySQLX = installedMySQLBinary.xPluginSupported
         this.removeExitHandler = onExit(() => {
             if (getInternalEnvVariable('cli') === 'true') {
                 console.log('\nShutting down the ephemeral MySQL database and cleaning all related files...')

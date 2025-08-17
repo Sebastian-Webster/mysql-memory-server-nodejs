@@ -122,8 +122,8 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
 } as const;
 
 export const MIN_SUPPORTED_MYSQL = '5.7.19';
-export const downloadsBaseURL = 'https://cdn.mysql.com//Downloads/MySQL-'
-export const archiveBaseURL = 'https://cdn.mysql.com/archives/mysql-'
+export const MySQLCDNDownloadsBaseURL = 'https://cdn.mysql.com//Downloads/MySQL-'
+export const MySQLCDNArchivesBaseURL = 'https://cdn.mysql.com/archives/mysql-'
 // Versions 8.0.29, 8.0.38, 8.4.1, and 9.0.0 have been purposefully left out of this list as MySQL has removed them from the CDN due to critical issues.
 export const DOWNLOADABLE_MYSQL_VERSIONS = [
     '5.7.19', '5.7.20', '5.7.21', '5.7.22', '5.7.23', '5.7.24', '5.7.25', '5.7.26', '5.7.27', '5.7.28', '5.7.29', '5.7.30', '5.7.31', '5.7.32', '5.7.33', '5.7.34', '5.7.35', '5.7.36', '5.7.37', '5.7.38', '5.7.39', '5.7.40', '5.7.41', '5.7.42', '5.7.43', '5.7.44',

@@ -87,8 +87,8 @@ The name of the user to use to login to the database
 If on Windows, this is the name of the named pipe that MySQL is listening on. If not on Windows, this is the path to the socket that MySQL is listening on.
 - `xSocket: string`
 If on Windows, this is the name of the named pipe that the MySQL X Plugin is listening on. If not on Windows, this is the path that the MySQL X Plugin is listening on. If ```options.xEnabled``` is set to "OFF", this value will be an empty string.
-- `mysql: {version: string, versionIsInstalledOnSystem: boolean, xPluginIsEnabled: boolean}`
-An object with three properties. ```version``` is the version of MySQL used to create the database. ```versionIsInstalledOnSystem``` will be true if the MySQL version used is already installed on the system and false if the version had to be downloaded from MySQL's CDN. ```xPluginIsEnabled``` will be true if ```options.xEnabled``` is set to "FORCE", and will be false if ```options.xEnabled``` is set to "OFF".
+- `mysql: {version: string, versionIsInstalledOnSystem: boolean}`
+An object with three properties. ```version``` is the version of MySQL used to create the database. ```versionIsInstalledOnSystem``` will be true if the MySQL version used is already installed on the system and false if the version had to be downloaded from MySQL's CDN.
 - `stop: () => Promise<void>`
 The method to stop the database. The returned promise resolves when the database has successfully stopped.
 
@@ -194,4 +194,4 @@ Description: The MySQL binary architecture to execute. MySQL does not offer serv
 
 Default: "FORCE"
 
-Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will not start up without a successful initialisation of the plugin, meaning that it's guaranteed the server will start up with MySQL X enabled. If the MySQL X initialisation fails, the server will not start up.
+Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will either start up with the MySQL X Plugin guaranteed to have successfully initialised, or if initialisation fails, the server will fail to start up.
