@@ -90,6 +90,6 @@ Ubuntu Linux:
 
 Fedora Linux: ```libaio1``` package and ```tar``` package
 
-Alpine Linux: ```libstdc++``` package and ```libaio``` package
+Alpine Linux: ```libstdc++``` package, ```libaio``` package, and ```tar``` package
 
-*Document last updated in v1.12.0*
+*Document last updated in v1.12.1*
