@@ -37,7 +37,10 @@ class Executor {
 
     async #killProcess(process: ChildProcess): Promise<boolean> {
         // If the process has already been killed, return true
-        if (process.kill(0) === false) return true
+        if (process.kill(0) === false) {
+            this.logger.warn('Called #killProcess to kill mysqld but it has already been killed.')
+            return true
+        }
 
         return process.kill()
     }
