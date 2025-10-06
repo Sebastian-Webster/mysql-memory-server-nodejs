@@ -36,18 +36,10 @@ class Executor {
     }
 
     async #killProcess(process: ChildProcess): Promise<boolean> {
-        let killed = false;
-        if (os.platform() === 'win32') {
-            const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
-            if (!error && !stderr) {
-                killed = true;
-            } else {
-                this.logger.error(error || stderr)
-            }
-        } else {
-            killed = process.kill()
-        }
-        return killed;
+        // If the process has already been killed, return true
+        if (process.kill(0) === false) return true
+
+        return process.kill()
     }
 
     //Returns a path to the binary if it should be deleted
