@@ -129,7 +129,29 @@ class Executor {
                 fs.unwatchFile(errorLogFile)
 
                 if (signal) {
-                    this.logger.log('Exiting because of aborted signal.')
+                    this.logger.log('Exiting because the process received a signal.')
+
+                    if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
+                        try {
+                            await fsPromises.rm(dbPath, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
+                        } catch (e) {
+                            this.logger.error('An error occurred while deleting database path after aborted signal. The error was:', e)
+                        }
+                    }
+
+                    const binaryPathToDelete = this.#returnBinaryPathToDelete(binaryFilepath, options)
+                    if (binaryPathToDelete) {
+                        try {
+                            await fsPromises.rm(binaryPathToDelete, {force: true, recursive: true, maxRetries: 50})
+                        } catch (e) {
+                            this.logger.error('An error occurred while deleting database binary after aborted signal. The error was:', e)
+                        }
+                    }
+
+                    if (resolveFunction) {
+                        resolveFunction()
+                    }
+
                     return
                 }
 
