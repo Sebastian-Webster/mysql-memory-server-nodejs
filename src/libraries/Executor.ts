@@ -42,7 +42,7 @@ class Executor {
             return true
         }
 
-        return process.kill()
+        return process.kill('SIGKILL')
     }
 
     //Returns a path to the binary if it should be deleted
