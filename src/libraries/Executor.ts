@@ -129,7 +129,7 @@ class Executor {
                 fs.unwatchFile(errorLogFile)
 
                 if (signal) {
-                    this.logger.log('Exiting because the process received a signal.')
+                    this.logger.log('Exiting because the process received a signal:', signal)
 
                     if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
                         try {
