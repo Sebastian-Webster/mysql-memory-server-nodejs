@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, macos-15, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm]
+        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm]
         #There is no 10.0.0 at the time of writing, but since greater than characters are not allowed in GitHub Actions artifacts names, 9.0.1 - 10.0.0 will be used instead of >9.0.0
         version-requirement: ['5.7.19 - 5.7.24', '5.7.25 - 5.7.29', '5.7.30 - 5.7.34', '5.7.35 - 5.7.39', '5.7.40 - 5.7.44', '8.0.0 - 8.0.4', '8.0.4 - 8.0.13', '8.0.14 - 8.0.19', '8.0.20 - 8.0.24', '8.0.25 - 8.0.29', '8.0.30 - 8.0.34', '8.0.35 - 8.0.39', '8.0.40 - 8.3.0', '8.4.0 - 9.0.0', '9.0.1 - 10.0.0']
 
