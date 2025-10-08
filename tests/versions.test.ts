@@ -5,6 +5,7 @@ import { coerce, satisfies } from 'semver';
 import { ServerOptions } from '../types';
 import getBinaryURL from '../src/libraries/Version';
 import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
+import fs from 'fs'
 import fsPromises from 'fs/promises'
 import os from 'os'
 
@@ -61,7 +62,8 @@ test('dummy test', () => {
 })
 
 afterAll(async () => {
-    if (process.env.MOVE_MYSQLMSN_TO) {
-        await fsPromises.rename(`${os.tmpdir()}/mysqlmsn`, process.env.MOVE_MYSQLMSN_TO)
+    const originalPath = `${os.tmpdir()}/mysqlmsn`
+    if (process.env.MOVE_MYSQLMSN_TO && fs.existsSync(originalPath)) {
+        await fsPromises.rename(originalPath, process.env.MOVE_MYSQLMSN_TO)
     }
 })
