@@ -64,6 +64,7 @@ test('dummy test', () => {
 afterAll(async () => {
     const originalPath = `${os.tmpdir()}/mysqlmsn`
     if (process.env.MOVE_MYSQLMSN_TO && fs.existsSync(originalPath)) {
-        await fsPromises.rename(originalPath, process.env.MOVE_MYSQLMSN_TO)
+        await fsPromises.cp(originalPath, process.env.MOVE_MYSQLMSN_TO, {recursive: true, force: true})
+        await fsPromises.rm(originalPath, {force: true, recursive: true})
     }
 })
