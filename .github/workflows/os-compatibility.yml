@@ -33,6 +33,7 @@ jobs:
       - name: Run tests
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
+          MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
         run: npm run os-compat:ci
 
       - name: Upload mysqlmsn directory (Windows)

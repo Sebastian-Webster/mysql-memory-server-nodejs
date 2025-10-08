@@ -516,7 +516,7 @@ class Executor {
 
         let retries = 0;
 
-        this.databasePath = normalizePath(`${getInternalEnvVariable('databaseDirectoryPath')}/${randomUUID().replaceAll("-", '')}`)
+        this.databasePath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replaceAll("-", '')}`)
 
         const datadir = normalizePath(`${this.databasePath}/data`)
 
