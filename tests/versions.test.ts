@@ -63,7 +63,7 @@ test('dummy test', () => {
 
 afterAll(async () => {
     const originalPath = `${os.tmpdir()}/mysqlmsn`
-    if (process.env.MOVE_MYSQLMSN_TO && fs.existsSync(originalPath)) {
+    if (process.env.MOVE_MYSQLMSN_TO && fs.existsSync(originalPath) && originalPath !== process.env.MOVE_MYSQLMSN_TO) {
         await fsPromises.cp(originalPath, process.env.MOVE_MYSQLMSN_TO, {recursive: true, force: true, filter: source => !source.includes('.sock')})
         await fsPromises.rm(originalPath, {force: true, recursive: true, maxRetries: 50, retryDelay: 100})
     }
