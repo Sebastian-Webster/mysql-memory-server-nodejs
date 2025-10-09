@@ -165,7 +165,9 @@ class Executor {
 
                 try {
                     if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
+                        this.logger.log('Deleting database path as deleteDBAfterStopped is true...')
                         await fsPromises.rm(dbPath, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
+                        this.logger.log('Database deletion was successful.')
                     }
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
