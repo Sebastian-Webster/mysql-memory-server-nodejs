@@ -12,7 +12,10 @@ jest.setTimeout(500_000); //5 minutes
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
-for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, process.env.VERSION_REQUIREMENT || '>0.0.0'))) {
+const versionRequirement = process.env.VERSION_REQUIREMENT || '>0.0.0'
+console.log('Running versions test with versionRequirement:', versionRequirement)
+
+for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versionRequirement))) {
     try {
         getBinaryURL(version, arch)
     } catch (e) {
