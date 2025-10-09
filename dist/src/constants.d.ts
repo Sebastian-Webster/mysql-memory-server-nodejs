@@ -8,7 +8,6 @@ export declare const LOG_LEVELS: {
 };
 declare const internalOptions: {
     deleteDBAfterStopped: string;
-    databaseDirectoryPath: string;
     binaryDirectoryPath: string;
     cli: string;
 };

@@ -32,7 +32,6 @@ export const LOG_LEVELS = {
 const internalOptions = {
     deleteDBAfterStopped: 'true',
     //mysqlmsn = MySQL Memory Server Node.js
-    databaseDirectoryPath: normalizePath(`${tmpdir()}/mysqlmsn/dbs`),
     binaryDirectoryPath: `${tmpdir()}/mysqlmsn/binaries`,
     cli: 'false'
 }

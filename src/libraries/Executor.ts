@@ -36,18 +36,24 @@ class Executor {
     }
 
     async #killProcess(process: ChildProcess): Promise<boolean> {
-        let killed = false;
+        // If the process has already been killed, return true
+        if (process.kill(0) === false) {
+            this.logger.warn('Called #killProcess to kill mysqld but it has already been killed.')
+            return true
+        }
+
         if (os.platform() === 'win32') {
             const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
+
             if (!error && !stderr) {
-                killed = true;
-            } else {
-                this.logger.error(error || stderr)
+                return true
             }
-        } else {
-            killed = process.kill()
+
+            this.logger.error(error || stderr)
+            return false
         }
-        return killed;
+
+        return process.kill('SIGKILL')
     }
 
     //Returns a path to the binary if it should be deleted
@@ -134,8 +140,9 @@ class Executor {
                 fs.unwatchFile(errorLogFile)
 
                 if (signal) {
-                    this.logger.log('Exiting because of aborted signal.')
-                    return
+                    this.logger.log('Exiting because the process received a signal:', signal)
+                } else {
+                    this.logger.log('Exiting with code:', code)
                 }
 
                 let errorLog: string;
@@ -169,7 +176,9 @@ class Executor {
 
                 try {
                     if (getInternalEnvVariable('deleteDBAfterStopped') === 'true') {
+                        this.logger.log('Deleting database path as deleteDBAfterStopped is true...')
                         await fsPromises.rm(dbPath, {recursive: true, force: true, maxRetries: 50, retryDelay: 100})
+                        this.logger.log('Database deletion was successful.')
                     }
                 } catch (e) {
                     this.logger.error('An error occurred while deleting database directory at path:', dbPath, '| The error was:', e)  
@@ -527,7 +536,7 @@ class Executor {
 
         let retries = 0;
 
-        this.databasePath = normalizePath(`${getInternalEnvVariable('databaseDirectoryPath')}/${randomUUID().replaceAll("-", '')}`)
+        this.databasePath = normalizePath(`${os.tmpdir()}/mysqlmsn/dbs/${randomUUID().replaceAll("-", '')}`)
 
         const datadir = normalizePath(`${this.databasePath}/data`)
 
