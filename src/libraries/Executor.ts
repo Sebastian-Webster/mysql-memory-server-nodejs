@@ -42,6 +42,17 @@ class Executor {
             return true
         }
 
+        if (os.platform() === 'win32') {
+            const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
+
+            if (!error && !stderr) {
+                return true
+            }
+
+            this.logger.error(error || stderr)
+            return false
+        }
+
         return process.kill('SIGKILL')
     }
 
