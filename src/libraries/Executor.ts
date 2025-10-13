@@ -44,12 +44,18 @@ class Executor {
 
         if (os.platform() === 'win32') {
             const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
+            const message = error || stderr
 
-            if (!error && !stderr) {
+            if (message) {
                 return true
             }
 
-            this.logger.error(error || stderr)
+            if (message.toString().includes('There is no running instance of the task')) {
+                this.logger.warn('Called #killProcess and tried to kill mysqld process but taskkill could not because it is not running. Error received:', message)
+                return true
+            }
+
+            this.logger.error(message)
             return false
         }
 
