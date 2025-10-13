@@ -46,7 +46,7 @@ class Executor {
             const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
             const message = error || stderr
 
-            if (message) {
+            if (!message) {
                 return true
             }
 
