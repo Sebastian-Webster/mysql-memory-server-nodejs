@@ -55,7 +55,7 @@ class Executor {
                 return true
             }
 
-            this.logger.error(message)
+            this.logger.error(message, '| Error toString:', message.toString())
             return false
         }
 
