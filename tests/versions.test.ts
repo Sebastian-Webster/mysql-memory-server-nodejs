@@ -1,10 +1,13 @@
-import {expect, test, jest} from '@jest/globals'
+import {expect, test, jest, afterAll} from '@jest/globals'
 import { createDB } from '../src/index'
 import sql from 'mysql2/promise'
 import { coerce, satisfies } from 'semver';
 import { ServerOptions } from '../types';
 import getBinaryURL from '../src/libraries/Version';
 import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
+import fs from 'fs'
+import fsPromises from 'fs/promises'
+import os from 'os'
 
 const usernames = ['root', 'dbuser']
 
@@ -59,4 +62,12 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
 //binary, we need this test here just in case all the MySQL binaries are skipped
 test('dummy test', () => {
     expect(1 + 1).toBe(2)
+})
+
+afterAll(async () => {
+    const originalPath = `${os.tmpdir()}/mysqlmsn`
+    if (process.env.MOVE_MYSQLMSN_TO && fs.existsSync(originalPath) && originalPath !== process.env.MOVE_MYSQLMSN_TO) {
+        await fsPromises.cp(originalPath, process.env.MOVE_MYSQLMSN_TO, {recursive: true, force: true, filter: source => !source.includes('.sock')})
+        await fsPromises.rm(originalPath, {force: true, recursive: true, maxRetries: 50, retryDelay: 100})
+    }
 })
