@@ -8,7 +8,8 @@ import { randomUUID } from 'crypto';
 import { execFile } from 'child_process';
 import { BinaryInfo, InternalServerOptions } from '../../types';
 import { lockFile, waitForLock } from './FileLock';
-import { getInternalEnvVariable, MySQLCDNArchivesBaseURL, MySQLCDNDownloadsBaseURL } from '../constants';
+import { MySQLCDNArchivesBaseURL, MySQLCDNDownloadsBaseURL } from '../constants';
+import os from 'os';
 
 function handleTarExtraction(filepath: string, extractedPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -243,7 +244,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         const {url, version} = binaryInfo;
-        const dirpath = getInternalEnvVariable('binaryDirectoryPath')
+        const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
         logger.log('Binary path:', dirpath)
         await fsPromises.mkdir(dirpath, {recursive: true})
 
