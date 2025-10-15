@@ -164,7 +164,7 @@ class Executor {
             }
         });
         let retries = 0;
-        this.databasePath = (0, path_1.normalize)(`${(0, constants_1.getInternalEnvVariable)('databaseDirectoryPath')}/${(0, crypto_1.randomUUID)().replaceAll("-", '')}`);
+        this.databasePath = (0, path_1.normalize)(`${os.tmpdir()}/mysqlmsn/dbs/${(0, crypto_1.randomUUID)().replaceAll("-", '')}`);
         const datadir = (0, path_1.normalize)(`${this.databasePath}/data`);
         do {
             await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, installedMySQLBinary, datadir, true);
@@ -199,20 +199,25 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         });
     });
 }, _Executor_killProcess = async function _Executor_killProcess(process) {
-    let killed = false;
+    // If the process has already been killed, return true
+    if (process.kill(0) === false) {
+        this.logger.warn('Called #killProcess to kill mysqld but it has already been killed.');
+        return true;
+    }
     if (os.platform() === 'win32') {
         const { error, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'taskkill', ['/pid', String(process.pid), '/t', '/f']);
-        if (!error && !stderr) {
-            killed = true;
+        const message = error || stderr;
+        if (!message) {
+            return true;
         }
-        else {
-            this.logger.error(error || stderr);
+        if (message.toString().includes('There is no running instance of the task')) {
+            this.logger.warn('Called #killProcess and tried to kill mysqld process but taskkill could not because it is not running. Error received:', message);
+            return true;
         }
+        this.logger.error(message, '| Error toString:', message.toString());
+        return false;
     }
-    else {
-        killed = process.kill();
-    }
-    return killed;
+    return process.kill('SIGKILL');
 }, _Executor_returnBinaryPathToDelete = function _Executor_returnBinaryPathToDelete(binaryFilepath, options) {
     if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
         const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/');
@@ -282,8 +287,10 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             // This unwatch will prevent the watch from watching when the process has stopped.
             fs.unwatchFile(errorLogFile);
             if (signal) {
-                this.logger.log('Exiting because of aborted signal.');
-                return;
+                this.logger.log('Exiting because the process received a signal:', signal);
+            }
+            else {
+                this.logger.log('Exiting with code:', code);
             }
             let errorLog;
             try {
@@ -314,7 +321,9 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             }
             try {
                 if ((0, constants_1.getInternalEnvVariable)('deleteDBAfterStopped') === 'true') {
+                    this.logger.log('Deleting database path as deleteDBAfterStopped is true...');
                     await fsPromises.rm(dbPath, { recursive: true, force: true, maxRetries: 50, retryDelay: 100 });
+                    this.logger.log('Database deletion was successful.');
                 }
             }
             catch (e) {
@@ -340,7 +349,13 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                         return reject(`Database exited early.\nError log: ${errorLog}\nError string: "${errorString}`);
                     }
                     if (code) {
-                        const errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                        let errorMessage = '';
+                        if (os.platform() === 'win32' && code === 3221225781) {
+                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                        }
+                        else {
+                            errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                        }
                         this.logger.error(errorMessage);
                         return reject(errorMessage);
                     }

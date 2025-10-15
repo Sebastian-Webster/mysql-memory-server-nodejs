@@ -46,6 +46,7 @@ const crypto_1 = require("crypto");
 const child_process_1 = require("child_process");
 const FileLock_1 = require("./FileLock");
 const constants_1 = require("../constants");
+const os_1 = __importDefault(require("os"));
 function handleTarExtraction(filepath, extractedPath) {
     return new Promise((resolve, reject) => {
         (0, child_process_1.execFile)(`tar`, ['-xf', filepath, '-C', extractedPath], (error, stdout, stderr) => {
@@ -253,7 +254,7 @@ function extractBinary(url, archiveLocation, extractedLocation, binaryInfo, logg
 function downloadBinary(binaryInfo, options, logger) {
     return new Promise(async (resolve, reject) => {
         const { url, version } = binaryInfo;
-        const dirpath = (0, constants_1.getInternalEnvVariable)('binaryDirectoryPath');
+        const dirpath = `${os_1.default.tmpdir()}/mysqlmsn/binaries`;
         logger.log('Binary path:', dirpath);
         await fsPromises.mkdir(dirpath, { recursive: true });
         const lastDashIndex = url.lastIndexOf('-');

@@ -8,7 +8,6 @@ export declare const LOG_LEVELS: {
 };
 declare const internalOptions: {
     deleteDBAfterStopped: string;
-    binaryDirectoryPath: string;
     cli: string;
 };
 export declare function getInternalEnvVariable(envVar: keyof typeof internalOptions): string;

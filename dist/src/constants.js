@@ -2,8 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = exports.MYSQL_LINUX_FILE_EXTENSIONS = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = exports.MYSQL_LINUX_GLIBC_VERSIONS = exports.MYSQL_MACOS_VERSIONS_IN_FILENAME = exports.RC_MYSQL_VERSIONS = exports.DMR_MYSQL_VERSIONS = exports.MYSQL_MIN_OS_SUPPORT = exports.MYSQL_ARCH_SUPPORT = exports.DOWNLOADABLE_MYSQL_VERSIONS = exports.MySQLCDNArchivesBaseURL = exports.MySQLCDNDownloadsBaseURL = exports.MIN_SUPPORTED_MYSQL = exports.OPTION_TYPE_CHECKS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS = void 0;
 exports.getInternalEnvVariable = getInternalEnvVariable;
-const path_1 = require("path");
-const os_1 = require("os");
 const semver_1 = require("semver");
 exports.DEFAULT_OPTIONS = {
     version: undefined,
@@ -30,9 +28,6 @@ exports.LOG_LEVELS = {
 };
 const internalOptions = {
     deleteDBAfterStopped: 'true',
-    //mysqlmsn = MySQL Memory Server Node.js
-    databaseDirectoryPath: (0, path_1.normalize)(`${(0, os_1.tmpdir)()}/mysqlmsn/dbs`),
-    binaryDirectoryPath: `${(0, os_1.tmpdir)()}/mysqlmsn/binaries`,
     cli: 'false'
 };
 function getInternalEnvVariable(envVar) {
