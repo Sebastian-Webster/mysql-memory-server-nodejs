@@ -33,8 +33,13 @@ jobs:
       - name: Run tests
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
-          MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
         run: npm run os-compat:ci
+
+      - name: Move MySQLMSN directory for GitHub Actions upload
+        if: ${{ failure() }}
+        env:
+          MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
+        run: npx ts-node tests/ci/DirMoveGitHubActions.ts
 
       - name: Upload mysqlmsn directory (Windows)
         if: ${{ failure() && runner.os == 'Windows' }}

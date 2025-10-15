@@ -24,3 +24,17 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+      - name: Move MySQLMSN directory for GitHub Actions upload
+        if: ${{ failure() }}
+        env:
+          MOVE_MYSQLMSN_TO: /tmp/mysqlmsn
+        run: npx ts-node tests/ci/DirMoveGitHubActions.ts
+
+      - name: Upload mysqlmsn directory (Not Windows)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: ci-mysqlmsn-dir
+          path: /tmp/mysqlmsn
+          compression-level: 0
