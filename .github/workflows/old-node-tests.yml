@@ -14,7 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [16.6.0, 16.x, 17.0.0, 17.x]
-        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm]
+        # windows-11-arm is not included here because Node only has Windows on Arm binaries for Node >= 19
+        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout
