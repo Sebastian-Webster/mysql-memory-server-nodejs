@@ -48,4 +48,4 @@ jobs:
         with:
           name: node-${{ matrix.node-version }}
           path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
-          compression-level: 0
+          compression-level: 9
