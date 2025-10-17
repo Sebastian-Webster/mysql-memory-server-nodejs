@@ -47,7 +47,7 @@ jobs:
         with:
           name: node-${{ matrix.node-version }}
           path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
-          compression-level: 0
+          compression-level: 9
 
   fedora-docker:
     runs-on: ubuntu-${{ matrix.ubuntu-version}}
@@ -92,7 +92,7 @@ jobs:
         with:
           name: docker-fedora-${{ matrix.version }}-${{ matrix.version-requirement }}-${{ matrix.ubuntu-version}}
           path: /tmp/mysqlmsn
-          compression-level: 0
+          compression-level: 9
 
   alpine-docker:
     runs-on: ubuntu-${{ matrix.ubuntu-version}}
