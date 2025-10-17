@@ -37,4 +37,4 @@ jobs:
         with:
           name: ci-mysqlmsn-dir
           path: /tmp/mysqlmsn
-          compression-level: 0
+          compression-level: 9
