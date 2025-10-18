@@ -8,12 +8,14 @@ on:
 
 jobs:
   node:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         node-version: [16.6.0, 16.x, 17.0.0, 17.x]
+        # windows-11-arm is not included here because Node only has Windows on Arm binaries for Node >= 19
+        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout
@@ -31,10 +33,16 @@ jobs:
       - name: Run tests
         run: npx ts-node tests/old-node.ts
 
+      - name: Move MySQLMSN directory for GitHub Actions upload
+        if: ${{ failure() }}
+        env:
+          MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
+        run: npx ts-node tests/ci/DirMoveGitHubActions.ts
+
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
           name: node-${{ matrix.node-version }}
-          path: /tmp/mysqlmsn
+          path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
           compression-level: 9

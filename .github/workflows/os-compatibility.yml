@@ -41,20 +41,12 @@ jobs:
           MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
         run: npx ts-node tests/ci/DirMoveGitHubActions.ts
 
-      - name: Upload mysqlmsn directory (Windows)
-        if: ${{ failure() && runner.os == 'Windows' }}
+      - name: Upload mysqlmsn directory
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: ${{ matrix.os }}-${{ matrix.version-requirement }}
-          path: "C:\\Users\\RUNNER~1\\mysqlmsn"
-          compression-level: 9
-
-      - name: Upload mysqlmsn directory (Not Windows)
-        if: ${{ failure() && runner.os != 'Windows' }}
-        uses: actions/upload-artifact@v4.3.5
-        with:
-          name: ${{ matrix.os }}-${{ matrix.version-requirement }}
-          path: /tmp/mysqlmsn
+          name: node-${{ matrix.node-version }}
+          path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
           compression-level: 9
 
   fedora-docker:
