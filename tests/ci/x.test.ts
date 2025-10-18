@@ -82,7 +82,8 @@ test('DB creation throws when MySQL fails to initialise and X is force enabled',
         logLevel: 'LOG',
         xPort: serverAddress.port, // Use a port that is already in use to get X to fail
         xEnabled: 'FORCE',
-        initSQLString: 'SELECT 2+2;'
+        initSQLString: 'SELECT 2+2;',
+        portRetries: 3
     }
 
     let thrown: string | boolean = false;
@@ -98,5 +99,5 @@ test('DB creation throws when MySQL fails to initialise and X is force enabled',
         server.close()
     })
 
-    expect(thrown).toBe('The port has been retried 10 times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.')
+    expect(thrown).toBe('The port has been retried 3 times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.')
 })
