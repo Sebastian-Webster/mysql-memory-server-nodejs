@@ -35,15 +35,19 @@ class Executor {
         })
     }
 
-    async #killProcess(process: ChildProcess): Promise<boolean> {
+    async #killProcess(childProcess: ChildProcess): Promise<boolean> {
         // If the process has already been killed, return true
-        if (process.kill(0) === false) {
-            this.logger.warn('Called #killProcess to kill mysqld but it has already been killed.')
+        const pid = childProcess.pid
+
+        try {
+            process.kill(pid, 0)
+        } catch (e) {
+            this.logger.warn('#killProcess got called to kill mysqld but it is not running:', e)
             return true
         }
 
         if (os.platform() === 'win32') {
-            const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(process.pid), '/t', '/f'])
+            const {error, stderr} = await this.#executeFile('taskkill', ['/pid', String(pid), '/t', '/f'])
             const message = error || stderr
 
             if (!message) {
@@ -59,7 +63,7 @@ class Executor {
             return false
         }
 
-        return process.kill('SIGKILL')
+        return process.kill(pid, 'SIGKILL')
     }
 
     //Returns a path to the binary if it should be deleted
