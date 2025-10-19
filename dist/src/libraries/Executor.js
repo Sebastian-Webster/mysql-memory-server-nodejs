@@ -198,14 +198,18 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
             resolve({ error, stdout, stderr });
         });
     });
-}, _Executor_killProcess = async function _Executor_killProcess(process) {
+}, _Executor_killProcess = async function _Executor_killProcess(childProcess) {
     // If the process has already been killed, return true
-    if (process.kill(0) === false) {
-        this.logger.warn('Called #killProcess to kill mysqld but it has already been killed.');
+    const pid = childProcess.pid;
+    try {
+        process.kill(pid, 0);
+    }
+    catch (e) {
+        this.logger.warn('#killProcess got called to kill mysqld but it is not running:', e);
         return true;
     }
     if (os.platform() === 'win32') {
-        const { error, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'taskkill', ['/pid', String(process.pid), '/t', '/f']);
+        const { error, stderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'taskkill', ['/pid', String(pid), '/t', '/f']);
         const message = error || stderr;
         if (!message) {
             return true;
@@ -217,7 +221,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         this.logger.error(message, '| Error toString:', message.toString());
         return false;
     }
-    return process.kill('SIGKILL');
+    return process.kill(pid, 'SIGKILL');
 }, _Executor_returnBinaryPathToDelete = function _Executor_returnBinaryPathToDelete(binaryFilepath, options) {
     if (binaryFilepath.includes(os.tmpdir()) && !options.downloadBinaryOnce) {
         const splitPath = binaryFilepath.split(os.platform() === 'win32' ? '\\' : '/');
@@ -351,7 +355,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     if (code) {
                         let errorMessage = '';
                         if (os.platform() === 'win32' && code === 3221225781) {
-                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.2/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
                         }
                         else {
                             errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
