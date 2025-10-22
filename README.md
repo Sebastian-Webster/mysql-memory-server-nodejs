@@ -200,7 +200,7 @@ Default: "FORCE"
 
 Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will either start up with the MySQL X Plugin guaranteed to have successfully initialised, or if initialisation fails, the server will fail to start up.
 
-#### Init SQL file order of operations:
+### Init SQL file order of operations:
 
 There are some SQL queries executed on the database before the database is ready to be used. This is handled under the hood using the ```--init-file``` MySQL server option. Learn more at the [--init-file MySQL Documentation](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_init_file). The following is the order in which the SQL queries are executed in, ordered from first executed to last executed:
 
