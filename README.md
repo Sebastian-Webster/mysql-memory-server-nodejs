@@ -186,7 +186,7 @@ Description: A string with SQL queries to run before the database starts to acce
 
 Default: ""
 
-Description: A path to a .sql file with SQL queries to run before the database starts to accept connections. This option can be used for things like importing an exported MySQL database. Check the [Init SQL file order of operations](#init-sql-file-order-of-operations) to learn more about what SQL queries are ran and in what order before the database starts accepting connections. If a filepath is defined and reading the file fails (like if the path does not exist), then the database creation will fail.
+Description: A path to a UTF-8 .sql file with SQL queries to run before the database starts to accept connections. This option can be used for things like importing an exported MySQL database. Check the [Init SQL file order of operations](#init-sql-file-order-of-operations) to learn more about what SQL queries are ran and in what order before the database starts accepting connections. If a filepath is defined and reading the file fails (like if the path does not exist), then the database creation will fail.
 
 - `arch: "arm64" | "x64"`
 

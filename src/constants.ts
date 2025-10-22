@@ -2,6 +2,7 @@ import { InternalServerOptions, OptionTypeChecks } from "../types";
 import {normalize as normalizePath} from 'path'
 import { tmpdir } from "os";
 import { valid as validSemver, coerce as coerceSemver } from "semver";
+import { existsSync } from "fs";
 
 export const DEFAULT_OPTIONS: InternalServerOptions = {
     version: undefined,
@@ -18,7 +19,8 @@ export const DEFAULT_OPTIONS: InternalServerOptions = {
     downloadRetries: 10,
     initSQLString: '',
     arch: process.arch,
-    xEnabled: 'FORCE'
+    xEnabled: 'FORCE',
+    initSQLFilePath: ''
 } as const;
 
 export const DEFAULT_OPTIONS_KEYS = Object.freeze(Object.keys(DEFAULT_OPTIONS))
@@ -115,7 +117,12 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
         check: (opt: any) => opt === undefined || pluginActivationStates.includes(opt),
         errorMessage: `xEnabled must be either undefined or one of the following: ${pluginActivationStates.join(', ')}`,
         definedType: 'boolean'
-    }
+    },
+    initSQLFilePath: {
+        check: (opt: any) => opt === undefined || (typeof opt === 'string' && existsSync(opt)),
+        errorMessage: 'Option initSQLFilePath must be either undefined or a filepath string that points to a file that exists.',
+        definedType: 'string'
+    },
 } as const;
 
 export const MIN_SUPPORTED_MYSQL = '5.7.19';
