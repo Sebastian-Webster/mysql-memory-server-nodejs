@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
-    "semver": "^7.7.2",
+    "semver": "^7.7.3",
     "signal-exit": "^4.1.0"
   },
   "repository": {
