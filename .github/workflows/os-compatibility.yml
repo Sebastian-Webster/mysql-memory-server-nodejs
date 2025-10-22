@@ -113,8 +113,11 @@ jobs:
       - name: Install required libraries for MySQL on alpine
         run: apk add libaio libstdc++
 
-      - name: Checkout
-        run: git clone https://github.com/${{ github.repository }} --branch ${{ github.head_ref || github.ref_name }} --single-branch --depth 1 mysqlmsn
+      - name: Clone Repository
+        run: git clone https://github.com/${{ github.repository }} --branch ${{ github.head_ref || github.ref_name }} --single-branch mysqlmsn
+
+      - name: Checkout code
+        run: git reset --hard ${{ github.sha }}
 
       - name: Install packages
         working-directory: mysqlmsn
