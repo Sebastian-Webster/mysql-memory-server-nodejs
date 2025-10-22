@@ -375,9 +375,13 @@ class Executor {
                 reject(e)
             })
 
-            rs.pipe(ws)
+            rs.on('end', () => {
+                rs.close();
+                ws.close();
+                resolve()
+            })
 
-            ws.on('finish', () => resolve)
+            rs.pipe(ws)
         })
     }
 
