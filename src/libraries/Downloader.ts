@@ -293,9 +293,10 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             let useDownloadsURL = false;
 
             do {
-                const downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? MySQLCDNDownloadsBaseURL : MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url)
+                let downloadURL: string = 'UNINITIALISED'
                 try {
                     downloadTries++;
+                    downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? MySQLCDNDownloadsBaseURL : MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url)
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
                     await downloadFromCDN(downloadURL, archivePath, logger)
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
@@ -358,7 +359,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
             let useDownloadsURL = false;
 
             do {
-                const downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? MySQLCDNDownloadsBaseURL : MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url)
+                let downloadURL: string = 'UNINITIALISED'
                 const uuid = randomUUID()
                 const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`
                 logger.log('Binary filepath:', zipFilepath)
@@ -366,6 +367,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                 try {
                     downloadTries++
+                    downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? MySQLCDNDownloadsBaseURL : MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url)
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`)
                     await downloadFromCDN(downloadURL, zipFilepath, logger)
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`)
