@@ -45,7 +45,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4.3.5
         with:
-          name: node-${{ matrix.node-version }}
+          name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
           path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
           compression-level: 9
 
