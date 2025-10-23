@@ -117,6 +117,7 @@ jobs:
         run: git clone https://github.com/${{ github.repository }} --branch ${{ github.head_ref || github.ref_name }} --single-branch mysqlmsn
 
       - name: Checkout code
+        working-directory: mysqlmsn
         run: git reset --hard ${{ github.sha }}
 
       - name: Install packages
