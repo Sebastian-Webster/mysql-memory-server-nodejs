@@ -521,7 +521,7 @@ class Executor {
         }
 
         if (options.initSQLString.length > 0) {
-            initText += `\n${options.initSQLString}`
+            initText += `\n${options.initSQLString}\n`
         }
 
         this.logger.log('Writing init file')
