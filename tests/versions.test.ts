@@ -8,6 +8,7 @@ import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import os from 'os'
+import { randomUUID } from 'crypto';
 
 const usernames = ['root', 'dbuser']
 
@@ -18,7 +19,7 @@ const arch = process.arch === 'x64' || (process.platform === 'win32' && process.
 const versionRequirement = process.env.VERSION_REQUIREMENT || '>0.0.0'
 console.log('Running versions test with versionRequirement:', versionRequirement)
 
-const initSQLFilePath = `${os.tmpdir()}/mysqlmsn-init-file-${crypto.randomUUID()}`
+const initSQLFilePath = `${os.tmpdir()}/mysqlmsn-init-file-${randomUUID()}`
 fs.writeFileSync(initSQLFilePath, 'CREATE DATABASE initfromsqlfilepath;', 'utf-8')
 
 for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versionRequirement))) {
