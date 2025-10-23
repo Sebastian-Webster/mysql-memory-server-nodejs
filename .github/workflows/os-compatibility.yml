@@ -118,7 +118,7 @@ jobs:
 
       - name: Checkout code
         working-directory: mysqlmsn
-        run: git reset --hard ${{ github.sha }}
+        run: git reset --hard ${{ github.event.after }}
 
       - name: Install packages
         working-directory: mysqlmsn
