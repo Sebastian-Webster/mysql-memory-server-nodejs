@@ -8,6 +8,7 @@ import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import os from 'os'
+import { randomUUID } from 'crypto';
 
 const usernames = ['root', 'dbuser']
 
@@ -17,6 +18,9 @@ const arch = process.arch === 'x64' || (process.platform === 'win32' && process.
 
 const versionRequirement = process.env.VERSION_REQUIREMENT || '>0.0.0'
 console.log('Running versions test with versionRequirement:', versionRequirement)
+
+const initSQLFilePath = `${os.tmpdir()}/mysqlmsn-init-file-${randomUUID()}`
+fs.writeFileSync(initSQLFilePath, 'CREATE DATABASE initfromsqlfilepath;', 'utf-8')
 
 for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versionRequirement))) {
     try {
@@ -35,7 +39,8 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
                 logLevel: 'LOG',
                 initSQLString: 'CREATE DATABASE mytestdb;',
                 arch,
-                xEnabled: process.env.X_OFF === 'true' ? 'OFF' : 'FORCE'
+                xEnabled: process.env.X_OFF === 'true' ? 'OFF' : 'FORCE',
+                initSQLFilePath
             }
     
             const db = await createDB(options)
@@ -49,6 +54,9 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
 
             //If this does not fail, it means initSQLString works as expected and the database was successfully created.
             await connection.query('USE mytestdb;')
+
+            //If this does not fail, it means initSQLFilePath works as expected and the database was successfully created.
+            await connection.query('USE initfromsqlfilepath;')
     
             await connection.end();
             await db.stop();

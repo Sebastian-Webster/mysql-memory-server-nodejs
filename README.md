@@ -180,9 +180,13 @@ Description: The number of times to try to download a MySQL binary before giving
 
 Default: ""
 
-Description: A string with MySQL queries to run before the database starts to accept connections. This option can be used for things like initialising tables without having to first connect to the database to do that. The queries in the string get executed after ```mysql-memory-server```'s queries run. Uses the ```--init-file``` MySQL server option under the hood. Learn more at the [--init-file MySQL Documentation](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_init_file)
+Description: A string with SQL queries to run before the database starts to accept connections. This option can be used for things like initialising tables without having to first connect to the database to do that. Check the [Init SQL file order of operations](#init-sql-file-order-of-operations) to learn more about what SQL queries are ran and in what order before the database starts accepting connections.
 
-The internal queries that are ran before the queries in ```initSQLString``` are creating the MySQL user with ```options.username``` username if the option's value is not ```root```, and creating a database with the ```options.dbName``` name.
+- `initSQLFilePath: string`
+
+Default: ""
+
+Description: A path to a UTF-8 .sql file with SQL queries to run before the database starts to accept connections. This option is like the ```initSQLString``` option, instead taking a filepath for SQL statements to execute rather than a string of SQL statements - great for when you need to execute more than just a few SQL statements. Check the [Init SQL file order of operations](#init-sql-file-order-of-operations) to learn more about what SQL queries are ran and in what order before the database starts accepting connections. If a filepath is defined and reading the file fails, then the database creation will fail. The database creation process will not begin if ```initSQLFilePath``` is defined but the path specified does not exist.
 
 - `arch: "arm64" | "x64"`
 
@@ -195,3 +199,11 @@ Description: The MySQL binary architecture to execute. MySQL does not offer serv
 Default: "FORCE"
 
 Description: This option follows the convention set out by the [MySQL Documentation](https://dev.mysql.com/doc/refman/en/plugin-loading.html). If set to "OFF", the MySQL X Plugin will not initialise. If set to "FORCE", the MySQL Server will either start up with the MySQL X Plugin guaranteed to have successfully initialised, or if initialisation fails, the server will fail to start up.
+
+### Init SQL file order of operations:
+
+There are some SQL queries executed on the database before the database is ready to be used. This is handled under the hood using the ```--init-file``` MySQL server option. Learn more at the [--init-file MySQL Documentation](https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_init_file). The following is the order in which the SQL queries are executed in, ordered from first executed to last executed:
+
+1. ```mysql-memory-server``` internal SQL queries - The internal queries that are executed are creating the MySQL user with ```options.username``` username if the option's value is not ```root```, and creating a database with the ```options.dbName``` name.
+2. The SQL queries provided to the ```initSQLString``` option
+3. The SQL queries provided to the ```initSQLFilePath``` option

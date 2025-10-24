@@ -19,7 +19,8 @@ export type ServerOptions = {
     downloadRetries?: number | undefined,
     initSQLString?: string | undefined,
     arch?: "arm64" | "x64" | undefined,
-    xEnabled?: PluginActivationState | undefined
+    xEnabled?: PluginActivationState | undefined,
+    initSQLFilePath?: string | undefined
 }
 
 export type InternalServerOptions = {
@@ -37,7 +38,8 @@ export type InternalServerOptions = {
     downloadRetries: number,
     initSQLString: string,
     arch: string,
-    xEnabled: PluginActivationState
+    xEnabled: PluginActivationState,
+    initSQLFilePath: string
 }
 
 export type ExecuteFileReturn = {

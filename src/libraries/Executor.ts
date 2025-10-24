@@ -358,6 +358,33 @@ class Executor {
         })
     }
 
+    #streamAppendToFile(readPath: string, writePath: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const rs = fs.createReadStream(readPath, {encoding: 'utf-8'})
+            const ws = fs.createWriteStream(writePath, {flags: 'a', encoding: 'utf-8'})
+
+            rs.on('error', (e) => {
+                ws.end();
+                this.logger.error('Received error from streamAppendToFile read stream:', e)
+                reject(e)
+            })
+
+            ws.on('error', (e) => {
+                rs.close();
+                this.logger.error('Received error from streamAppendToFile write stream:', e)
+                reject(e)
+            })
+
+            rs.on('end', () => {
+                rs.close();
+                ws.close();
+                resolve()
+            })
+
+            rs.pipe(ws)
+        })
+    }
+
     async #setupDataDirectories(options: InternalServerOptions, binary: DownloadedMySQLVersion, datadir: string, retry: boolean): Promise<void> {
         const binaryFilepath = binary.path
         this.logger.log('Created data directory for database at:', datadir)
@@ -494,14 +521,23 @@ class Executor {
         }
 
         if (options.initSQLString.length > 0) {
-            initText += `\n${options.initSQLString}`
+            initText += `\n${options.initSQLString}\n`
         }
 
         this.logger.log('Writing init file')
 
-        await fsPromises.writeFile(`${this.databasePath}/init.sql`, initText, {encoding: 'utf8'})
+        const initFilePath = `${this.databasePath}/init.sql`
+        await fsPromises.writeFile(initFilePath, initText, {encoding: 'utf8'})
 
         this.logger.log('Finished writing init file')
+
+        if (options.initSQLFilePath) {
+            this.logger.log('Appending init.sql file with the contents of the file at path provided by options.initSQLFilePath.')
+
+            await this.#streamAppendToFile(options.initSQLFilePath, initFilePath)
+
+            this.logger.log('Successfully appended init.sql file with the contents of the file at path provided by options.initSQLFilePath.')
+        }
     }
 
     async startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB> {
