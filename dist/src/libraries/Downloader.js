@@ -292,9 +292,10 @@ function downloadBinary(binaryInfo, options, logger) {
             let downloadTries = 0;
             let useDownloadsURL = false;
             do {
-                const downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? constants_1.MySQLCDNDownloadsBaseURL : constants_1.MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url);
+                let downloadURL = 'UNINITIALISED';
                 try {
                     downloadTries++;
+                    downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? constants_1.MySQLCDNDownloadsBaseURL : constants_1.MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url);
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`);
                     await downloadFromCDN(downloadURL, archivePath, logger);
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`);
@@ -361,13 +362,14 @@ function downloadBinary(binaryInfo, options, logger) {
             let downloadTries = 0;
             let useDownloadsURL = false;
             do {
-                const downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? constants_1.MySQLCDNDownloadsBaseURL : constants_1.MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url);
+                let downloadURL = 'UNINITIALISED';
                 const uuid = (0, crypto_1.randomUUID)();
                 const zipFilepath = `${dirpath}/${uuid}.${fileExtension}`;
                 logger.log('Binary filepath:', zipFilepath);
                 const extractedPath = `${dirpath}/${uuid}`;
                 try {
                     downloadTries++;
+                    downloadURL = binaryInfo.hostedByOracle ? `${useDownloadsURL ? constants_1.MySQLCDNDownloadsBaseURL : constants_1.MySQLCDNArchivesBaseURL}${url}` : await getFileDownloadURLRedirect(url);
                     logger.log(`Starting download for MySQL version ${version} from ${downloadURL}.`);
                     await downloadFromCDN(downloadURL, zipFilepath, logger);
                     logger.log(`Finished downloading MySQL version ${version} from ${downloadURL}. Now starting binary extraction.`);

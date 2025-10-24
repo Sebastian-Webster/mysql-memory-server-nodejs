@@ -37,7 +37,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_returnBinaryPathToDelete, _Executor_startMySQLProcess, _Executor_setupDataDirectories;
+var _Executor_instances, _Executor_executeFile, _Executor_killProcess, _Executor_returnBinaryPathToDelete, _Executor_startMySQLProcess, _Executor_streamAppendToFile, _Executor_setupDataDirectories;
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const semver_1 = require("semver");
@@ -355,7 +355,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     if (code) {
                         let errorMessage = '';
                         if (os.platform() === 'win32' && code === 3221225781) {
-                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.2/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.13.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
                         }
                         else {
                             errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
@@ -417,6 +417,27 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 }
             }
         });
+    });
+}, _Executor_streamAppendToFile = function _Executor_streamAppendToFile(readPath, writePath) {
+    return new Promise((resolve, reject) => {
+        const rs = fs.createReadStream(readPath, { encoding: 'utf-8' });
+        const ws = fs.createWriteStream(writePath, { flags: 'a', encoding: 'utf-8' });
+        rs.on('error', (e) => {
+            ws.end();
+            this.logger.error('Received error from streamAppendToFile read stream:', e);
+            reject(e);
+        });
+        ws.on('error', (e) => {
+            rs.close();
+            this.logger.error('Received error from streamAppendToFile write stream:', e);
+            reject(e);
+        });
+        rs.on('end', () => {
+            rs.close();
+            ws.close();
+            resolve();
+        });
+        rs.pipe(ws);
     });
 }, _Executor_setupDataDirectories = async function _Executor_setupDataDirectories(options, binary, datadir, retry) {
     const binaryFilepath = binary.path;
@@ -536,10 +557,16 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
         initText += `\nCREATE USER '${options.username}'@'localhost';\nGRANT ALL ON *.* TO '${options.username}'@'localhost' WITH GRANT OPTION;`;
     }
     if (options.initSQLString.length > 0) {
-        initText += `\n${options.initSQLString}`;
+        initText += `\n${options.initSQLString}\n`;
     }
     this.logger.log('Writing init file');
-    await fsPromises.writeFile(`${this.databasePath}/init.sql`, initText, { encoding: 'utf8' });
+    const initFilePath = `${this.databasePath}/init.sql`;
+    await fsPromises.writeFile(initFilePath, initText, { encoding: 'utf8' });
     this.logger.log('Finished writing init file');
+    if (options.initSQLFilePath) {
+        this.logger.log('Appending init.sql file with the contents of the file at path provided by options.initSQLFilePath.');
+        await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_streamAppendToFile).call(this, options.initSQLFilePath, initFilePath);
+        this.logger.log('Successfully appended init.sql file with the contents of the file at path provided by options.initSQLFilePath.');
+    }
 };
 exports.default = Executor;

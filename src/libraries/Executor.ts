@@ -216,7 +216,7 @@ class Executor {
                             let errorMessage: string = ''
 
                             if (os.platform() === 'win32' && code === 3221225781) {
-                                errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.12.2/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`
+                                errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.13.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`
                             } else {
                                 errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`
                             }

@@ -17,6 +17,7 @@ export type ServerOptions = {
     initSQLString?: string | undefined;
     arch?: "arm64" | "x64" | undefined;
     xEnabled?: PluginActivationState | undefined;
+    initSQLFilePath?: string | undefined;
 };
 export type InternalServerOptions = {
     version?: string | undefined;
@@ -34,6 +35,7 @@ export type InternalServerOptions = {
     initSQLString: string;
     arch: string;
     xEnabled: PluginActivationState;
+    initSQLFilePath: string;
 };
 export type ExecuteFileReturn = {
     error: ExecFileException | null;
