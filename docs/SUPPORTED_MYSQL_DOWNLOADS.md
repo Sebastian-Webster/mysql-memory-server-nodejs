@@ -24,11 +24,11 @@ Only MySQL versions 8.4.x and 9.x can be downloaded and ran with this package on
 
 *Architectures used can be overridden by the ```arch``` option provided your OS and system supports running applications that use those architectures.*
 
-Linux, Windows, macOS x64: MySQL v5.7.19 - v9.5.0
+Linux, Windows, macOS x64: MySQL v5.7.19 - v9.6.0
 
-Linux ARM64: MySQL v8.0.31 - v9.5.0
+Linux ARM64: MySQL v8.0.31 - v9.6.0
 
-macOS ARM64: MySQL v8.0.26 - v9.5.0
+macOS ARM64: MySQL v8.0.26 - v9.6.0
 
 Windows ARM64: N/A - Read about the ```arch``` option to run this package on your system
 
@@ -50,7 +50,7 @@ macOS:
 | v8.0.28 - v8.0.31 | macOS 11 (Big Sur) |
 | v8.0.32 - v8.0.34 | macOS 12 (Monterey) |
 | v8.0.35 - v8.0.39 OR v8.1.0 - v8.4.2 OR v9.0.1 | macOS 13 (Ventura) |
-| v8.0.40 - v8.0.44 OR v8.4.3 - v8.4.7 OR v9.1.0 - v9.5.0 | macOS 14 (Sonoma) |
+| v8.0.40 - v8.0.45 OR v8.4.3 - v8.4.8 OR v9.1.0 - v9.6.0 | macOS 14 (Sonoma) |
 
 ## Operating System Maximum Version Requirements
 
