@@ -8,7 +8,7 @@
 - Windows
 - Linux
 
-*```mysql-memory-server``` gets tested on Ubuntu 22.04 (x64 and arm64) and 24.04 (x64 and arm64), Fedora 42 (x64 and arm64) and 43 (x64 and arm64), Alpine 3.22 (x64 and arm64), macOS 14 (arm64), 15 (x64 and arm64), and 26 (arm64), Windows 11 (arm64), and Windows Server 2022 (x64) and 2025 (x64). Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.*
+*```mysql-memory-server``` gets tested on Ubuntu 22.04 (x64 and arm64) and 24.04 (x64 and arm64), Fedora 42 (x64 and arm64) and 43 (x64 and arm64), Alpine 3.23 (x64 and arm64), macOS 14 (arm64), 15 (x64 and arm64), and 26 (arm64), Windows 11 (arm64), and Windows Server 2022 (x64) and 2025 (x64). Linux distributions and Windows and macOS versions other than the ones tested may or may not work and are not guaranteed to work with this package.*
 
 ## Binaries not available for download
 
