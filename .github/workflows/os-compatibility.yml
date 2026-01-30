@@ -104,7 +104,7 @@ jobs:
         version-requirement: [ '8.4.0 - 8.4.4', '8.4.5 - 9.0.0', '9.0.1 - 9.4.0', '9.5.0 - 10.0.0']
         ubuntu-version: [24.04, 24.04-arm]
 
-    container: alpine:3.22
+    container: alpine:3.23
 
     steps:
       - name: Install required libraries for test setup
