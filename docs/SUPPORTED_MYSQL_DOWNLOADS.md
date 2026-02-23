@@ -85,11 +85,11 @@ Ubuntu Linux:
 
 | Ubuntu Version | Required Dependencies |
 |--|--|
-| >= v24.04 | ```libaio1t64``` package, ```tar``` package, and ```ldconfig``` command |
-| <= v23.10 | ```libaio1``` package and ```tar``` package |
+| >= v24.04 | ```libaio1t64``` package, ```libnuma-dev``` package, ```tar``` package, and ```ldconfig``` command |
+| <= v23.10 | ```libaio1``` package, ```libnuma-dev``` package, and ```tar``` package |
 
 Fedora Linux: ```libaio1``` package and ```tar``` package
 
 Alpine Linux: ```libstdc++``` package, ```libaio``` package, and ```tar``` package
 
-*Document last updated in v1.14.0*
+*Document last updated in v1.14.1*
