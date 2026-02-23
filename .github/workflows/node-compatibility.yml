@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm]
+        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm, ubuntu-slim, windows-2025-vs2026]
         node-version: [18.x, 19.x, 20.x, 21.x, 22.x, 23.x, 24.x, 25.x]
         # Exclude Node 18.x on Windows on Arm because Node only provides Windows on Arm binaries for Node >= 19
         exclude:
@@ -32,6 +32,10 @@ jobs:
 
       - name: Install packages
         run: npm ci
+
+      - name: Install required system packages (Ubuntu Slim only)
+        if: ${{ matrix.os == 'ubuntu-slim' }}
+        run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
       - name: Run tests
         run: npm run test:ci
