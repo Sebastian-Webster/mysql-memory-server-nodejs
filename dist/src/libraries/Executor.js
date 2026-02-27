@@ -355,7 +355,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     if (code) {
                         let errorMessage = '';
                         if (os.platform() === 'win32' && code === 3221225781) {
-                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
                         }
                         else {
                             errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
@@ -459,7 +459,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 throw 'Tried to copy libaio into lib folder and MySQL is still failing to initialize. Please check the console for more information.';
             }
             if (binary.installedOnSystem) {
-                throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html';
+                throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
             }
             // If the below code is running, the version of MySQL that is trying to be executed was downloaded from the CDN by this package and libaio has not yet been attempted to be copied
             if (LinuxOSRelease_1.default.NAME === 'Ubuntu' && LinuxOSRelease_1.default.VERSION_ID >= '24.04') {
@@ -467,13 +467,13 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 if (lderror || ldstderr) {
                     this.logger.error('The following libaio error occurred:', stderr);
                     this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr);
-                    throw 'The ldconfig command failed to run. This command was ran to find libaio1t64 because libaio1t64 could not be found on the system. libaio1t64 is needed for MySQL to run. Do you have ldconfig and libaio1t64 installed? Learn more at https://dev.mysql.com/doc/refman/en/binary-installation.html';
+                    throw 'The ldconfig command failed to run. This command was ran to find libaio1t64 because libaio1t64 could not be found on the system. libaio1t64 is needed for MySQL to run. Do you have ldconfig and libaio1t64 installed? Learn more at https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
                 }
                 const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'));
                 if (!libaioFound.length) {
                     this.logger.error('Error from launching MySQL:', stderr);
                     this.logger.error('Could not find libaio1t64 in this list:', libaioFound);
-                    throw 'An error occurred while launching MySQL because libaio1t64 is not installed on your system. Please install libaio1t64 and then use mysql-memory-server again. To learn more, please check out https://dev.mysql.com/doc/refman/en/binary-installation.html. Check error in console for more information.';
+                    throw 'An error occurred while launching MySQL because libaio1t64 is not installed on your system. Please install libaio1t64 and then use mysql-memory-server again. To learn more, please check out https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. Check error in console for more information.';
                 }
                 const libaioEntry = libaioFound[0];
                 const libaioPathIndex = libaioEntry.indexOf('=>');
@@ -547,7 +547,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binary, datadir, false);
                 return;
             }
-            throw 'You do not have libaio1 installed. Please install the libaio1 package for the downloaded MySQL binary to run. Learn more here: https://dev.mysql.com/doc/refman/en/binary-installation.html';
+            throw 'You do not have libaio1 installed. Please install the libaio1 package for the downloaded MySQL binary to run. Learn more here: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
         }
         throw stderr;
     }
