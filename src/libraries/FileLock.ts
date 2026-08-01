@@ -1,6 +1,6 @@
 import fsPromises from 'fs/promises';
 import { InternalServerOptions } from "../../types";
-import { isNodeError } from '../constants';
+import { isNodeError } from '../TypeCheckers';
 
 const mtimeUpdateIntervalTime = 2_000
 const mtimeLimit = 10_000

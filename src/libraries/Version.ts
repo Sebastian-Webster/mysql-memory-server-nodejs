@@ -3,6 +3,7 @@ import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
 import { MySQLCDNDownloadsBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 } from "../constants";
 import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
+import { isSupportedOS } from "../TypeCheckers";
 
 export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
@@ -12,9 +13,9 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     }
 
     const currentOS = os.platform();
-    const OSVersionSupport = MYSQL_MIN_OS_SUPPORT[currentOS];
 
-    if (!OSVersionSupport) throw `MySQL and/or mysql-memory-server does not support your operating system. Please make sure you are running the latest version of mysql-memory-server or try running on a different operating system or report an issue on GitHub if you believe this is a bug.`
+    if (!isSupportedOS(currentOS)) throw `MySQL and/or mysql-memory-server does not support your operating system. Please make sure you are running the latest version of mysql-memory-server or try running on a different operating system or report an issue on GitHub if you believe this is a bug.`
+    const OSVersionSupport = MYSQL_MIN_OS_SUPPORT[currentOS];
 
     const OSSupportVersionRanges = Object.keys(OSVersionSupport);
 
@@ -60,7 +61,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
     }
 
     if (process.platform === 'linux') {
-        if (etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
+        if (etcOSRelease.NAME === 'Ubuntu' && typeof etcOSRelease.VERSION_ID === 'string' && etcOSRelease.VERSION_ID >= '24.04') {
             //Since Ubuntu >= 24.04 uses libaio1t64 instead of libaio, this package has to copy libaio1t64 into a folder that MySQL looks in for dynamically linked libraries with the filename "libaio.so.1".
             //I have not been able to find a suitable folder for libaio1t64 to be copied into for MySQL < 8.0.4, so here we are filtering all versions lower than 8.0.4 since they fail to launch in Ubuntu 24.04.
             //If there is a suitable filepath for libaio1t64 to be copied into for MySQL < 8.0.4 then this check can be removed and these older MySQL versions can run on Ubuntu.
@@ -117,8 +118,6 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
         const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[currentArch][fileExtensionKey]
 
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'aarch64'}${minimalInstallAvailable !== 'no' && (process.arch !== 'arm64' ? true : satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64)) ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
-    } else {
-        throw 'You are running this package on an unsupported OS. Please use either Windows, macOS, or a Linux-based OS.'
     }
 
     return {

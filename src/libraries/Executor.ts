@@ -10,8 +10,9 @@ import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
 import { randomUUID } from "crypto";
-import { getInternalEnvVariable, isNodeError } from "../constants";
+import { getInternalEnvVariable } from "../constants";
 import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
+import { isNodeError } from "../TypeCheckers";
 
 class Executor {
     logger: Logger;
