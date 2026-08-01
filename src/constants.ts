@@ -220,3 +220,12 @@ export const MYSQL_LINUX_FILE_EXTENSIONS = {
     }
 } as const;
 export const MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = '8.0.26';
+
+export function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+    return error instanceof Error && (
+        'errno' in error ||
+        'code' in error ||
+        'path' in error ||
+        'syscall' in error
+    )
+}
