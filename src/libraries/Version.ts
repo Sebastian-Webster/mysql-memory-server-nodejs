@@ -43,6 +43,11 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
 
     const versionsBeforeOSVersionCheck = selectedVersions.slice()
     const coercedOSRelease = coerce(os.release())
+
+    if (coercedOSRelease === null) {
+        throw 'Your OS version could not be coerced to SemVer. Please report this as a bug on GitHub.'
+    }
+
     selectedVersions = selectedVersions.filter(possibleVersion => {
         const OSVersionKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
         return !lt(coercedOSRelease, OSVersionSupport[OSVersionKey])
