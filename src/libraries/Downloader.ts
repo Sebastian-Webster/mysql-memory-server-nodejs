@@ -316,7 +316,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                     // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
                     // then retry with the Downloads URL. Otherwise, reject.
-                    if (e?.includes('status code 404')) {
+                    if (typeof e === 'string' && e.includes('status code 404')) {
                         if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
                             downloadTries--
@@ -387,7 +387,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                     // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
                     // then retry with the Downloads URL. Otherwise, reject.
-                    if (e?.includes('status code 404')) {
+                    if (typeof e === 'string' && e.includes('status code 404')) {
                         if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
                             downloadTries--
