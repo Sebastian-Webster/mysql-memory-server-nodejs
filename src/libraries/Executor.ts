@@ -10,18 +10,19 @@ import {normalize as normalizePath, resolve as resolvePath} from 'path'
 import { lockFile, waitForLock } from "./FileLock";
 import { onExit } from "signal-exit";
 import { randomUUID } from "crypto";
-import { getInternalEnvVariable } from "../constants";
+import { getInternalEnvVariable, isNodeError } from "../constants";
 import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
 
 class Executor {
     logger: Logger;
     DBDestroySignal = new AbortController();
-    removeExitHandler: () => void;
-    version: string;
-    versionInstalledOnSystem: boolean;
-    versionSupportsMySQLX: boolean;
-    databasePath: string
-    killedFromPortIssue: boolean;
+    killedFromPortIssue = false;
+
+    databasePath = ''; // This is a placeholder value and gets set to the correct value in startMySQL().
+    versionSupportsMySQLX = true; // This value gets changed in startMySQL() if the version does not support MySQLX.
+    version = ''; // This is a placeholder value and gets set to the correct value in startMySQL().
+    versionInstalledOnSystem = true; // This value gets changed in startMySQL() to false if the version is not installed on the system.
+    removeExitHandler = () => {}; // This field contains a placeholder function and the real function gets set in startMySQL().
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -38,6 +39,11 @@ class Executor {
     async #killProcess(childProcess: ChildProcess): Promise<boolean> {
         // If the process has already been killed, return true
         const pid = childProcess.pid
+
+        if (pid === undefined) {
+            // According to https://nodejs.org/api/child_process.html#subprocesspid, if pid is undefined, the process failed to spawn, and thus we can return true as it is not running.
+            return true
+        }
 
         try {
             process.kill(pid, 0)
@@ -296,7 +302,7 @@ class Executor {
                     try {
                         dirs = await fsPromises.readdir(`${process.env.PROGRAMFILES}\\MySQL`)
                     } catch (e) {
-                        if (e?.code === 'ENOENT') {
+                        if (isNodeError(e) && e.code === 'ENOENT') {
                             return resolve(null)
                         } else {
                             throw e
@@ -415,7 +421,7 @@ class Executor {
 
                 // If the below code is running, the version of MySQL that is trying to be executed was downloaded from the CDN by this package and libaio has not yet been attempted to be copied
 
-                if (etcOSRelease.NAME === 'Ubuntu' && etcOSRelease.VERSION_ID >= '24.04') {
+                if (etcOSRelease.NAME === 'Ubuntu' && typeof etcOSRelease.VERSION_ID === 'string' && etcOSRelease.VERSION_ID >= '24.04') {
                     const {error: lderror, stdout, stderr: ldstderr} = await this.#executeFile('ldconfig', ['-p'])
                     if (lderror || ldstderr) {
                         this.logger.error('The following libaio error occurred:', stderr)
@@ -442,7 +448,7 @@ class Executor {
                         copyPath = resolvePath(`${binaryFilepath}/../../lib/private/libaio.so.1`)
                     }
 
-                    let lockRelease: () => Promise<void>;
+                    let lockRelease: undefined | (() => Promise<void>) = undefined;
 
                     while(true) {
                         try {
@@ -473,12 +479,12 @@ class Executor {
                         //If the lock failed to acquire for some other reason, the error would've already been thrown.
                         
                         this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath)
-                        let copyError: Error;
+                        let copyErrorOccurred = false;
 
                         try {
                             await fsPromises.copyFile(libaioPath, copyPath)
                         } catch (e) {
-                            copyError = e
+                            copyErrorOccurred = true
                             this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e)
 
                             try {
@@ -494,7 +500,7 @@ class Executor {
                                 this.logger.error('Error unlocking libaio file:', e)
                             }
 
-                            if (copyError) {
+                            if (copyErrorOccurred) {
                                 throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.'
                             }
                         }
@@ -604,11 +610,11 @@ class Executor {
                 retries++
                 if (retries <= options.portRetries) {
                     this.logger.warn(`Tried a port that is already in use. Now retrying... ${retries}/${options.portRetries} possible retries.`)
-                } else {
-                    throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`
                 }
             }
         } while (retries <= options.portRetries)
+
+        throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`
     }
 }
 
