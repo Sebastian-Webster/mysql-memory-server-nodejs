@@ -84,15 +84,9 @@ export type OptionTypeChecks = {
     }
 }
 
-export type LinuxEtcOSRelease = {
-    PRETTY_NAME?: string,
+export type LinuxEtcOSRelease = Record<string, string> & {
     NAME?: string,
-    VERSION_ID?: string,
-    VERSION?: string,
-    VERSION_CODENAME?: string,
-    ID?: string,
-    ID_LIKE?: string,
-    UBUNTU_CODENAME?: string
+    VERSION_ID?: string
 }
 
 export type JSRuntimeVersion = {
