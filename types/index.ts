@@ -76,11 +76,13 @@ export type BinaryInfo = {
     xPluginSupported: boolean
 }
 
+type OptionTypeChecksDefinedTypeHelper<T> = T extends string ? "string" : T extends boolean ? "boolean" : T extends number ? "number" : never
+
 export type OptionTypeChecks = {
     [key in keyof Required<ServerOptions>]: {
         check: (opt: any) => boolean,
         errorMessage: string,
-        definedType: "string" | "boolean" | "number"
+        definedType: OptionTypeChecksDefinedTypeHelper<ServerOptions[key]>
     }
 }
 

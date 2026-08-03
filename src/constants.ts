@@ -114,7 +114,7 @@ export const OPTION_TYPE_CHECKS: OptionTypeChecks = {
     xEnabled: {
         check: (opt: any) => opt === undefined || pluginActivationStates.includes(opt),
         errorMessage: `xEnabled must be either undefined or one of the following: ${pluginActivationStates.join(', ')}`,
-        definedType: 'boolean'
+        definedType: 'string'
     },
     initSQLFilePath: {
         check: (opt: any) => opt === undefined || (typeof opt === 'string' && existsSync(opt)),
