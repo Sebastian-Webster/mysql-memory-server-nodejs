@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 import { createDB } from "./index";
-import { DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS } from "./constants";
-import { ServerOptions } from "../types";
+import { OPTION_TYPE_CHECKS } from "./constants";
 import { isValidOption } from "./TypeCheckers";
 
 function main() {
     const definedOptions = process.argv.filter((option) => option.startsWith('--'))
-    const options: ServerOptions = {}
+    const options: Record<string, unknown> = {}
     process.env.mysqlmsn_internal_DO_NOT_USE_cli = 'true'
     for (const opt of definedOptions) {
         const optionName = opt.slice(2)
