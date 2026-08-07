@@ -1,5 +1,5 @@
-import { createDB } from '../src/index'
-import sql from 'mysql2/promise'
+const { createDB } = require('../src/index')
+const sql = require('mysql2/promise')
 
 async function main() {
     console.log('Starting test...')
