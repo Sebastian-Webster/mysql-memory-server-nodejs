@@ -35,13 +35,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
       - name: Run tests
-        run: npx ts-node tests/old-node.ts
+        run: npx tsx tests/old-node.ts
 
       - name: Move MySQLMSN directory for GitHub Actions upload
         if: ${{ failure() }}
         env:
           MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
-        run: npx ts-node tests/ci/DirMoveGitHubActions.ts
+        run: npx tsx tests/ci/DirMoveGitHubActions.ts
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}

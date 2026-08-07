@@ -29,7 +29,7 @@ jobs:
         if: ${{ failure() }}
         env:
           MOVE_MYSQLMSN_TO: /tmp/mysqlmsn
-        run: npx ts-node tests/ci/DirMoveGitHubActions.ts
+        run: npx tsx tests/ci/DirMoveGitHubActions.ts
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
