@@ -8,23 +8,25 @@ import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_
 import etcOSRelease from './libraries/LinuxOSRelease'
 
 export async function createDB(opts?: ServerOptions) {
-    const suppliedOpts: Partial<ServerOptions> = opts || {};
+    const suppliedOpts: ServerOptions = opts || {};
 
     const options: InternalServerOptions = {...DEFAULT_OPTIONS}
     
     for (const opt in suppliedOpts) {
         const optKey = opt as keyof typeof suppliedOpts
+        const optValue = suppliedOpts[optKey]
+
         if (!DEFAULT_OPTIONS_KEYS.includes(optKey)) {
             throw `Option ${optKey} is not a valid option.`
         }
 
         if (!OPTION_TYPE_CHECKS[optKey].check(suppliedOpts[optKey])) {
             //Supplied option failed the check
-            throw `${OPTION_TYPE_CHECKS[optKey].errorMessage} | Received value: ${suppliedOpts[optKey]} (type: ${typeof suppliedOpts[optKey]})`
+            throw `${OPTION_TYPE_CHECKS[optKey].errorMessage} | Received value: ${optValue} (type: ${typeof optValue})`
         }
 
-        if (suppliedOpts[optKey] !== undefined) {
-            options[optKey] = suppliedOpts[optKey]
+        if (optValue !== undefined) {
+            (options as Record<string, unknown>)[optKey] = optValue
         }
     }
 
