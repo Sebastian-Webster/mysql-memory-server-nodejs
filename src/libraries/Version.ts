@@ -5,7 +5,7 @@ import { MySQLCDNDownloadsBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIO
 import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
 import { isSupportedOS } from "../TypeCheckers";
 
-export default function getBinaryURL(versionToGet: string = "x", currentArch: string): BinaryInfo {
+export default function getBinaryURL(versionToGet: string = "x", currentArch: "arm64" | "x64"): BinaryInfo {
     let selectedVersions = DOWNLOADABLE_MYSQL_VERSIONS.filter(version => satisfies(version, versionToGet));
 
     if (selectedVersions.length === 0) {
@@ -30,15 +30,12 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: st
 
     const archSupport = MYSQL_ARCH_SUPPORT[currentOS][currentArch]
 
-    if (!archSupport) {
-        if (currentOS === 'win32' && currentArch === 'arm64') throw 'mysql-memory-server has detected you are running Windows on ARM. MySQL does not support Windows on ARM. To get this package working, please try setting the "arch" option to "x64".'
-        throw `MySQL and/or mysql-memory-server does not support the CPU architecture you want to use (${currentArch}). Please make sure you are using the latest version of mysql-memory-server or try using a different architecture, or if you believe this is a bug, please report this on GitHub.`
-    }
+    if (currentOS === 'win32' && currentArch === 'arm64') throw 'mysql-memory-server has detected you are running Windows on ARM. MySQL does not support Windows on ARM. To get this package working, please try setting the "arch" option to "x64" to run the x64 version of MySQL instead.'
 
     selectedVersions = selectedVersions.filter(possibleVersion => satisfies(possibleVersion, archSupport))
 
     if (selectedVersions.length === 0) {
-        throw `No version of MySQL could be found that supports the CPU architecture ${currentArch === os.arch() ? 'for your system' : 'you have chosen'} (${currentArch}). Please try choosing a different version of MySQL, or if you believe this is a bug, please report this on GitHub.`
+        throw `No version of MySQL could be found that is version "${versionToGet}" and supports the CPU architecture ${currentArch === os.arch() ? 'for your system' : 'you have chosen'} (${currentArch}). Please try choosing a different version of MySQL, or if you believe this is a bug, please report this on GitHub.`
     }
 
     const versionsBeforeOSVersionCheck = selectedVersions.slice()

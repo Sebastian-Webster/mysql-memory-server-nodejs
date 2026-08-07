@@ -37,7 +37,7 @@ export type InternalServerOptions = {
     xPort: number,
     downloadRetries: number,
     initSQLString: string,
-    arch: string,
+    arch: "arm64" | "x64" | "unsupported",
     xEnabled: PluginActivationState,
     initSQLFilePath: string
 }

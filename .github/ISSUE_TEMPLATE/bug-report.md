@@ -40,6 +40,7 @@ None
 **Environment:**
 --
 - OS and OS version (e.g macOS 15.0.1): 
+- CPU Architecture (e.g arm64): 
 - JS runtime and runtime version (E.g Node.js 22.9.0):
 - mysql-memory-server version:
 - In which environment does this bug occur? (Application Code, CLI, or both):

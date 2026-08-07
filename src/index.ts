@@ -30,6 +30,10 @@ export async function createDB(opts?: ServerOptions) {
         }
     }
 
+    if (options.arch === 'unsupported') {
+        throw "mysql-memory-server can only execute arm64 and x64 versions of MySQL. Your CPU architecture has been detected as one that isn't either one of those. If that is wrong, please report a bug on GitHub. If you would like to forcefully execute an arm64 or x64 MySQL binary on this system even when your CPU architecture isn't one of those, please refer to the documentation for the 'options.arch' option to set the binary architecture to execute."
+    }
+
     const logger = new Logger(options.logLevel)
 
     const executor = new Executor(logger)

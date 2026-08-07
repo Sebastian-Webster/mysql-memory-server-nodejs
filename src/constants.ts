@@ -16,7 +16,7 @@ export const DEFAULT_OPTIONS: InternalServerOptions = {
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
-    arch: process.arch,
+    arch: process.arch === 'arm64' ? 'arm64' : process.arch === 'x64' ? 'x64' : 'unsupported',
     xEnabled: 'FORCE',
     initSQLFilePath: ''
 } as const;
@@ -150,7 +150,8 @@ export const MYSQL_ARCH_SUPPORT = {
         x64: '5.7.19 - 9.6.0'
     },
     win32: {
-        x64: '5.7.19 - 9.6.0'
+        x64: '5.7.19 - 9.6.0',
+        arm64: '0.0.0' // There aren't any arm64 MySQL binaries for Windows on ARM provided by Oracle. As a result, this is set to 0.0.0 to indicate no support for arm64 on win32.
     }
 } as const;
 export const MYSQL_MIN_OS_SUPPORT = {
