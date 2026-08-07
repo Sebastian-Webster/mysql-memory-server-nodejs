@@ -47,7 +47,8 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: "a
 
     selectedVersions = selectedVersions.filter(possibleVersion => {
         const OSVersionKey = OSSupportVersionRanges.find(item => satisfies(possibleVersion, item))
-        return !lt(coercedOSRelease, OSVersionSupport[OSVersionKey])
+        if (OSVersionKey === undefined) return false
+        return !lt(coercedOSRelease, OSVersionSupport[OSVersionKey as keyof typeof MYSQL_MIN_OS_SUPPORT[keyof typeof MYSQL_MIN_OS_SUPPORT]])
     })
 
     if (selectedVersions.length === 0) {
@@ -55,7 +56,7 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: "a
         for (const v of versionsBeforeOSVersionCheck) {
             versionKeys.add(OSSupportVersionRanges.find(item => satisfies(v, item)))
         }
-        const minVersions = Array.from(versionKeys).map(v => OSVersionSupport[v])
+        const minVersions = Array.from(versionKeys).map(v => OSVersionSupport[v as keyof typeof MYSQL_MIN_OS_SUPPORT[keyof typeof MYSQL_MIN_OS_SUPPORT]])
         //Sorts versions in ascending order
         minVersions.sort((a, b) => a < b ? -1 : 1)
         const minVersion = minVersions[0]
@@ -98,26 +99,38 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: "a
     if (currentOS === 'win32') {
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-winx64.zip`
     } else if (currentOS === 'darwin') {
-        const MySQLmacOSVersionNameKeys = Object.keys(MYSQL_MACOS_VERSIONS_IN_FILENAME);
+        const MySQLmacOSVersionNameKeys = (Object.keys(MYSQL_MACOS_VERSIONS_IN_FILENAME) as unknown) as (keyof typeof MYSQL_MACOS_VERSIONS_IN_FILENAME)[]
         const macOSVersionNameKey = MySQLmacOSVersionNameKeys.find(range => satisfies(selectedVersion, range))
+        if (macOSVersionNameKey === undefined) {
+            throw 'Could not find macOSVersionNameKey while getting binary URL. Please report this as a bug on GitHub.'
+        }
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-${MYSQL_MACOS_VERSIONS_IN_FILENAME[macOSVersionNameKey]}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
     } else if (isOnAlpineLinux) {
         fileLocation = `https://github.com/Sebastian-Webster/mysql-server-musl-binaries/releases/download/current/mysql-musl-${selectedVersion}-${currentArch === 'x64' ? 'x86_64' : 'arm64'}.tar.gz`
         xPluginSupported = false
     } else if (currentOS === 'linux') {
         const glibcObject = MYSQL_LINUX_GLIBC_VERSIONS[currentArch];
-        const glibcVersionKeys = Object.keys(glibcObject);
+        const glibcVersionKeys = Object.keys(glibcObject)
         const glibcVersionKey = glibcVersionKeys.find(range => satisfies(selectedVersion, range))
-        const glibcVersion = glibcObject[glibcVersionKey];
+        if (glibcVersionKey === undefined) {
+            throw 'Could not find glibcVersionKey while getting binary URL. Please report this as a bug on GitHub.'
+        }
+        const glibcVersion = glibcObject[glibcVersionKey as keyof typeof glibcObject];
 
-        const minimalInstallAvailableKeys = Object.keys(MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE);
+        const minimalInstallAvailableKeys = (Object.keys(MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE) as unknown) as (keyof typeof MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE)[]
         const minimalInstallAvailableKey = minimalInstallAvailableKeys.find(range => satisfies(selectedVersion, range))
+        if (minimalInstallAvailableKey === undefined) {
+            throw 'Could not find minimalInstallAvailableKey while getting binary URL. Please report this as a bug on GitHub.'
+        }
         const minimalInstallAvailable = MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE[minimalInstallAvailableKey]
 
         const fileExtensionObject = MYSQL_LINUX_FILE_EXTENSIONS[currentArch]
         const fileExtensionKeys = Object.keys(fileExtensionObject);
         const fileExtensionKey = fileExtensionKeys.find(range => satisfies(selectedVersion, range))
-        const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[currentArch][fileExtensionKey]
+        if (fileExtensionKey === undefined) {
+            throw 'Could not find fileExtensionKey while getting binary URL. Please report this as a bug on GitHub.'
+        }
+        const fileExtension = MYSQL_LINUX_FILE_EXTENSIONS[currentArch][fileExtensionKey as keyof typeof fileExtensionObject]
 
         fileLocation = `${major(selectedVersion)}.${minor(selectedVersion)}/mysql-${selectedVersion}${isRC ? '-rc' : isDMR ? '-dmr' : ''}-linux-${minimalInstallAvailable !== 'no-glibc-tag' ? `glibc${glibcVersion}-` : ''}${currentArch === 'x64' ? 'x86_64' : 'aarch64'}${minimalInstallAvailable !== 'no' && (process.arch !== 'arm64' ? true : satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64)) ? `-minimal${satisfies(selectedVersion, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS) ? '-rebuild' : ''}` : ''}.tar.${fileExtension}`
     }
