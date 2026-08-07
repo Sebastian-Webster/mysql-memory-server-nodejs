@@ -21,11 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup node ${{ matrix.node-version }}
+      - name: Setup Node 24.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24.x
           check-latest: true
+
+      - name: Get Node.js version
+        run: node -v
 
       - name: Install packages
         run: npm ci
@@ -35,7 +38,16 @@ jobs:
         run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
       - name: Run tsc
-        run: ./node_modules/typescript/bin/tsc
+        run: npx tsc
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          check-latest: true
+
+      - name: Get Node.js version
+        run: node -v
 
       - name: Run tests
         run: node tests/old-node.js
