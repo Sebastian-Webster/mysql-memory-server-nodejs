@@ -35,7 +35,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
       - name: Run tests
-        run: npx tsx@3.14.0 tests/old-node.js
+        run: npx tsx@3.14.0 tests/old-node.ts
 
       - name: Move MySQLMSN directory for GitHub Actions upload
         if: ${{ failure() }}
