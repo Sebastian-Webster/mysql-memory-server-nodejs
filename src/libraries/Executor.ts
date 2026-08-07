@@ -12,7 +12,6 @@ import { onExit } from "signal-exit";
 import { randomUUID } from "crypto";
 import { getInternalEnvVariable } from "../constants";
 import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
-import { isNodeError } from "../TypeCheckers";
 
 class Executor {
     logger: Logger;
@@ -302,8 +301,8 @@ class Executor {
                     let dirs: String[];
                     try {
                         dirs = await fsPromises.readdir(`${process.env.PROGRAMFILES}\\MySQL`)
-                    } catch (e) {
-                        if (isNodeError(e) && e.code === 'ENOENT') {
+                    } catch (e: any) {
+                        if (e?.code === 'ENOENT') {
                             return resolve(null)
                         } else {
                             throw e
