@@ -35,7 +35,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
       - name: Run tsc
-        run: npx tsc
+        run: ./node_modules/typescript/bin/tsc
 
       - name: Run tests
         run: node tests/old-node.js
