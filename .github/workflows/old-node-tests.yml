@@ -34,8 +34,11 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-slim' }}
         run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
+      - name: Run tsc
+        run: npx tsc
+
       - name: Run tests
-        run: npx tsx@3.14.0 tests/old-node.ts
+        run: node tests/old-node.js
 
       - name: Move MySQLMSN directory for GitHub Actions upload
         if: ${{ failure() }}
