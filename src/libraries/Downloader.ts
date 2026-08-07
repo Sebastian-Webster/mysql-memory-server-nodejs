@@ -243,6 +243,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
+        logger.log('Downloading binary with BinaryInfo object:', binaryInfo)
         const {url, version} = binaryInfo;
         const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
         logger.log('Binary path:', dirpath)
