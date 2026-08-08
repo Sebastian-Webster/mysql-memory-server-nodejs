@@ -30,7 +30,6 @@
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-typescript": "^7.28.5",
-    "@types/adm-zip": "^0.5.5",
     "@types/node": "^25.3.2",
     "@types/semver": "^7.7.1",
     "babel-jest": "^30.2.0",
@@ -39,7 +38,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "semver": "^7.7.4",
     "signal-exit": "^4.1.0"
   },
