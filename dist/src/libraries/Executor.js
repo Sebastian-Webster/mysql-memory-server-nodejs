@@ -55,6 +55,12 @@ class Executor {
     constructor(logger) {
         _Executor_instances.add(this);
         this.DBDestroySignal = new AbortController();
+        this.killedFromPortIssue = false;
+        this.databasePath = ''; // This is a placeholder value and gets set to the correct value in startMySQL().
+        this.versionSupportsMySQLX = true; // This value gets changed in startMySQL() if the version does not support MySQLX.
+        this.version = ''; // This is a placeholder value and gets set to the correct value in startMySQL().
+        this.versionInstalledOnSystem = true; // This value gets changed in startMySQL() to false if the version is not installed on the system.
+        this.removeExitHandler = () => { }; // This field contains a placeholder function and the real function gets set in startMySQL().
         this.logger = logger;
     }
     getMySQLVersion(preferredVersion) {
@@ -185,11 +191,9 @@ class Executor {
                 if (retries <= options.portRetries) {
                     this.logger.warn(`Tried a port that is already in use. Now retrying... ${retries}/${options.portRetries} possible retries.`);
                 }
-                else {
-                    throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`;
-                }
             }
         } while (retries <= options.portRetries);
+        throw `The port has been retried ${options.portRetries} times and a free port could not be found.\nEither try again, or if this is a common issue, increase options.portRetries.`;
     }
 }
 _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_executeFile(command, args) {
@@ -201,6 +205,10 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
 }, _Executor_killProcess = async function _Executor_killProcess(childProcess) {
     // If the process has already been killed, return true
     const pid = childProcess.pid;
+    if (pid === undefined) {
+        // According to https://nodejs.org/api/child_process.html#subprocesspid, if pid is undefined, the process failed to spawn, and thus we can return true as it is not running.
+        return true;
+    }
     try {
         process.kill(pid, 0);
     }
@@ -355,7 +363,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     if (code) {
                         let errorMessage = '';
                         if (os.platform() === 'win32' && code === 3221225781) {
-                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
+                            errorMessage = `The MySQL database exited early with code 3221225781. A possible cause is that the Microsoft Visual C++ Redistributable Package is not installed. Please refer to the following link for this package's requirements on your system - this may help solve this error: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.15.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. If you are sure you have this installed, check the following for more details: The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
                         }
                         else {
                             errorMessage = `The database exited early with code ${code}. The error log was:\n${errorLog}\nThe error string was: "${errorString}".`;
@@ -459,21 +467,21 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 throw 'Tried to copy libaio into lib folder and MySQL is still failing to initialize. Please check the console for more information.';
             }
             if (binary.installedOnSystem) {
-                throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
+                throw 'libaio could not be found while running system-installed MySQL. libaio must be installed on this system for MySQL to run. To learn more, please check out https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.15.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
             }
             // If the below code is running, the version of MySQL that is trying to be executed was downloaded from the CDN by this package and libaio has not yet been attempted to be copied
-            if (LinuxOSRelease_1.default.NAME === 'Ubuntu' && LinuxOSRelease_1.default.VERSION_ID >= '24.04') {
+            if (LinuxOSRelease_1.default.NAME === 'Ubuntu' && typeof LinuxOSRelease_1.default.VERSION_ID === 'string' && LinuxOSRelease_1.default.VERSION_ID >= '24.04') {
                 const { error: lderror, stdout, stderr: ldstderr } = await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_executeFile).call(this, 'ldconfig', ['-p']);
                 if (lderror || ldstderr) {
                     this.logger.error('The following libaio error occurred:', stderr);
                     this.logger.error('After the libaio error, an ldconfig error occurred:', lderror || ldstderr);
-                    throw 'The ldconfig command failed to run. This command was ran to find libaio1t64 because libaio1t64 could not be found on the system. libaio1t64 is needed for MySQL to run. Do you have ldconfig and libaio1t64 installed? Learn more at https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
+                    throw 'The ldconfig command failed to run. This command was ran to find libaio1t64 because libaio1t64 could not be found on the system. libaio1t64 is needed for MySQL to run. Do you have ldconfig and libaio1t64 installed? Learn more at https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.15.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
                 }
                 const libaioFound = stdout.split('\n').filter(lib => lib.includes('libaio.so.1t64'));
                 if (!libaioFound.length) {
                     this.logger.error('Error from launching MySQL:', stderr);
                     this.logger.error('Could not find libaio1t64 in this list:', libaioFound);
-                    throw 'An error occurred while launching MySQL because libaio1t64 is not installed on your system. Please install libaio1t64 and then use mysql-memory-server again. To learn more, please check out https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. Check error in console for more information.';
+                    throw 'An error occurred while launching MySQL because libaio1t64 is not installed on your system. Please install libaio1t64 and then use mysql-memory-server again. To learn more, please check out https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.15.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies. Check error in console for more information.';
                 }
                 const libaioEntry = libaioFound[0];
                 const libaioPathIndex = libaioEntry.indexOf('=>');
@@ -486,7 +494,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 else {
                     copyPath = (0, path_1.resolve)(`${binaryFilepath}/../../lib/private/libaio.so.1`);
                 }
-                let lockRelease;
+                let lockRelease = undefined;
                 while (true) {
                     try {
                         lockRelease = await (0, FileLock_1.lockFile)(copyPath);
@@ -515,12 +523,12 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                     //If the lock was already acquired by some other process, this process would have already waited for the lock, so no copying needs to be done since it's already happened.
                     //If the lock failed to acquire for some other reason, the error would've already been thrown.
                     this.logger.log('libaio copy path:', copyPath, '| libaio symlink path:', libaioSymlinkPath, '| libaio actual path:', libaioPath);
-                    let copyError;
+                    let copyErrorOccurred = false;
                     try {
                         await fsPromises.copyFile(libaioPath, copyPath);
                     }
                     catch (e) {
-                        copyError = e;
+                        copyErrorOccurred = true;
                         this.logger.error('An error occurred while copying libaio1t64 to lib folder:', e);
                         try {
                             await fsPromises.rm(copyPath, { force: true });
@@ -536,7 +544,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                         catch (e) {
                             this.logger.error('Error unlocking libaio file:', e);
                         }
-                        if (copyError) {
+                        if (copyErrorOccurred) {
                             throw 'An error occurred while copying libaio1t64 to the MySQL lib folder. Please check the console for more details.';
                         }
                     }
@@ -547,7 +555,7 @@ _Executor_instances = new WeakSet(), _Executor_executeFile = function _Executor_
                 await __classPrivateFieldGet(this, _Executor_instances, "m", _Executor_setupDataDirectories).call(this, options, binary, datadir, false);
                 return;
             }
-            throw 'You do not have libaio1 installed. Please install the libaio1 package for the downloaded MySQL binary to run. Learn more here: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.14.1/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
+            throw 'You do not have libaio1 installed. Please install the libaio1 package for the downloaded MySQL binary to run. Learn more here: https://github.com/Sebastian-Webster/mysql-memory-server-nodejs/blob/v1.15.0/docs/SUPPORTED_MYSQL_DOWNLOADS.md#required-dependencies';
         }
         throw stderr;
     }

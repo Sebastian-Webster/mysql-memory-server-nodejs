@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = exports.MYSQL_LINUX_FILE_EXTENSIONS = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = exports.MYSQL_LINUX_GLIBC_VERSIONS = exports.MYSQL_MACOS_VERSIONS_IN_FILENAME = exports.RC_MYSQL_VERSIONS = exports.DMR_MYSQL_VERSIONS = exports.MYSQL_MIN_OS_SUPPORT = exports.MYSQL_ARCH_SUPPORT = exports.DOWNLOADABLE_MYSQL_VERSIONS = exports.MySQLCDNArchivesBaseURL = exports.MySQLCDNDownloadsBaseURL = exports.MIN_SUPPORTED_MYSQL = exports.OPTION_TYPE_CHECKS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS = void 0;
+exports.MYSQL_ALPINE_VERSION_RANGE = exports.MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = exports.MYSQL_LINUX_FILE_EXTENSIONS = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = exports.MYSQL_LINUX_GLIBC_VERSIONS = exports.MYSQL_MACOS_VERSIONS_IN_FILENAME = exports.RC_MYSQL_VERSIONS = exports.DMR_MYSQL_VERSIONS = exports.MYSQL_MIN_OS_SUPPORT = exports.MYSQL_ARCH_SUPPORT = exports.DOWNLOADABLE_MYSQL_VERSIONS = exports.MySQLCDNArchivesBaseURL = exports.MySQLCDNDownloadsBaseURL = exports.MIN_SUPPORTED_MYSQL = exports.OPTION_TYPE_CHECKS = exports.LOG_LEVELS = exports.DEFAULT_OPTIONS_KEYS = exports.DEFAULT_OPTIONS = void 0;
 exports.getInternalEnvVariable = getInternalEnvVariable;
 const semver_1 = require("semver");
 const fs_1 = require("fs");
@@ -18,7 +18,7 @@ exports.DEFAULT_OPTIONS = {
     xPort: 0,
     downloadRetries: 10,
     initSQLString: '',
-    arch: process.arch,
+    arch: process.arch === 'arm64' ? 'arm64' : process.arch === 'x64' ? 'x64' : 'unsupported',
     xEnabled: 'FORCE',
     initSQLFilePath: ''
 };
@@ -111,7 +111,7 @@ exports.OPTION_TYPE_CHECKS = {
     xEnabled: {
         check: (opt) => opt === undefined || pluginActivationStates.includes(opt),
         errorMessage: `xEnabled must be either undefined or one of the following: ${pluginActivationStates.join(', ')}`,
-        definedType: 'boolean'
+        definedType: 'string'
     },
     initSQLFilePath: {
         check: (opt) => opt === undefined || (typeof opt === 'string' && (0, fs_1.existsSync)(opt)),
@@ -128,20 +128,22 @@ exports.DOWNLOADABLE_MYSQL_VERSIONS = [
     '8.0.0', '8.0.1', '8.0.2', '8.0.3', '8.0.4',
     '8.0.11', '8.0.12', '8.0.13', '8.0.14', '8.0.15', '8.0.16', '8.0.17', '8.0.18', '8.0.19', '8.0.20', '8.0.21', '8.0.22', '8.0.23', '8.0.24', '8.0.25', '8.0.26', '8.0.27', '8.0.28', '8.0.30', '8.0.31', '8.0.32', '8.0.33', '8.0.34', '8.0.35', '8.0.36', '8.0.37', '8.0.39', '8.0.40', '8.0.41', '8.0.42', '8.0.43', '8.0.44', '8.0.45',
     '8.1.0', '8.2.0', '8.3.0',
-    '8.4.0', '8.4.2', '8.4.3', '8.4.4', '8.4.5', '8.4.6', '8.4.7', '8.4.8',
-    '9.0.1', '9.1.0', '9.2.0', '9.3.0', '9.4.0', '9.5.0', '9.6.0'
+    '8.4.0', '8.4.2', '8.4.3', '8.4.4', '8.4.5', '8.4.6', '8.4.7', '8.4.8', '8.4.9', '8.4.10', '8.4.11',
+    '9.0.1', '9.1.0', '9.2.0', '9.3.0', '9.4.0', '9.5.0', '9.6.0',
+    '9.7.0', '9.7.1', '9.7.2'
 ];
 exports.MYSQL_ARCH_SUPPORT = {
     darwin: {
-        arm64: '8.0.26 - 9.6.0',
-        x64: '5.7.19 - 9.6.0'
+        arm64: '8.0.26 - 9.7.2',
+        x64: '5.7.19 - 9.7.2'
     },
     linux: {
-        arm64: '8.0.31 - 9.6.0',
-        x64: '5.7.19 - 9.6.0'
+        arm64: '8.0.31 - 9.7.2',
+        x64: '5.7.19 - 9.7.2'
     },
     win32: {
-        x64: '5.7.19 - 9.6.0'
+        x64: '5.7.19 - 9.7.2',
+        arm64: '0.0.0' // There aren't any arm64 MySQL binaries for Windows on ARM provided by Oracle. As a result, this is set to 0.0.0 to indicate no support for arm64 on win32.
     }
 };
 exports.MYSQL_MIN_OS_SUPPORT = {
@@ -161,7 +163,7 @@ exports.MYSQL_MIN_OS_SUPPORT = {
         '8.0.28 - 8.0.31': '20.0.0',
         '8.0.32 - 8.0.34': '21.0.0',
         '8.0.35 - 8.0.39 || 8.1.0 - 8.4.2 || 9.0.1': '22.0.0',
-        '8.0.40 - 8.0.45 || 8.4.3 - 8.4.8 || 9.1.0 - 9.6.0': '23.0.0'
+        '8.0.40 - 8.0.45 || 8.4.3 - 8.4.11 || 9.1.0 - 9.7.2': '23.0.0'
     }
 };
 exports.DMR_MYSQL_VERSIONS = '8.0.0 - 8.0.2';
@@ -176,7 +178,7 @@ exports.MYSQL_MACOS_VERSIONS_IN_FILENAME = {
     '8.0.30 - 8.0.31': 'macos12',
     '8.0.32 - 8.0.35 || 8.1.0 - 8.2.0': 'macos13',
     '8.0.36 - 8.0.40 || 8.3.0 - 8.4.3 || 9.0.1 - 9.1.0': 'macos14',
-    '8.0.41 - 8.0.45 || 8.4.4 - 8.4.8 || 9.2.0 - 9.6.0': 'macos15'
+    '8.0.41 - 8.0.45 || 8.4.4 - 8.4.11 || 9.2.0 - 9.7.2': 'macos15'
 };
 exports.MYSQL_LINUX_GLIBC_VERSIONS = {
     //8.0.42 - 8.0.43, 8.4.5 - 8.4.6, and 9.3.0 - 9.4.0 with glibc 2.28 does NOT have a minimal install version for x64 but it DOES have arm64 support.
@@ -185,29 +187,31 @@ exports.MYSQL_LINUX_GLIBC_VERSIONS = {
     //Neither glibc versions for the above MySQL versions have an arm64 minimal install.
     x64: {
         '5.7.19 - 8.0.20': '2.12',
-        '8.0.21 - 9.5.0': '2.17',
-        '9.6.0': '2.28'
+        '8.0.21 - 8.4.10 || 9.0.1 - 9.5.0': '2.17',
+        '8.4.11 || 9.6.0 - 9.7.2': '2.28'
     },
     arm64: {
         '5.7.19 - 8.0.20': '2.12',
         '8.0.21 - 8.0.41 || 8.1.0 - 8.4.4 || 9.0.1 - 9.2.0': '2.17',
-        '8.0.42 - 8.0.45 || 8.4.5 - 8.4.8 || 9.3.0 - 9.6.0': '2.28'
+        '8.0.42 - 8.0.45 || 8.4.5 - 8.4.11 || 9.3.0 - 9.7.2': '2.28'
     }
 };
 exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE = {
     '5.7.19 - 8.0.15': 'no',
     '8.0.16 - 8.0.20': 'no-glibc-tag',
-    '8.0.21 - 9.6.0': 'glibc-tag'
+    '8.0.21 - 9.7.2': 'glibc-tag'
 };
 exports.MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 = '8.0.33 - 8.0.41 || 8.1.0 - 8.4.4 || 9.0.1 - 9.2.0'; //Not available for < 8.0.33 and >=8.0.42 <8.1.0, >=8.4.5 <8.5, and >=9.3.0 <10.0.0
 exports.MYSQL_LINUX_FILE_EXTENSIONS = {
     x64: {
         '5.7.19 - 8.0.11': 'gz',
-        '8.0.12 - 9.6.0': 'xz'
+        '8.0.12 - 9.7.2': 'xz'
     },
     arm64: {
         '8.0.31 - 8.0.32': 'gz',
-        '8.0.33 - 9.6.0': 'xz'
+        '8.0.33 - 9.7.2': 'xz'
     }
 };
 exports.MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS = '8.0.26';
+//https://github.com/Sebastian-Webster/mysql-server-musl-binaries only has support for v8.4.x (up to 8.4.11) and 9.x (excluding 9.7.x, up to 9.6.0) binaries
+exports.MYSQL_ALPINE_VERSION_RANGE = '8.4.0 - 8.4.11 || 9.0.1 - 9.6.0';

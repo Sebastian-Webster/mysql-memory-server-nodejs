@@ -4,12 +4,12 @@ declare class Executor {
     #private;
     logger: Logger;
     DBDestroySignal: AbortController;
-    removeExitHandler: () => void;
+    killedFromPortIssue: boolean;
+    databasePath: string;
+    versionSupportsMySQLX: boolean;
     version: string;
     versionInstalledOnSystem: boolean;
-    versionSupportsMySQLX: boolean;
-    databasePath: string;
-    killedFromPortIssue: boolean;
+    removeExitHandler: () => void;
     constructor(logger: Logger);
     getMySQLVersion(preferredVersion?: string): Promise<DownloadedMySQLVersion | null>;
     startMySQL(options: InternalServerOptions, installedMySQLBinary: DownloadedMySQLVersion): Promise<MySQLDB>;

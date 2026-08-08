@@ -13,19 +13,23 @@ const constants_1 = require("./constants");
 const LinuxOSRelease_1 = __importDefault(require("./libraries/LinuxOSRelease"));
 async function createDB(opts) {
     const suppliedOpts = opts || {};
-    const suppliedOptsKeys = Object.keys(suppliedOpts);
     const options = { ...constants_1.DEFAULT_OPTIONS };
-    for (const opt of suppliedOptsKeys) {
-        if (!constants_1.DEFAULT_OPTIONS_KEYS.includes(opt)) {
-            throw `Option ${opt} is not a valid option.`;
+    for (const opt in suppliedOpts) {
+        const optKey = opt;
+        const optValue = suppliedOpts[optKey];
+        if (!constants_1.DEFAULT_OPTIONS_KEYS.includes(optKey)) {
+            throw `Option ${optKey} is not a valid option.`;
         }
-        if (!constants_1.OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
+        if (!constants_1.OPTION_TYPE_CHECKS[optKey].check(suppliedOpts[optKey])) {
             //Supplied option failed the check
-            throw `${constants_1.OPTION_TYPE_CHECKS[opt].errorMessage} | Received value: ${suppliedOpts[opt]} (type: ${typeof suppliedOpts[opt]})`;
+            throw `${constants_1.OPTION_TYPE_CHECKS[optKey].errorMessage} | Received value: ${optValue} (type: ${typeof optValue})`;
         }
-        if (suppliedOpts[opt] !== undefined) {
-            options[opt] = suppliedOpts[opt];
+        if (optValue !== undefined) {
+            options[optKey] = optValue;
         }
+    }
+    if (options.arch === 'unsupported') {
+        throw "mysql-memory-server can only execute arm64 and x64 versions of MySQL. Your CPU architecture has been detected as one that isn't either one of those. If that is wrong, please report a bug on GitHub. If you would like to forcefully execute an arm64 or x64 MySQL binary on this system even when your CPU architecture isn't one of those, please refer to the documentation for the 'options.arch' option to set the binary architecture to execute.";
     }
     const logger = new Logger_1.default(options.logLevel);
     const executor = new Executor_1.default(logger);

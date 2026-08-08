@@ -23,7 +23,7 @@ async function waitForLock(path, options) {
             }
         }
         catch (e) {
-            if (e.code === 'ENOENT') {
+            if (e?.code === 'ENOENT') {
                 return;
             }
             else {
@@ -53,7 +53,7 @@ async function lockFile(path) {
         return setupMTimeEditor(lockPath);
     }
     catch (e) {
-        if (e.code === 'EEXIST') {
+        if (e?.code === 'EEXIST') {
             try {
                 const stat = await promises_1.default.stat(lockPath);
                 if (Date.now() - stat.mtime.getTime() > mtimeLimit) {
@@ -64,7 +64,7 @@ async function lockFile(path) {
                 }
             }
             catch (e) {
-                if (e.code === 'ENOENT') {
+                if (e?.code === 'ENOENT') {
                     //This will run if the lock gets released after the EEXIST error is thrown but before the stat is checked.
                     //If this is the case, the lock acquisition should be retried.
                     return await lockFile(path);

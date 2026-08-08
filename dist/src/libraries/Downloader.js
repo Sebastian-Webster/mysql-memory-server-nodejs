@@ -253,6 +253,7 @@ function extractBinary(url, archiveLocation, extractedLocation, binaryInfo, logg
 }
 function downloadBinary(binaryInfo, options, logger) {
     return new Promise(async (resolve, reject) => {
+        logger.log('Downloading binary with BinaryInfo object:', binaryInfo);
         const { url, version } = binaryInfo;
         const dirpath = `${os_1.default.tmpdir()}/mysqlmsn/binaries`;
         logger.log('Binary path:', dirpath);
@@ -316,7 +317,7 @@ function downloadBinary(binaryInfo, options, logger) {
                     }
                     // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
                     // then retry with the Downloads URL. Otherwise, reject.
-                    if (e?.includes('status code 404')) {
+                    if (typeof e === 'string' && e.includes('status code 404')) {
                         if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
                             downloadTries--;
@@ -342,7 +343,7 @@ function downloadBinary(binaryInfo, options, logger) {
                         catch (e) {
                             logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e);
                         }
-                        logger.error('downloadRetries have been exceeded. Aborting download.');
+                        logger.error(`downloadRetries have been exceeded for download from URL ${downloadURL}. Aborting download.`);
                         return reject(e);
                     }
                     else {
@@ -390,7 +391,7 @@ function downloadBinary(binaryInfo, options, logger) {
                     }
                     // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
                     // then retry with the Downloads URL. Otherwise, reject.
-                    if (e?.includes('status code 404')) {
+                    if (typeof e === 'string' && e.includes('status code 404')) {
                         if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
                             downloadTries--;

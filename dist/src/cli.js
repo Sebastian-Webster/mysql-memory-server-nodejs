@@ -3,12 +3,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("./index");
 const constants_1 = require("./constants");
+const TypeCheckers_1 = require("./TypeCheckers");
 function main() {
     const definedOptions = process.argv.filter((option) => option.startsWith('--'));
     const options = {};
     process.env.mysqlmsn_internal_DO_NOT_USE_cli = 'true';
     for (const opt of definedOptions) {
-        if (!constants_1.DEFAULT_OPTIONS_KEYS.includes(opt.replace('--', ''))) {
+        const optionName = opt.slice(2);
+        if (!(0, TypeCheckers_1.isValidOption)(optionName)) {
             console.error(`Option ${opt} is not a valid option.`);
             return;
         }
@@ -18,7 +20,6 @@ function main() {
             console.error(`Option ${opt} must have a value.`);
             return;
         }
-        const optionName = opt.slice(2);
         const optionType = constants_1.OPTION_TYPE_CHECKS[optionName].definedType;
         //Try to convert the options to their correct types.
         //We do not need to do any proper type validation here as the library will make sure everything is correct.
@@ -39,7 +40,7 @@ function main() {
             options[optionName] = parseInt(optionValue);
         }
         else {
-            options[opt.slice(2)] = optionValue;
+            options[optionName] = optionValue;
         }
     }
     console.log('Creating ephemeral MySQL database...');
