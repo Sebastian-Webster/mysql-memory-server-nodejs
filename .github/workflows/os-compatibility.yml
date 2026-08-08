@@ -138,6 +138,7 @@ jobs:
         run: df -h
 
       - name: Build code
+        working-directory: mysqlmsn
         run: npx tsc
 
       - name: Run tests
