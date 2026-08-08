@@ -1,15 +1,18 @@
-import {expect, test, jest} from '@jest/globals'
-import { createDB } from '../../src/index'
-import sql from 'mysql2/promise'
-import { ServerOptions } from '../../types';
-import http from 'http';
+// This test is written in JavaScript and using 'dist' as it's source because if it wasn't, Babel would be required.
+// At the time of writing, Babel only supports Node ^20 or >=22 (and errors on anything that isn't that) and we support Node >=16.6.0.
+// If/when we drop support for these legacy Node versions, this file can be changed back to TS and use 'src' for the source files.
+
+const { expect, test } = require('@jest/globals')
+const { createDB } = require('../../dist/src/index.js')
+const sql = require('mysql2/promise')
+const http = require('http')
 
 jest.setTimeout(500_000); //5 minutes
 
 const arch = process.arch === 'x64' || (process.platform === 'win32' && process.arch === 'arm64') ? 'x64' : 'arm64';
 
 test(`MySQL X is off when disabling it`, async () => {
-    const options: ServerOptions = {
+    const options = {
         arch,
         xEnabled: 'OFF',
         logLevel: 'LOG'
@@ -35,7 +38,7 @@ test(`MySQL X is off when disabling it`, async () => {
 })
 
 test(`MySQL X is on when force enabling it`, async () => {
-    const options: ServerOptions = {
+    const options = {
         arch,
         xEnabled: 'FORCE',
         logLevel: 'LOG'
@@ -62,7 +65,7 @@ test(`MySQL X is on when force enabling it`, async () => {
 })
 
 test('DB creation throws when MySQL fails to initialise and X is force enabled', async () => {
-    const server: http.Server = await new Promise(resolve => {
+    const server = await new Promise(resolve => {
         const httpServer = new http.Server();
         httpServer.listen(0, () => {
             resolve(httpServer)
@@ -77,7 +80,7 @@ test('DB creation throws when MySQL fails to initialise and X is force enabled',
         throw 'serverAddress is null. Should be an object.'
     }
 
-    const options: ServerOptions = {
+    const options = {
         arch,
         logLevel: 'LOG',
         xPort: serverAddress.port, // Use a port that is already in use to get X to fail
@@ -86,7 +89,7 @@ test('DB creation throws when MySQL fails to initialise and X is force enabled',
         portRetries: 3
     }
 
-    let thrown: string | boolean = false;
+    let thrown = false;
 
     try {
         await createDB(options)

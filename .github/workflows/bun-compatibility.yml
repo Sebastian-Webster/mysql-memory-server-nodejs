@@ -27,6 +27,9 @@ jobs:
       - name: Install packages
         run: npm ci
 
+      - name: Build code
+        run: npx tsc
+
       - name: Run tests
         run: npm run test:ci
 

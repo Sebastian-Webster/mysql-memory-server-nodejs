@@ -1,6 +1,10 @@
-import {expect, test, jest} from '@jest/globals'
-import { createDB } from '../../src/index'
-import sql from 'mysql2/promise'
+// This test is written in JavaScript and using 'dist' as it's source because if it wasn't, Babel would be required.
+// At the time of writing, Babel only supports Node ^20 or >=22 (and errors on anything that isn't that) and we support Node >=16.6.0.
+// If/when we drop support for these legacy Node versions, this file can be changed back to TS and use 'src' for the source files.
+
+const { expect, test } = require('@jest/globals')
+const { createDB } = require('../../dist/src/index.js')
+const sql = require('mysql2/promise')
 
 jest.setTimeout(500_000);
 

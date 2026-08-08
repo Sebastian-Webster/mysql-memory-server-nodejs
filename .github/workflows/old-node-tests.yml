@@ -56,7 +56,7 @@ jobs:
         if: ${{ failure() }}
         env:
           MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
-        run: npx tsx tests/ci/DirMoveGitHubActions.ts
+        run: node tests/ci/DirMoveGitHubActions.js
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}

@@ -22,6 +22,9 @@ jobs:
       - name: Install packages
         run: npm ci
 
+      - name: Build code
+        run: npx tsc
+
       - name: Run tests
         run: npm run test:ci
 
@@ -29,7 +32,7 @@ jobs:
         if: ${{ failure() }}
         env:
           MOVE_MYSQLMSN_TO: /tmp/mysqlmsn
-        run: npx tsx tests/ci/DirMoveGitHubActions.ts
+        run: node tests/ci/DirMoveGitHubActions.js
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
