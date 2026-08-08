@@ -1,5 +1,9 @@
-import { createDB } from '../src/index'
-import sql from 'mysql2/promise'
+// To not need to rely on ts-node / tsx, this test is importing the library from dist
+// In .github/workflows/old-node-tests.yml, CI runs tsc first and then executes this test
+// If running this test locally, please execute tsc before running this test to have your up-to-date code.
+
+const { createDB } = require('../dist/src/index.js')
+const sql = require('mysql2/promise')
 
 async function main() {
     console.log('Starting test...')

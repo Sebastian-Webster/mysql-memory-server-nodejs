@@ -243,6 +243,7 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
 
 export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOptions, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
+        logger.log('Downloading binary with BinaryInfo object:', binaryInfo)
         const {url, version} = binaryInfo;
         const dirpath = `${os.tmpdir()}/mysqlmsn/binaries`
         logger.log('Binary path:', dirpath)
@@ -316,7 +317,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                     // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
                     // then retry with the Downloads URL. Otherwise, reject.
-                    if (e?.includes('status code 404')) {
+                    if (typeof e === 'string' && e.includes('status code 404')) {
                         if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
                             downloadTries--
@@ -339,7 +340,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
                         } catch (e) {
                             logger.error('An error occurred while releasing lock after downloadRetries exhaustion. The error was:', e)
                         }
-                        logger.error('downloadRetries have been exceeded. Aborting download.')
+                        logger.error(`downloadRetries have been exceeded for download from URL ${downloadURL}. Aborting download.`)
                         return reject(e)
                     } else {
                         logger.warn(`An error was encountered during the binary download process. Retrying for retry ${downloadTries}/${options.downloadRetries}. The error was:`, e)
@@ -387,7 +388,7 @@ export function downloadBinary(binaryInfo: BinaryInfo, options: InternalServerOp
 
                     // If we got a 404 error while downloading a binary from Oracle and have not retried with the Downloads URL yet
                     // then retry with the Downloads URL. Otherwise, reject.
-                    if (e?.includes('status code 404')) {
+                    if (typeof e === 'string' && e.includes('status code 404')) {
                         if (binaryInfo.hostedByOracle && useDownloadsURL === false) {
                             useDownloadsURL = true;
                             downloadTries--

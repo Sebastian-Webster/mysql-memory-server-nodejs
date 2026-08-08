@@ -37,7 +37,7 @@ export type InternalServerOptions = {
     xPort: number,
     downloadRetries: number,
     initSQLString: string,
-    arch: string,
+    arch: "arm64" | "x64" | "unsupported",
     xEnabled: PluginActivationState,
     initSQLFilePath: string
 }
@@ -76,23 +76,19 @@ export type BinaryInfo = {
     xPluginSupported: boolean
 }
 
+type OptionTypeChecksDefinedTypeHelper<T> = T extends string ? "string" : T extends boolean ? "boolean" : T extends number ? "number" : never
+
 export type OptionTypeChecks = {
     [key in keyof Required<ServerOptions>]: {
         check: (opt: any) => boolean,
         errorMessage: string,
-        definedType: "string" | "boolean" | "number"
+        definedType: OptionTypeChecksDefinedTypeHelper<ServerOptions[key]>
     }
 }
 
-export type LinuxEtcOSRelease = {
-    PRETTY_NAME?: string,
+export type LinuxEtcOSRelease = Record<string, string> & {
     NAME?: string,
-    VERSION_ID?: string,
-    VERSION?: string,
-    VERSION_CODENAME?: string,
-    ID?: string,
-    ID_LIKE?: string,
-    UBUNTU_CODENAME?: string
+    VERSION_ID?: string
 }
 
 export type JSRuntimeVersion = {

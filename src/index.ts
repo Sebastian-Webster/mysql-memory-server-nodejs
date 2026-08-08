@@ -8,24 +8,30 @@ import { MIN_SUPPORTED_MYSQL, DEFAULT_OPTIONS_KEYS, OPTION_TYPE_CHECKS, DEFAULT_
 import etcOSRelease from './libraries/LinuxOSRelease'
 
 export async function createDB(opts?: ServerOptions) {
-    const suppliedOpts = opts || {};
-    const suppliedOptsKeys = Object.keys(suppliedOpts);
+    const suppliedOpts: ServerOptions = opts || {};
 
     const options: InternalServerOptions = {...DEFAULT_OPTIONS}
     
-    for (const opt of suppliedOptsKeys) {
-        if (!DEFAULT_OPTIONS_KEYS.includes(opt)) {
-            throw `Option ${opt} is not a valid option.`
+    for (const opt in suppliedOpts) {
+        const optKey = opt as keyof typeof suppliedOpts
+        const optValue = suppliedOpts[optKey]
+
+        if (!DEFAULT_OPTIONS_KEYS.includes(optKey)) {
+            throw `Option ${optKey} is not a valid option.`
         }
 
-        if (!OPTION_TYPE_CHECKS[opt].check(suppliedOpts[opt])) {
+        if (!OPTION_TYPE_CHECKS[optKey].check(suppliedOpts[optKey])) {
             //Supplied option failed the check
-            throw `${OPTION_TYPE_CHECKS[opt].errorMessage} | Received value: ${suppliedOpts[opt]} (type: ${typeof suppliedOpts[opt]})`
+            throw `${OPTION_TYPE_CHECKS[optKey].errorMessage} | Received value: ${optValue} (type: ${typeof optValue})`
         }
 
-        if (suppliedOpts[opt] !== undefined) {
-            options[opt] = suppliedOpts[opt]
+        if (optValue !== undefined) {
+            (options as Record<string, unknown>)[optKey] = optValue
         }
+    }
+
+    if (options.arch === 'unsupported') {
+        throw "mysql-memory-server can only execute arm64 and x64 versions of MySQL. Your CPU architecture has been detected as one that isn't either one of those. If that is wrong, please report a bug on GitHub. If you would like to forcefully execute an arm64 or x64 MySQL binary on this system even when your CPU architecture isn't one of those, please refer to the documentation for the 'options.arch' option to set the binary architecture to execute."
     }
 
     const logger = new Logger(options.logLevel)

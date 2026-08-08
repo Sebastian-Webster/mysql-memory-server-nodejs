@@ -17,8 +17,8 @@ export async function waitForLock(path: string, options: InternalServerOptions):
             } else {
                 await new Promise(resolve => setTimeout(resolve, options.lockRetryWait))
             }
-        } catch (e) {
-            if (e.code === 'ENOENT') {
+        } catch (e: any) {
+            if (e?.code === 'ENOENT') {
                 return
             } else {
                 throw e
@@ -48,8 +48,8 @@ export async function lockFile(path: string): Promise<() => Promise<void>> {
     try {
         await fsPromises.mkdir(lockPath)
         return setupMTimeEditor(lockPath)
-    } catch (e) {
-        if (e.code === 'EEXIST') {
+    } catch (e: any) {
+        if (e?.code === 'EEXIST') {
             try {
                 const stat = await fsPromises.stat(lockPath)
                 if (Date.now() - stat.mtime.getTime() > mtimeLimit) {
@@ -57,8 +57,8 @@ export async function lockFile(path: string): Promise<() => Promise<void>> {
                 } else {
                     throw 'LOCKED'
                 }
-            } catch (e) {
-                if (e.code === 'ENOENT') {
+            } catch (e: any) {
+                if (e?.code === 'ENOENT') {
                     //This will run if the lock gets released after the EEXIST error is thrown but before the stat is checked.
                     //If this is the case, the lock acquisition should be retried.
                     return await lockFile(path)
