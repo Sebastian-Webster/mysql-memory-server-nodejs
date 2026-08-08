@@ -55,7 +55,7 @@ function main() {
         } else {
             console.log(`If you want to use the MySQL CLI client to connect to the database, you can use either commands: \nmysql -u ${db.username} -P ${db.port} --protocol tcp \nOR\nmysql -u ${db.username} --socket ${db.socket}\nIf prompted for a password, leave the password field blank. The database does not have a password set.`)
         }
-    })
+    }).catch(error => console.error('ERROR:', error))
 }
 
 main()
