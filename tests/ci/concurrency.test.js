@@ -2,7 +2,7 @@
 // At the time of writing, Babel only supports Node ^20 or >=22 (and errors on anything that isn't that) and we support Node >=16.6.0.
 // If/when we drop support for these legacy Node versions, this file can be changed back to TS and use 'src' for the source files.
 
-const { expect, test, jest } = require('@jest/globals')
+const { expect, test } = require('@jest/globals')
 const { createDB } = require('../../dist/src/index.js')
 const sql = require('mysql2/promise')
 
