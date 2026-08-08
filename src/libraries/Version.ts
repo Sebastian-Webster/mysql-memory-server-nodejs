@@ -1,7 +1,7 @@
 import { BinaryInfo, JSRuntimeVersion } from "../../types";
 import * as os from 'os'
 import { satisfies, coerce, lt, major, minor } from "semver";
-import { MySQLCDNDownloadsBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64 } from "../constants";
+import { MySQLCDNDownloadsBaseURL, DMR_MYSQL_VERSIONS, DOWNLOADABLE_MYSQL_VERSIONS, MYSQL_ARCH_SUPPORT, MYSQL_LINUX_FILE_EXTENSIONS, MYSQL_LINUX_GLIBC_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE, MYSQL_MACOS_VERSIONS_IN_FILENAME, MYSQL_MIN_OS_SUPPORT, RC_MYSQL_VERSIONS, MYSQL_LINUX_MINIMAL_REBUILD_VERSIONS, MYSQL_LINUX_MINIMAL_INSTALL_AVAILABLE_ARM64, MYSQL_ALPINE_VERSION_RANGE } from "../constants";
 import etcOSRelease, { isOnAlpineLinux } from "./LinuxOSRelease";
 import { isSupportedOS } from "../TypeCheckers";
 
@@ -76,11 +76,10 @@ export default function getBinaryURL(versionToGet: string = "x", currentArch: "a
                 throw `You are running a version of Ubuntu that is too modern to run any MySQL versions with this package that match the following version requirement: ${versionToGet}. Please choose a newer version of MySQL to use, or if you believe this is a bug please report this on GitHub.`
             }
         } else if (isOnAlpineLinux) {
-            //https://github.com/Sebastian-Webster/mysql-server-musl-binaries only has support for v8.4.x and 9.x binaries
-            selectedVersions = selectedVersions.filter(v => satisfies(v, '8.4.x') || satisfies(v, '9.x'))
+            selectedVersions = selectedVersions.filter(v => satisfies(v, MYSQL_ALPINE_VERSION_RANGE))
             
             if (selectedVersions.length === 0) {
-                throw 'mysql-memory-server has detected you are running this package on Alpine Linux. The source for MySQL with musl libc only provides binaries for MySQL 8.4.x and 9.x and as such only those versions can be used with this package. Please use 8.4.x or 9.x.'
+                throw `mysql-memory-server has detected you are running this package on Alpine Linux. The source for MySQL with musl libc only provides binaries for the following version ranges: "${MYSQL_ALPINE_VERSION_RANGE}" and as such only those versions can be used with this package. Please use a version within those ranges.`
             }
         }
     }
