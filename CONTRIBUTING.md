@@ -42,7 +42,7 @@ npm install path/to/mysql-memory-server
 
 replacing "path/to/mysql-memory-server" with the path to this repository on your computer. You can then write code that uses `mysql-memory-server` and test your changes.
 
-There are also automated tests which you can run by running the command:
+There are also automated tests you can run. Please build the code before running these tests, and then start the automated tests by running the command:
 
 ```sh
 npm test

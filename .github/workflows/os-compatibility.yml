@@ -34,6 +34,9 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-slim' }}
         run: sudo apt-get update && sudo apt-get install libaio1t64 libnuma-dev
 
+      - name: Build code
+        run: npx tsc
+
       - name: Run tests
         env:
           VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
@@ -43,7 +46,7 @@ jobs:
         if: ${{ failure() }}
         env:
           MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
-        run: npx tsx tests/ci/DirMoveGitHubActions.ts
+        run: node tests/ci/DirMoveGitHubActions.js
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
@@ -84,6 +87,9 @@ jobs:
 
       - name: Print available storage space
         run: df -h
+
+      - name: Build code
+        run: npx tsc
 
       - name: Run tests
         env:
@@ -130,6 +136,9 @@ jobs:
 
       - name: Print available storage space
         run: df -h
+
+      - name: Build code
+        run: npx tsc
 
       - name: Run tests
         working-directory: mysqlmsn

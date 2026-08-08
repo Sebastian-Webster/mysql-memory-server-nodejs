@@ -1,6 +1,9 @@
-import os from 'os';
-import fs from 'fs';
-import fsPromises from 'fs/promises'
+// This is written in JavaScript to remove the need for ts-node / tsx on the old versions of Node we support (>=16.6.0).
+// If/when we drop support for legacy versions of Node.js, this file can be rewritten in TypeScript.
+
+const os = require('os')
+const fs = require('fs')
+const fsPromises = require('fs/promises')
 
 async function main() {
     const originalPath = `${os.tmpdir()}/mysqlmsn`

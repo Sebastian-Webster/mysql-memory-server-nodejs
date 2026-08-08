@@ -1,14 +1,16 @@
-import {expect, test, jest, afterAll} from '@jest/globals'
-import { createDB } from '../src/index'
-import sql from 'mysql2/promise'
-import { coerce, satisfies } from 'semver';
-import { ServerOptions } from '../types';
-import getBinaryURL from '../src/libraries/Version';
-import { DOWNLOADABLE_MYSQL_VERSIONS } from '../src/constants';
-import fs from 'fs'
-import fsPromises from 'fs/promises'
-import os from 'os'
-import { randomUUID } from 'crypto';
+// This test is written in JavaScript and using 'dist' as it's source because if it wasn't, Babel would be required.
+// At the time of writing, Babel only supports Node ^20 or >=22 (and errors on anything that isn't that) and we support Node >=16.6.0.
+// If/when we drop support for these legacy Node versions, this file can be changed back to TS and use 'src' for the source files.
+
+const { expect, test, jest } = require('@jest/globals')
+const { createDB } = require('../dist/src/index.js')
+const sql = require('mysql2/promise')
+const { coerce, satisfies } = require('semver')
+const getBinaryURL = require('../dist/src/libraries/Version.js')
+const { DOWNLOADABLE_MYSQL_VERSIONS } = require('../dist/src/constants.js')
+const fs = require('fs')
+const os = require('os')
+const { randomUUID } = require('crypto')
 
 const usernames = ['root', 'dbuser']
 
@@ -32,7 +34,7 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
 
     for (const username of usernames) {
         test(`running on version ${version} with username ${username}`, async () => {
-            const options: ServerOptions = {
+            const options = {
                 version,
                 dbName: 'testingdata',
                 username: username,
