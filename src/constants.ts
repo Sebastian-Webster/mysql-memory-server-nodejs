@@ -197,7 +197,7 @@ export const MYSQL_LINUX_GLIBC_VERSIONS = {
     //Neither glibc versions for the above MySQL versions have an arm64 minimal install.
     x64: {
         '5.7.19 - 8.0.20': '2.12',
-        '8.0.21 - 9.5.0': '2.17',
+        '8.0.21 - 8.4.10 || 9.0.1 - 9.5.0': '2.17',
         '8.4.11 || 9.6.0 - 9.7.2': '2.28'
     },
     arm64: {
