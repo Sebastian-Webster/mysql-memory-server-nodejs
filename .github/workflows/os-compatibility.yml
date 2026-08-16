@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup node LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           check-latest: true
@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup node LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           check-latest: true
@@ -112,7 +112,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup node LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           check-latest: true
@@ -159,7 +159,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup node LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           check-latest: true
