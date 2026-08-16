@@ -7,15 +7,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  os:
+  ubuntu:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm, ubuntu-slim, windows-2025-vs2026]
-        version-requirement: ['5.7.19 - 5.7.24', '5.7.25 - 5.7.29', '5.7.30 - 5.7.34', '5.7.35 - 5.7.39', '5.7.40 - 5.7.44', '8.0.0 - 8.0.4', '8.0.4 - 8.0.13', '8.0.14 - 8.0.19', '8.0.20 - 8.0.24', '8.0.25 - 8.0.29', '8.0.30 - 8.0.34', '8.0.35 - 8.0.39', '8.0.40 - 8.0.45', '8.1.0 - 8.3.0', '8.4.0 - 9.0.0', '9.0.1 - 10.0.0', '26.7.0 - 28.0.0']
-
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm, ubuntu-slim]
+        version-requirement: &mysql-versions ['5.7.19 - 5.7.24', '5.7.25 - 5.7.29', '5.7.30 - 5.7.34', '5.7.35 - 5.7.39', '5.7.40 - 5.7.44', '8.0.0 - 8.0.4', '8.0.11 - 8.0.12', '8.0.13 - 8.0.14', '8.0.15 - 8.0.19', '8.0.20 - 8.0.24', '8.0.25 - 8.0.29', '8.0.30 - 8.0.34', '8.0.35 - 8.0.39', '8.0.40 - 8.0.42', '8.0.43', '8.0.44', '8.0.45', '8.1.0 - 8.3.0', '8.4.0 - 8.4.3', '8.4.4 - 8.4.6', '8.4.7 - 8.4.8', '8.4.9 - 9.0.0', '9.0.1 - 9.2.0', '9.3.0 - 9.4.0', '9.5.0', '9.6.0 - 9.7.0', '9.7.1 - 9.7.2', '26.7.0 - 28.0.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +43,7 @@ jobs:
       - name: Move MySQLMSN directory for GitHub Actions upload
         if: ${{ failure() }}
         env:
-          MOVE_MYSQLMSN_TO: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
+          MOVE_MYSQLMSN_TO: /tmp/mysqlmsn
         run: node tests/ci/DirMoveGitHubActions.js
 
       - name: Upload mysqlmsn directory
@@ -52,7 +51,95 @@ jobs:
         uses: actions/upload-artifact@v4.3.5
         with:
           name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
-          path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
+          path: /tmp/mysqlmsn
+          compression-level: 9
+
+  macos:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15, macos-15-intel, macos-26, macos-26-intel, xcode-27]
+        version-requirement: *mysql-versions
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          check-latest: true
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Build code
+        run: npx tsc
+
+      - name: Run tests
+        env:
+          VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
+        run: npm run os-compat:ci
+
+      - name: Move MySQLMSN directory for GitHub Actions upload
+        if: ${{ failure() }}
+        env:
+          MOVE_MYSQLMSN_TO: /tmp/mysqlmsn
+        run: node tests/ci/DirMoveGitHubActions.js
+
+      - name: Upload mysqlmsn directory
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
+          path: /tmp/mysqlmsn
+          compression-level: 9
+
+  windows:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025, windows-2025-vs2026, windows-11-arm, windows-11-vs2026-arm]
+        version-requirement: *mysql-versions
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          check-latest: true
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Build code
+        run: npx tsc
+
+      - name: Run tests
+        env:
+          VERSION_REQUIREMENT: ${{ matrix.version-requirement }}
+        run: npm run os-compat:ci
+
+      - name: Move MySQLMSN directory for GitHub Actions upload
+        if: ${{ failure() }}
+        env:
+          MOVE_MYSQLMSN_TO: C:\\Users\\RUNNER~1\\mysqlmsn
+        run: node tests/ci/DirMoveGitHubActions.js
+
+      - name: Upload mysqlmsn directory
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
+          path: C:\\Users\\RUNNER~1\\mysqlmsn
           compression-level: 9
 
   fedora-docker:
@@ -61,8 +148,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [42, 43]
-        version-requirement: ['5.7.19 - 5.7.24', '5.7.25 - 5.7.29', '5.7.30 - 5.7.34', '5.7.35 - 5.7.39', '5.7.40 - 5.7.44', '8.0.0 - 8.0.4', '8.0.4 - 8.0.13', '8.0.14 - 8.0.19', '8.0.20 - 8.0.24', '8.0.25 - 8.0.29', '8.0.30 - 8.0.34', '8.0.35 - 8.0.39', '8.0.40 - 8.0.45', '8.1.0 - 8.3.0', '8.4.0 - 9.0.0', '9.0.1 - 10.0.0', '26.7.0 - 28.0.0']
+        version: [42, 43, 44]
+        version-requirement: *mysql-versions
         ubuntu-version: [24.04, 24.04-arm]
 
     container: fedora:${{ matrix.version }}
@@ -108,10 +195,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version-requirement: [ '8.4.0 - 8.4.4', '8.4.5 - 9.0.0', '9.0.1 - 9.4.0', '9.5.0 - 10.0.0', '26.7.0 - 28.0.0']
+        version-requirement: [ '8.4.0 - 8.4.4', '8.4.5 - 9.0.0', '9.0.1 - 9.4.0', '9.5.0 - 9.6.0']
         ubuntu-version: [24.04, 24.04-arm]
+        alpine-version: ['3.20', 3.21, 3.22, 3.23, 3.24]
 
-    container: alpine:3.23
+    container: alpine:${{ matrix.alpine-version }}
 
     steps:
       - name: Install required libraries for test setup
