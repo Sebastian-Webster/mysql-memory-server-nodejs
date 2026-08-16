@@ -48,7 +48,7 @@ jobs:
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
+        uses: actions/upload-artifact@v7
         with:
           name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
           path: /tmp/mysqlmsn
@@ -92,7 +92,7 @@ jobs:
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
+        uses: actions/upload-artifact@v7
         with:
           name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
           path: /tmp/mysqlmsn
@@ -136,7 +136,7 @@ jobs:
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
+        uses: actions/upload-artifact@v7
         with:
           name: os-${{ matrix.os }}-node-${{ matrix.node-version }}-mysql-${{ matrix.version-requirement }}
           path: C:\\Users\\RUNNER~1\\mysqlmsn
@@ -183,7 +183,7 @@ jobs:
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
+        uses: actions/upload-artifact@v7
         with:
           name: docker-fedora-${{ matrix.version }}-${{ matrix.version-requirement }}-${{ matrix.ubuntu-version}}
           path: /tmp/mysqlmsn
