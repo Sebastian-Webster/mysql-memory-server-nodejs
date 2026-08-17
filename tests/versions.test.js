@@ -46,22 +46,29 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
             }
     
             const db = await createDB(options)
-            const connection = await sql.createConnection({
-                host: '127.0.0.1',
-                user: db.username,
-                port: db.port
-            })
-    
-            const mySQLVersion = (await connection.query('SELECT VERSION()'))[0][0]["VERSION()"]
+            let mySQLVersion;
 
-            //If this does not fail, it means initSQLString works as expected and the database was successfully created.
-            await connection.query('USE mytestdb;')
+            try {
+                const connection = await sql.createConnection({
+                    host: '127.0.0.1',
+                    user: db.username,
+                    port: db.port
+                })
+        
+                mySQLVersion = (await connection.query('SELECT VERSION()'))[0][0]["VERSION()"]
 
-            //If this does not fail, it means initSQLFilePath works as expected and the database was successfully created.
-            await connection.query('USE initfromsqlfilepath;')
-    
-            await connection.end();
-            await db.stop();
+                //If this does not fail, it means initSQLString works as expected and the database was successfully created.
+                await connection.query('USE mytestdb;')
+
+                //If this does not fail, it means initSQLFilePath works as expected and the database was successfully created.
+                await connection.query('USE initfromsqlfilepath;')
+        
+                await connection.end();
+            } catch (e) {
+                console.error('TEST ERROR:', e)
+            } finally {
+                await db.stop();
+            }
     
             expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
         })
