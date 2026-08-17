@@ -16,7 +16,7 @@ async function moveFolder(startDir, endDir) {
             const start = `${file.parentPath}/${file.name}`
             const dest = `${endDir}/${file.name}`
             await fsPromises.mkdir(dest, { recursive: true })
-            await moveFiles(start, dest)
+            await moveFolders(start, dest)
         } else {
             const start = `${file.parentPath}/${file.name}`
             const dest = `${endDir}/${file.name}`
