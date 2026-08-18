@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node 24.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.x
           check-latest: true
@@ -41,7 +41,7 @@ jobs:
         run: npx tsc
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
@@ -60,7 +60,7 @@ jobs:
 
       - name: Upload mysqlmsn directory
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4.3.5
+        uses: actions/upload-artifact@v7
         with:
           name: node-${{ matrix.node-version }}
           path: ${{ runner.os == 'Windows' && 'C:\\Users\\RUNNER~1\\mysqlmsn' || '/tmp/mysqlmsn' }}
