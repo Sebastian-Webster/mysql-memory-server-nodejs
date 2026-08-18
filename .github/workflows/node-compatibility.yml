@@ -13,11 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-15-intel, macos-26, ubuntu-22.04, ubuntu-24.04, windows-2022, windows-2025, ubuntu-22.04-arm, ubuntu-24.04-arm, windows-11-arm, ubuntu-slim, windows-2025-vs2026]
-        node-version: [18.x, 19.x, 20.x, 21.x, 22.x, 23.x, 24.x, 25.x]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, ubuntu-22.04-arm, ubuntu-24.04-arm, ubuntu-26.04-arm, ubuntu-slim, macos-14, macos-15, macos-15-intel, macos-26, macos-26-intel, xcode-27, windows-2022, windows-2025, windows-2025-vs2026, windows-11-arm, windows-11-vs2026-arm]
+        node-version: [18.x, 19.x, 20.x, 21.x, 22.x, 23.x, 24.x, 25.x, 26.x]
         # Exclude Node 18.x on Windows on Arm because Node only provides Windows on Arm binaries for Node >= 19
         exclude:
           - os: windows-11-arm
+            node-version: 18.x
+          - os: windows-11-vs2026-arm
             node-version: 18.x
 
     steps:
