@@ -70,7 +70,7 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
                 await db.stop();
             }
     
-            expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
+            expect(mySQLVersion).toBe(version)
         })
     }
 }
