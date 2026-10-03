@@ -2,7 +2,7 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as fsPromises from 'fs/promises'
 import Logger from './Logger';
-import AdmZip from 'adm-zip'
+import unzipper from 'unzipper'
 import { normalize as normalizePath } from 'path';
 import { randomUUID } from 'crypto';
 import { execFile } from 'child_process';
@@ -143,19 +143,6 @@ function downloadFromCDN(url: string, downloadLocation: string, logger: Logger):
     })
 }
 
-function promisifiedZipExtraction(archiveLocation: string, extractedLocation: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const zip = new AdmZip(archiveLocation)
-        zip.extractAllToAsync(extractedLocation, false, false, (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve()
-            }
-        })
-    })
-}
-
 function extractBinary(url: string, archiveLocation: string, extractedLocation: string, binaryInfo: BinaryInfo, logger: Logger): Promise<string> {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(extractedLocation)) {
@@ -187,7 +174,8 @@ function extractBinary(url: string, archiveLocation: string, extractedLocation: 
             //Only Windows MySQL files use the .zip extension
 
             try {
-                await promisifiedZipExtraction(archiveLocation, extractedLocation)
+                const zip = await unzipper.Open.file(archiveLocation)
+                await zip.extract({path: extractedLocation})
             } catch (e) {
                 extractionError = e
                 logger.log('An error occurred while extracting the ZIP file. The error was:', e)
