@@ -53,6 +53,7 @@ export async function createDB(opts?: ServerOptions) {
         let binaryInfo: BinaryInfo;
         let binaryFilepath: string;
         binaryInfo = getBinaryURL(options.version, options.arch)
+        logger.log('BinaryInfo from version and arch provided:', binaryInfo)
 
         try {
             binaryFilepath = await downloadBinary(binaryInfo, options, logger);
