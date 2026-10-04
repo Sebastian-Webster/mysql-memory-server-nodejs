@@ -40,7 +40,7 @@ exports.downloadBinary = downloadBinary;
 const https = __importStar(require("https"));
 const fs = __importStar(require("fs"));
 const fsPromises = __importStar(require("fs/promises"));
-const adm_zip_1 = __importDefault(require("adm-zip"));
+const unzipper_1 = __importDefault(require("unzipper"));
 const path_1 = require("path");
 const crypto_1 = require("crypto");
 const child_process_1 = require("child_process");
@@ -157,19 +157,6 @@ function downloadFromCDN(url, downloadLocation, logger) {
         });
     });
 }
-function promisifiedZipExtraction(archiveLocation, extractedLocation) {
-    return new Promise((resolve, reject) => {
-        const zip = new adm_zip_1.default(archiveLocation);
-        zip.extractAllToAsync(extractedLocation, false, false, (err) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve();
-            }
-        });
-    });
-}
 function extractBinary(url, archiveLocation, extractedLocation, binaryInfo, logger) {
     return new Promise(async (resolve, reject) => {
         if (fs.existsSync(extractedLocation)) {
@@ -195,7 +182,8 @@ function extractBinary(url, archiveLocation, extractedLocation, binaryInfo, logg
         if (fileExtension === 'zip') {
             //Only Windows MySQL files use the .zip extension
             try {
-                await promisifiedZipExtraction(archiveLocation, extractedLocation);
+                const zip = await unzipper_1.default.Open.file(archiveLocation);
+                await zip.extract({ path: extractedLocation });
             }
             catch (e) {
                 extractionError = e;
