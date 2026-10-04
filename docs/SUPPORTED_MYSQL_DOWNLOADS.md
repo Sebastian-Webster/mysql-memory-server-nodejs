@@ -50,7 +50,7 @@ macOS:
 | v8.0.28 - v8.0.31 | macOS 11 (Big Sur) |
 | v8.0.32 - v8.0.34 | macOS 12 (Monterey) |
 | v8.0.35 - v8.0.39 OR v8.1.0 - v8.4.2 OR v9.0.1 | macOS 13 (Ventura) |
-| v8.0.40 - v8.0.45 OR v8.4.3 - v8.4.11 OR v9.1.0 - v26.7.0 | macOS 14 (Sonoma) |
+| v8.0.40 - v8.0.46 OR v8.4.3 - v8.4.11 OR v9.1.0 - v26.7.0 | macOS 14 (Sonoma) |
 
 ## Operating System Maximum Version Requirements
 
