@@ -70,7 +70,10 @@ for (const version of DOWNLOADABLE_MYSQL_VERSIONS.filter(v => satisfies(v, versi
                 await db.stop();
             }
     
-            expect(satisfies(coerce(mySQLVersion) || 'error', version)).toBe(true)
+            // We are using coerce here because sometimes MySQL adds suffixes to versions
+            // For example, some 5.7.x binaries return their version as 5.7.XX-log
+            // Using coerce removes the suffix and converts version to raw version
+            expect(coerce(mySQLVersion).version).toBe(version)
         })
     }
 }
