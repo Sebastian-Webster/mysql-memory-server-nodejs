@@ -26,7 +26,9 @@ Only MySQL versions 8.4.0 - 8.4.11 and 9.0.1 - 9.6.0 can be downloaded and ran w
 
 *Architectures used can be overridden by the ```arch``` option provided your OS and system supports running applications that use those architectures.*
 
-Linux, Windows, macOS x64: MySQL v5.7.19 - v26.10.0
+Linux and Windows x64: MySQL v5.7.19 - v26.10.0
+
+macOS x64: MySQL v5.7.19 - v8.4.11 OR v9.0.1 - v9.7.4 OR v26.7.0
 
 Linux ARM64: MySQL v8.0.31 - v26.10.0
 

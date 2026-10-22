@@ -148,7 +148,7 @@ export const DOWNLOADABLE_MYSQL_VERSIONS = [
 export const MYSQL_ARCH_SUPPORT = {
     darwin: {
         arm64: '8.0.26 - 26.10.0',
-        x64: '5.7.19 - 26.10.0'
+        x64: '5.7.19 - 8.4.11 || 9.0.1 - 26.7.0'
     },
     linux: {
         arm64: '8.0.31 - 26.10.0',
