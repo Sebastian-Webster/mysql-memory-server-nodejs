@@ -16,6 +16,8 @@
 
 - Versions 5.7.32 - 5.7.44 are not available for download only for macOS systems as MySQL stopped supporting macOS Mojave starting from 5.7.32 for the rest of the 5.7.x line. As a result, those versions are not available for macOS in the MySQL CDN.
 
+- Versions 8.4.12 and 9.7.3 are not available for download as these were updates released for Docker only. No standalone binaries for these versions are available from the MySQL CDN.
+
 ## Alpine Linux Limitations
 
 Only MySQL versions 8.4.0 - 8.4.11 and 9.0.1 - 9.6.0 can be downloaded and ran with this package on Alpine Linux. This limitation is because the binaries for Alpine Linux are sourced from [Sebastian-Webster/mysql-server-musl-binaries](https://github.com/Sebastian-Webster/mysql-server-musl-binaries) on GitHub as Oracle does not support MySQL on musl-based Linux distributions and that repository only has support for those versions of MySQL. If you discover any issues with MySQL (and not this package) when you are running this on Alpine Linux, please report the issue on that repository and not the ```mysql-memory-server``` one. The MySQL X Plugin is also not available when running on Alpine Linux due to compilation errors for musl.
@@ -24,11 +26,13 @@ Only MySQL versions 8.4.0 - 8.4.11 and 9.0.1 - 9.6.0 can be downloaded and ran w
 
 *Architectures used can be overridden by the ```arch``` option provided your OS and system supports running applications that use those architectures.*
 
-Linux, Windows, macOS x64: MySQL v5.7.19 - v26.7.0
+Linux and Windows x64: MySQL v5.7.19 - v26.10.0
 
-Linux ARM64: MySQL v8.0.31 - v26.7.0
+macOS x64: MySQL v5.7.19 - v8.4.11 OR v9.0.1 - v9.7.4 OR v26.7.0
 
-macOS ARM64: MySQL v8.0.26 - v26.7.0
+Linux ARM64: MySQL v8.0.31 - v26.10.0
+
+macOS ARM64: MySQL v8.0.26 - v26.10.0
 
 Windows ARM64: N/A - Read about the ```arch``` option to run this package on your system
 
@@ -50,7 +54,7 @@ macOS:
 | v8.0.28 - v8.0.31 | macOS 11 (Big Sur) |
 | v8.0.32 - v8.0.34 | macOS 12 (Monterey) |
 | v8.0.35 - v8.0.39 OR v8.1.0 - v8.4.2 OR v9.0.1 | macOS 13 (Ventura) |
-| v8.0.40 - v8.0.46 OR v8.4.3 - v8.4.11 OR v9.1.0 - v26.7.0 | macOS 14 (Sonoma) |
+| v8.0.40 - v8.0.46 OR v8.4.3 - v8.4.13 OR v9.1.0 - v26.10.0 | macOS 14 (Sonoma) |
 
 ## Operating System Maximum Version Requirements
 
@@ -92,4 +96,4 @@ Fedora Linux: ```libaio1``` package and ```tar``` package
 
 Alpine Linux: ```libstdc++``` package, ```libaio``` package, and ```tar``` package
 
-*Document last updated in v1.17.0*
+*Document last updated in v1.18.0*
